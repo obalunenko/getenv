@@ -28,7 +28,7 @@ func IntOrDefault(key string, defaultVal int) int {
 // StringOrDefault retrieves the string value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.
-func StringOrDefault(key string, defaultVal string) string {
+func StringOrDefault(key, defaultVal string) string {
 	env, ok := os.LookupEnv(key)
 	if !ok || env == "" {
 		return defaultVal
@@ -111,7 +111,12 @@ func Int64OrDefault(key string, defaultVal int64) int64 {
 		return defaultVal
 	}
 
-	val, err := strconv.ParseInt(env, 10, 64)
+	const (
+		base    = 10
+		bitsize = 64
+	)
+
+	val, err := strconv.ParseInt(env, base, bitsize)
 	if err != nil {
 		return defaultVal
 	}
@@ -128,7 +133,11 @@ func Float64OrDefault(key string, defaultVal float64) float64 {
 		return defaultVal
 	}
 
-	val, err := strconv.ParseFloat(env, 64)
+	const (
+		bitsize = 64
+	)
+
+	val, err := strconv.ParseFloat(env, bitsize)
 	if err != nil {
 		return defaultVal
 	}
