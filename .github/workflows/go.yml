@@ -123,7 +123,7 @@ jobs:
         shell: bash
 
   reports:
-    needs: linting
+    needs: testing
     strategy:
       fail-fast: true
       max-parallel: 1
