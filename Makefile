@@ -46,12 +46,6 @@ sync-vendor:
 	./scripts/sync-vendor.sh
 .PHONY: sync-vendor
 
-
-
-############################################################################
-############################# Linting and testing ##########################
-############################################################################
-
 ## vet project
 vet:
 	./scripts/linting/run-vet.sh
@@ -74,15 +68,19 @@ lint-sonar:
 
 ## Test the project (excluding integration tests).
 test:
-	${call colored, test is running...}
 	./scripts/tests/run.sh
 .PHONY: test
 
 ## Test coverage report.
 test-cover:
-	${call colored, test-cover is running...}
 	./scripts/tests/coverage.sh
 .PHONY: test-cover
+
+## Tests sonar report generate.
+test-sonar-report:
+	./scripts/tests/sonar-report.sh
+.PHONY: test-sonar-report
+
 
 ## Open coverage report.
 open-cover-report: test-cover
@@ -96,13 +94,11 @@ update-readme-cover: test-cover
 
 ## Fix imports sorting.
 imports:
-	${call colored, fix-imports is running...}
 	./scripts/style/fix-imports.sh
 .PHONY: imports
 
 ## Format code with go fmt.
 fmt:
-	${call colored, fmt is running...}
 	./scripts/style/fmt.sh
 .PHONY: fmt
 
@@ -114,10 +110,5 @@ format-project: fmt imports
 release:
 	./scripts/release/release.sh
 .PHONY: release
-
-## Run linting for sonar report
-lint-sonar:
-	./scripts/linting/golangci-sonar.sh
-.PHONY: lint-sonar
 
 .DEFAULT_GOAL := help
