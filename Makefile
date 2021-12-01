@@ -111,4 +111,9 @@ release:
 	./scripts/release/release.sh
 .PHONY: release
 
+## Issue new release.
+new-version: vet test
+	./scripts/release/new-version.sh
+.PHONY: new-release
+
 .DEFAULT_GOAL := help
