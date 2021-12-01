@@ -1,0 +1,40 @@
+name: Issue new release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - "!*"
+
+jobs:
+  release:
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        os: [ 'ubuntu-20.04' ]
+        go: [ '1.17' ]
+    runs-on: ${{ matrix.os }}
+    name: Release
+    steps:
+      - name: Set up go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Install tools
+        run: |
+          make install-tools
+
+      - name: Run GoReleaser
+        if: success()
+        run: |
+          make release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
