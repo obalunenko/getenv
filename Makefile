@@ -54,7 +54,6 @@ sync-vendor:
 
 ## vet project
 vet:
-	${call colored, vet is running...}
 	./scripts/linting/run-vet.sh
 .PHONY: vet
 
@@ -65,8 +64,13 @@ lint-full:
 
 ## Run linting for build pipeline
 lint-pipeline:
-	./scripts/linting/run-linters-pipeline.sh
+	./scripts/linting/golangci-pipeline.sh
 .PHONY: lint-pipeline
+
+## Run linting for sonar report
+lint-sonar:
+	./scripts/linting/golangci-sonar.sh
+.PHONY: lint-sonar
 
 ## Test the project (excluding integration tests).
 test:
