@@ -19,7 +19,7 @@ jobs:
     name: Release
     steps:
       - name: Set up go
-        uses: actions/setup-go@v2.1.5
+        uses: actions/setup-go@v2.2.0
         with:
           go-version: ${{ matrix.go }}
 
