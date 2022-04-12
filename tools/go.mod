@@ -10,7 +10,7 @@ require (
 	github.com/obalunenko/coverbadger v1.2.0
 	github.com/vasi-stripe/gogroup v0.0.0-20200806161525-b5d7f67a97b5
 	golang.org/x/tools v0.1.10
-	gotest.tools/gotestsum v1.7.0
+	gotest.tools/gotestsum v1.8.0
 )
 
 require (
