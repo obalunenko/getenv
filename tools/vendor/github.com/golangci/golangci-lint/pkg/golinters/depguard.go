@@ -10,31 +10,28 @@ import (
 	"golang.org/x/tools/go/loader" //nolint:staticcheck // require changes in github.com/OpenPeeDeeP/depguard
 
 	"github.com/golangci/golangci-lint/pkg/config"
-	"github.com/golangci/golangci-lint/pkg/fsutils"
 	"github.com/golangci/golangci-lint/pkg/golinters/goanalysis"
 	"github.com/golangci/golangci-lint/pkg/lint/linter"
 	"github.com/golangci/golangci-lint/pkg/result"
 )
 
-const depguardName = "depguard"
+const depguardLinterName = "depguard"
 
-func NewDepguard(settings *config.DepGuardSettings) *goanalysis.Linter {
+func NewDepguard() *goanalysis.Linter {
 	var mu sync.Mutex
 	var resIssues []goanalysis.Issue
 
 	analyzer := &analysis.Analyzer{
-		Name: depguardName,
+		Name: depguardLinterName,
 		Doc:  goanalysis.TheOnlyanalyzerDoc,
-		Run:  goanalysis.DummyRun,
 	}
-
 	return goanalysis.NewLinter(
-		depguardName,
+		depguardLinterName,
 		"Go linter that checks if package imports are in a list of acceptable packages",
 		[]*analysis.Analyzer{analyzer},
 		nil,
 	).WithContextSetter(func(lintCtx *linter.Context) {
-		dg, err := newDepGuard(settings)
+		dg, err := newDepGuard(&lintCtx.Settings().Depguard)
 
 		analyzer.Run = func(pass *analysis.Pass) (interface{}, error) {
 			if err != nil {
@@ -111,15 +108,10 @@ type guardian struct {
 }
 
 func newGuardian(settings *config.DepGuardSettings) (*guardian, error) {
-	var ignoreFileRules []string
-	for _, rule := range settings.IgnoreFileRules {
-		ignoreFileRules = append(ignoreFileRules, fsutils.NormalizePathInRegex(rule))
-	}
-
 	dg := &depguard.Depguard{
 		Packages:        settings.Packages,
 		IncludeGoRoot:   settings.IncludeGoRoot,
-		IgnoreFileRules: ignoreFileRules,
+		IgnoreFileRules: settings.IgnoreFileRules,
 	}
 
 	var err error
@@ -128,7 +120,7 @@ func newGuardian(settings *config.DepGuardSettings) (*guardian, error) {
 		return nil, err
 	}
 
-	// if the list type was a denylist the packages with error messages should be included in the denylist package list
+	// if the list type was a blacklist the packages with error messages should be included in the blacklist package list
 	if dg.ListType == depguard.LTBlacklist {
 		noMessagePackages := make(map[string]bool)
 		for _, pkg := range dg.Packages {
@@ -161,7 +153,7 @@ func (g guardian) run(loadConfig *loader.Config, prog *loader.Program, pass *ana
 			goanalysis.NewIssue(&result.Issue{
 				Pos:        issue.Position,
 				Text:       g.createMsg(issue.PackageName),
-				FromLinter: depguardName,
+				FromLinter: depguardLinterName,
 			}, pass),
 		)
 	}
@@ -170,9 +162,9 @@ func (g guardian) run(loadConfig *loader.Config, prog *loader.Program, pass *ana
 }
 
 func (g guardian) createMsg(pkgName string) string {
-	msgSuffix := "is in the denylist"
+	msgSuffix := "is in the blacklist"
 	if g.ListType == depguard.LTWhitelist {
-		msgSuffix = "is not in the allowlist"
+		msgSuffix = "is not in the whitelist"
 	}
 
 	var userSuppliedMsgSuffix string

@@ -12,5 +12,3 @@ completions/
 .vscode/
 .task/
 .idea/
-manpages
-output.json

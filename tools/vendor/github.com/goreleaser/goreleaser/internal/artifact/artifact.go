@@ -3,7 +3,6 @@ package artifact
 
 // nolint: gosec
 import (
-	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -17,7 +16,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
 )
 
 // Type defines the type of an artifact.
@@ -56,10 +55,8 @@ const (
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.
 	BrewTap
-	// PkgBuild is an Arch Linux AUR PKGBUILD file.
-	PkgBuild
-	// SrcInfo is an Arch Linux AUR .SRCINFO file.
-	SrcInfo
+	// GoFishRig is an uploadable Rigs rig food file.
+	GoFishRig
 	// KrewPluginManifest is a krew plugin manifest file.
 	KrewPluginManifest
 	// ScoopManifest is an uploadable scoop manifest file.
@@ -94,19 +91,21 @@ func (t Type) String() string {
 		return "Source"
 	case BrewTap:
 		return "Brew Tap"
+	case GoFishRig:
+		return "GoFish Rig"
 	case KrewPluginManifest:
 		return "Krew Plugin Manifest"
 	case ScoopManifest:
 		return "Scoop Manifest"
 	case SBOM:
 		return "SBOM"
-	case PkgBuild:
-		return "PKGBUILD"
-	case SrcInfo:
-		return "SRCINFO"
 	default:
 		return "unknown"
 	}
+}
+
+func (t Type) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%q", t)), nil
 }
 
 const (
@@ -122,14 +121,15 @@ const (
 )
 
 // Extras represents the extra fields in an artifact.
-type Extras map[string]any
+type Extras map[string]interface{}
 
 func (e Extras) MarshalJSON() ([]byte, error) {
-	m := map[string]any{}
+	m := map[string]interface{}{}
 	for k, v := range e {
 		if k == ExtraRefresh {
 			// refresh is a func, so we can't serialize it.
-			continue
+			// set v to a string representation of the function signature instead.
+			v = "func() error"
 		}
 		m[k] = v
 	}
@@ -138,58 +138,27 @@ func (e Extras) MarshalJSON() ([]byte, error) {
 
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
-	Name    string `json:"name,omitempty"`
-	Path    string `json:"path,omitempty"`
-	Goos    string `json:"goos,omitempty"`
-	Goarch  string `json:"goarch,omitempty"`
-	Goarm   string `json:"goarm,omitempty"`
-	Gomips  string `json:"gomips,omitempty"`
-	Goamd64 string `json:"goamd64,omitempty"`
-	Type    Type   `json:"internal_type,omitempty"`
-	TypeS   string `json:"type,omitempty"`
-	Extra   Extras `json:"extra,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Path   string `json:"path,omitempty"`
+	Goos   string `json:"goos,omitempty"`
+	Goarch string `json:"goarch,omitempty"`
+	Goarm  string `json:"goarm,omitempty"`
+	Gomips string `json:"gomips,omitempty"`
+	Type   Type   `json:"type,omitempty"`
+	Extra  Extras `json:"extra,omitempty"`
 }
 
 func (a Artifact) String() string {
 	return a.Name
 }
 
-// Extra tries to get the extra field with the given name, returning either
-// its value, the default value for its type, or an error.
-//
-// If the extra value cannot be cast into the given type, it'll try to convert
-// it to JSON and unmarshal it into the correct type after.
-//
-// If that fails as well, it'll error.
-func Extra[T any](a Artifact, key string) (T, error) {
-	ex := a.Extra[key]
-	if ex == nil {
-		return *(new(T)), nil
-	}
-
-	t, ok := ex.(T)
-	if ok {
-		return t, nil
-	}
-
-	bts, err := json.Marshal(ex)
-	if err != nil {
-		return t, err
-	}
-
-	decoder := json.NewDecoder(bytes.NewReader(bts))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&t)
-	return t, err
-}
-
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
-func ExtraOr[T any](a Artifact, key string, or T) T {
+func (a Artifact) ExtraOr(key string, or interface{}) interface{} {
 	if a.Extra[key] == nil {
 		return or
 	}
-	return a.Extra[key].(T)
+	return a.Extra[key]
 }
 
 // Checksum calculates the checksum of the artifact.
@@ -236,7 +205,11 @@ func (a Artifact) Refresh() error {
 	if a.Type != Checksum {
 		return nil
 	}
-	if err := ExtraOr(a, ExtraRefresh, noRefresh)(); err != nil {
+	fn, ok := a.ExtraOr(ExtraRefresh, noRefresh).(func() error)
+	if !ok {
+		return nil
+	}
+	if err := fn(); err != nil {
 		return fmt.Errorf("failed to refresh %q: %w", a.Name, err)
 	}
 	return nil
@@ -244,12 +217,12 @@ func (a Artifact) Refresh() error {
 
 // ID returns the artifact ID if it exists, empty otherwise.
 func (a Artifact) ID() string {
-	return ExtraOr(a, ExtraID, "")
+	return a.ExtraOr(ExtraID, "").(string)
 }
 
 // Format returns the artifact Format if it exists, empty otherwise.
 func (a Artifact) Format() string {
-	return ExtraOr(a, ExtraFormat, "")
+	return a.ExtraOr(ExtraFormat, "").(string)
 }
 
 // Artifacts is a list of artifacts.
@@ -268,29 +241,14 @@ func New() Artifacts {
 
 // List return the actual list of artifacts.
 func (artifacts Artifacts) List() []*Artifact {
-	artifacts.lock.Lock()
-	defer artifacts.lock.Unlock()
 	return artifacts.items
-}
-
-// GroupByID groups the artifacts by their ID.
-func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
-	result := map[string][]*Artifact{}
-	for _, a := range artifacts.List() {
-		id := a.ID()
-		if id == "" {
-			continue
-		}
-		result[a.ID()] = append(result[a.ID()], a)
-	}
-	return result
 }
 
 // GroupByPlatform groups the artifacts by their platform.
 func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
-	for _, a := range artifacts.List() {
-		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
+	for _, a := range artifacts.items {
+		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips
 		result[plat] = append(result[plat], a)
 	}
 	return result
@@ -342,7 +300,7 @@ type Filter func(a *Artifact) bool
 //
 // This is useful specially on homebrew et al, where you'll want to use only either the single-arch or the universal binaries.
 func OnlyReplacingUnibins(a *Artifact) bool {
-	return ExtraOr(*a, ExtraReplaces, true)
+	return a.ExtraOr(ExtraReplaces, true).(bool)
 }
 
 // ByGoos is a predefined filter that filters by the given goos.
@@ -363,13 +321,6 @@ func ByGoarch(s string) Filter {
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goarm == s
-	}
-}
-
-// ByGoamd64 is a predefined filter that filters by the given goamd64.
-func ByGoamd64(s string) Filter {
-	return func(a *Artifact) bool {
-		return a.Goamd64 == s
 	}
 }
 
@@ -407,52 +358,6 @@ func ByIDs(ids ...string) Filter {
 	return Or(filters...)
 }
 
-// ByExt filter artifact by their 'Ext' extra field.
-func ByExt(exts ...string) Filter {
-	filters := make([]Filter, 0, len(exts))
-	for _, ext := range exts {
-		ext := ext
-		filters = append(filters, func(a *Artifact) bool {
-			return ExtraOr(*a, ExtraExt, "") == ext
-		})
-	}
-	return Or(filters...)
-}
-
-// ByBinaryLikeArtifacts filter artifacts down to artifacts that are Binary, UploadableBinary, or UniversalBinary,
-// deduplicating artifacts by path (preferring UploadableBinary over all others). Note: this filter is unique in the
-// sense that it cannot act in isolation of the state of other artifacts; the filter requires the whole list of
-// artifacts in advance to perform deduplication.
-func ByBinaryLikeArtifacts(arts Artifacts) Filter {
-	// find all of the paths for any uploadable binary artifacts
-	uploadableBins := arts.Filter(ByType(UploadableBinary)).List()
-	uploadableBinPaths := map[string]struct{}{}
-	for _, a := range uploadableBins {
-		uploadableBinPaths[a.Path] = struct{}{}
-	}
-
-	// we want to keep any matching artifact that is not a binary that already has a path accounted for
-	// by another uploadable binary. We always prefer uploadable binary artifacts over binary artifacts.
-	deduplicateByPath := func(a *Artifact) bool {
-		if a.Type == UploadableBinary {
-			return true
-		}
-		_, ok := uploadableBinPaths[a.Path]
-		return !ok
-	}
-
-	return And(
-		// allow all of the binary-like artifacts as possible...
-		Or(
-			ByType(Binary),
-			ByType(UploadableBinary),
-			ByType(UniversalBinary),
-		),
-		// ... but remove any duplicates found
-		deduplicateByPath,
-	)
-}
-
 // Or performs an OR between all given filters.
 func Or(filters ...Filter) Filter {
 	return func(a *Artifact) bool {
@@ -487,7 +392,7 @@ func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
 	}
 
 	result := New()
-	for _, a := range artifacts.List() {
+	for _, a := range artifacts.items {
 		if filter(a) {
 			result.items = append(result.items, a)
 		}

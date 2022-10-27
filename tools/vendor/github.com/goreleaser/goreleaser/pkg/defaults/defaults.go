@@ -7,13 +7,13 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
-	"github.com/goreleaser/goreleaser/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
@@ -69,9 +69,9 @@ var Defaulters = []Defaulter{
 	docker.ManifestPipe{},
 	artifactory.Pipe{},
 	blob.Pipe{},
-	aur.Pipe{},
 	brew.Pipe{},
 	krew.Pipe{},
+	gofish.Pipe{},
 	scoop.Pipe{},
 	discord.Pipe{},
 	reddit.Pipe{},

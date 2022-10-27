@@ -24,7 +24,9 @@ func NewMaintIdx(cfg *config.MaintIdxSettings) *goanalysis.Linter {
 	return goanalysis.NewLinter(
 		analyzer.Name,
 		analyzer.Doc,
-		[]*analysis.Analyzer{analyzer},
+		[]*analysis.Analyzer{
+			analyzer,
+		},
 		cfgMap,
 	).WithLoadMode(goanalysis.LoadModeSyntax)
 }

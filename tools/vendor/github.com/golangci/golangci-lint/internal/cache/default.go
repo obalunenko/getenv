@@ -12,8 +12,6 @@ import (
 	"sync"
 )
 
-const envGolangciLintCache = "GOLANGCI_LINT_CACHE"
-
 // Default returns the default cache to use.
 func Default() (*Cache, error) {
 	defaultOnce.Do(initDefaultCache)
@@ -66,19 +64,19 @@ func DefaultDir() string {
 	// otherwise distinguish between an explicit "off" and a UserCacheDir error.
 
 	defaultDirOnce.Do(func() {
-		defaultDir = os.Getenv(envGolangciLintCache)
+		defaultDir = os.Getenv("GOLANGCI_LINT_CACHE")
 		if filepath.IsAbs(defaultDir) {
 			return
 		}
 		if defaultDir != "" {
-			defaultDirErr = fmt.Errorf("%s is not an absolute path", envGolangciLintCache)
+			defaultDirErr = fmt.Errorf("GOLANGCI_LINT_CACHE is not an absolute path")
 			return
 		}
 
 		// Compute default location.
 		dir, err := os.UserCacheDir()
 		if err != nil {
-			defaultDirErr = fmt.Errorf("%s is not defined and %w", envGolangciLintCache, err)
+			defaultDirErr = fmt.Errorf("GOLANGCI_LINT_CACHE is not defined and %v", err)
 			return
 		}
 		defaultDir = filepath.Join(dir, "golangci-lint")

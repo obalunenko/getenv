@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/alecthomas/jsonschema"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/invopop/jsonschema"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +27,6 @@ func newSchemaCmd() *schemaCmd {
 		Args:          cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			schema := jsonschema.Reflect(&config.Project{})
-			schema.Definitions["FileInfo"] = jsonschema.Reflect(&config.FileInfo{})
 			schema.Description = "goreleaser configuration definition file"
 			bts, err := json.MarshalIndent(schema, "	", "	")
 			if err != nil {
@@ -47,8 +46,7 @@ func newSchemaCmd() *schemaCmd {
 		},
 	}
 
-	cmd.Flags().StringVarP(&root.output, "output", "o", "-", "Where to save the JSONSchema file")
-	_ = cmd.Flags().SetAnnotation("output", cobra.BashCompFilenameExt, []string{"json"})
+	cmd.Flags().StringVarP(&root.output, "output", "o", "-", "where to save the json schema")
 
 	root.cmd = cmd
 	return root

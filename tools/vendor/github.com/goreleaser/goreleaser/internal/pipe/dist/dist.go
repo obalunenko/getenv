@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 

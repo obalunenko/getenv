@@ -7,7 +7,6 @@ import (
 	"go/token"
 	"os"
 	"reflect"
-	"sync"
 
 	"github.com/BurntSushi/toml"
 	reviveConfig "github.com/mgechev/revive/config"
@@ -25,7 +24,7 @@ import (
 
 const reviveName = "revive"
 
-var reviveDebugf = logutils.Debug(logutils.DebugKeyRevive)
+var reviveDebugf = logutils.Debug("revive")
 
 // jsonObject defines a JSON object of a failure
 type jsonObject struct {
@@ -34,16 +33,12 @@ type jsonObject struct {
 }
 
 // NewRevive returns a new Revive linter.
-//
-//nolint:dupl
-func NewRevive(settings *config.ReviveSettings) *goanalysis.Linter {
-	var mu sync.Mutex
-	var resIssues []goanalysis.Issue
+func NewRevive(cfg *config.ReviveSettings) *goanalysis.Linter {
+	var issues []goanalysis.Issue
 
 	analyzer := &analysis.Analyzer{
 		Name: goanalysis.TheOnlyAnalyzerName,
 		Doc:  goanalysis.TheOnlyanalyzerDoc,
-		Run:  goanalysis.DummyRun,
 	}
 
 	return goanalysis.NewLinter(
@@ -53,86 +48,72 @@ func NewRevive(settings *config.ReviveSettings) *goanalysis.Linter {
 		nil,
 	).WithContextSetter(func(lintCtx *linter.Context) {
 		analyzer.Run = func(pass *analysis.Pass) (interface{}, error) {
-			issues, err := runRevive(lintCtx, pass, settings)
+			var files []string
+			for _, file := range pass.Files {
+				files = append(files, pass.Fset.PositionFor(file.Pos(), false).Filename)
+			}
+			packages := [][]string{files}
+
+			conf, err := getReviveConfig(cfg)
 			if err != nil {
 				return nil, err
 			}
 
-			if len(issues) == 0 {
-				return nil, nil
+			formatter, err := reviveConfig.GetFormatter("json")
+			if err != nil {
+				return nil, err
 			}
 
-			mu.Lock()
-			resIssues = append(resIssues, issues...)
-			mu.Unlock()
+			revive := lint.New(os.ReadFile, cfg.MaxOpenFiles)
+
+			lintingRules, err := reviveConfig.GetLintingRules(conf, []lint.Rule{})
+			if err != nil {
+				return nil, err
+			}
+
+			failures, err := revive.Lint(packages, lintingRules, *conf)
+			if err != nil {
+				return nil, err
+			}
+
+			formatChan := make(chan lint.Failure)
+			exitChan := make(chan bool)
+
+			var output string
+			go func() {
+				output, err = formatter.Format(formatChan, *conf)
+				if err != nil {
+					lintCtx.Log.Errorf("Format error: %v", err)
+				}
+				exitChan <- true
+			}()
+
+			for f := range failures {
+				if f.Confidence < conf.Confidence {
+					continue
+				}
+
+				formatChan <- f
+			}
+
+			close(formatChan)
+			<-exitChan
+
+			var results []jsonObject
+			err = json.Unmarshal([]byte(output), &results)
+			if err != nil {
+				return nil, err
+			}
+
+			for i := range results {
+				issues = append(issues, reviveToIssue(pass, &results[i]))
+			}
 
 			return nil, nil
 		}
 	}).WithIssuesReporter(func(*linter.Context) []goanalysis.Issue {
-		return resIssues
+		return issues
 	}).WithLoadMode(goanalysis.LoadModeSyntax)
-}
-
-func runRevive(lintCtx *linter.Context, pass *analysis.Pass, settings *config.ReviveSettings) ([]goanalysis.Issue, error) {
-	packages := [][]string{getFileNames(pass)}
-
-	conf, err := getReviveConfig(settings)
-	if err != nil {
-		return nil, err
-	}
-
-	formatter, err := reviveConfig.GetFormatter("json")
-	if err != nil {
-		return nil, err
-	}
-
-	revive := lint.New(os.ReadFile, settings.MaxOpenFiles)
-
-	lintingRules, err := reviveConfig.GetLintingRules(conf, []lint.Rule{})
-	if err != nil {
-		return nil, err
-	}
-
-	failures, err := revive.Lint(packages, lintingRules, *conf)
-	if err != nil {
-		return nil, err
-	}
-
-	formatChan := make(chan lint.Failure)
-	exitChan := make(chan bool)
-
-	var output string
-	go func() {
-		output, err = formatter.Format(formatChan, *conf)
-		if err != nil {
-			lintCtx.Log.Errorf("Format error: %v", err)
-		}
-		exitChan <- true
-	}()
-
-	for f := range failures {
-		if f.Confidence < conf.Confidence {
-			continue
-		}
-
-		formatChan <- f
-	}
-
-	close(formatChan)
-	<-exitChan
-
-	var results []jsonObject
-	err = json.Unmarshal([]byte(output), &results)
-	if err != nil {
-		return nil, err
-	}
-
-	var issues []goanalysis.Issue
-	for i := range results {
-		issues = append(issues, reviveToIssue(pass, &results[i]))
-	}
-
-	return issues, nil
 }
 
 func reviveToIssue(pass *analysis.Pass, object *jsonObject) goanalysis.Issue {
@@ -321,7 +302,6 @@ var allRules = append([]lint.Rule{
 	&rule.TimeEqualRule{},
 	&rule.BannedCharsRule{},
 	&rule.OptimizeOperandsOrderRule{},
-	&rule.DataRaceRule{},
 }, defaultRules...)
 
 const defaultConfidence = 0.8

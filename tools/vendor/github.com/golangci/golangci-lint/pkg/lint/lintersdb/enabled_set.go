@@ -10,9 +10,6 @@ import (
 	"github.com/golangci/golangci-lint/pkg/logutils"
 )
 
-// EnvTestRun value: "1"
-const EnvTestRun = "GL_TEST_RUN"
-
 type EnabledSet struct {
 	m      *Manager
 	v      *Validator
@@ -27,7 +24,7 @@ func NewEnabledSet(m *Manager, v *Validator, log logutils.Log, cfg *config.Confi
 		v:      v,
 		log:    log,
 		cfg:    cfg,
-		debugf: logutils.Debug(logutils.DebugKeyEnabledLinters),
+		debugf: logutils.Debug("enabled_linters"),
 	}
 }
 
@@ -87,7 +84,7 @@ func (es EnabledSet) GetEnabledLintersMap() (map[string]*linter.Config, error) {
 	}
 
 	enabledLinters := es.build(&es.cfg.Linters, es.m.GetAllEnabledByDefaultLinters())
-	if os.Getenv(EnvTestRun) == "1" {
+	if os.Getenv("GL_TEST_RUN") == "1" {
 		es.verbosePrintLintersStatus(enabledLinters)
 	}
 	return enabledLinters, nil

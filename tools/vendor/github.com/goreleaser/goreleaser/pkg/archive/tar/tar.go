@@ -3,7 +3,6 @@ package tar
 
 import (
 	"archive/tar"
-	"fmt"
 	"io"
 	"os"
 
@@ -29,20 +28,25 @@ func (a Archive) Close() error {
 
 // Add file to the archive.
 func (a Archive) Add(f config.File) error {
+	file, err := os.Open(f.Source) // #nosec
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 	info, err := os.Lstat(f.Source) // #nosec
 	if err != nil {
-		return fmt.Errorf("%s: %w", f.Source, err)
+		return err
 	}
 	var link string
 	if info.Mode()&os.ModeSymlink != 0 {
 		link, err = os.Readlink(f.Source) // #nosec
 		if err != nil {
-			return fmt.Errorf("%s: %w", f.Source, err)
+			return err
 		}
 	}
 	header, err := tar.FileInfoHeader(info, link)
 	if err != nil {
-		return fmt.Errorf("%s: %w", f.Source, err)
+		return err
 	}
 	header.Name = f.Destination
 	if !f.Info.MTime.IsZero() {
@@ -60,18 +64,11 @@ func (a Archive) Add(f config.File) error {
 		header.Gname = f.Info.Group
 	}
 	if err = a.tw.WriteHeader(header); err != nil {
-		return fmt.Errorf("%s: %w", f.Source, err)
+		return err
 	}
 	if info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
 		return nil
 	}
-	file, err := os.Open(f.Source) // #nosec
-	if err != nil {
-		return fmt.Errorf("%s: %w", f.Source, err)
-	}
-	defer file.Close()
-	if _, err := io.Copy(a.tw, file); err != nil {
-		return fmt.Errorf("%s: %w", f.Source, err)
-	}
-	return nil
+	_, err = io.Copy(a.tw, file)
+	return err
 }

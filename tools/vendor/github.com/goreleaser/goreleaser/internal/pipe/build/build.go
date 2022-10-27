@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/shell"
@@ -31,16 +31,17 @@ func (Pipe) String() string {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	g := semerrgroup.New(ctx.Parallelism)
 	for _, build := range ctx.Config.Builds {
 		if build.Skip {
 			log.WithField("id", build.ID).Info("skip is set")
 			continue
 		}
 		log.WithField("build", build).Debug("building")
-		runPipeOnBuild(ctx, g, build)
+		if err := runPipeOnBuild(ctx, build); err != nil {
+			return err
+		}
 	}
-	return g.Wait()
+	return nil
 }
 
 // Default sets the pipe defaults.
@@ -80,7 +81,8 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	return builders.For(build.Builder).WithDefaults(build)
 }
 
-func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) {
+func runPipeOnBuild(ctx *context.Context, build config.Build) error {
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, target := range build.Targets {
 		target := target
 		build := build
@@ -104,6 +106,8 @@ func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Buil
 			return nil
 		})
 	}
+
+	return g.Wait()
 }
 
 func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.Hooks) error {
@@ -143,7 +147,7 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 			return err
 		}
 
-		if err := shell.Run(ctx, dir, cmd, env, hook.Output); err != nil {
+		if err := shell.Run(ctx, dir, cmd, env); err != nil {
 			return err
 		}
 	}
@@ -167,25 +171,20 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 
 	var gomips string
 	var goarm string
-	var goamd64 string
 	if strings.HasPrefix(goarch, "arm") && len(parts) > 2 {
 		goarm = parts[2]
 	}
 	if strings.HasPrefix(goarch, "mips") && len(parts) > 2 {
 		gomips = parts[2]
 	}
-	if strings.HasPrefix(goarch, "amd64") && len(parts) > 2 {
-		goamd64 = parts[2]
-	}
 
 	buildOpts := builders.Options{
-		Target:  target,
-		Ext:     ext,
-		Goos:    goos,
-		Goarch:  goarch,
-		Goarm:   goarm,
-		Gomips:  gomips,
-		Goamd64: goamd64,
+		Target: target,
+		Ext:    ext,
+		Goos:   goos,
+		Goarch: goarch,
+		Goarm:  goarm,
+		Gomips: gomips,
 	}
 
 	binary, err := tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.Binary)
@@ -199,15 +198,14 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	if build.NoUniqueDistDir {
 		dir = ""
 	}
-	relpath := filepath.Join(ctx.Config.Dist, dir, name)
-	path, err := filepath.Abs(relpath)
+	path, err := filepath.Abs(filepath.Join(ctx.Config.Dist, dir, name))
 	if err != nil {
 		return nil, err
 	}
 	buildOpts.Path = path
 	buildOpts.Name = name
 
-	log.WithField("binary", relpath).Info("building")
+	log.WithField("binary", buildOpts.Path).Info("building")
 	return &buildOpts, nil
 }
 

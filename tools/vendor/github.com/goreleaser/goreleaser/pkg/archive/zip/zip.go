@@ -34,6 +34,11 @@ func (a Archive) Close() error {
 
 // Add a file to the zip archive.
 func (a Archive) Add(f config.File) error {
+	file, err := os.Open(f.Source) // #nosec
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 	info, err := os.Lstat(f.Source) // #nosec
 	if err != nil {
 		return err
@@ -57,14 +62,6 @@ func (a Archive) Add(f config.File) error {
 	if err != nil {
 		return err
 	}
-	if info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
-		return nil
-	}
-	file, err := os.Open(f.Source) // #nosec
-	if err != nil {
-		return err
-	}
-	defer file.Close()
 	_, err = io.Copy(w, file)
 	return err
 }

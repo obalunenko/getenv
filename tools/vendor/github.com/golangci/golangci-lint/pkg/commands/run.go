@@ -28,13 +28,6 @@ import (
 
 const defaultFileMode = 0644
 
-const (
-	// envFailOnWarnings value: "1"
-	envFailOnWarnings = "FAIL_ON_WARNINGS"
-	// envMemLogEvery value: "1"
-	envMemLogEvery = "GL_MEM_LOG_EVERY"
-)
-
 func getDefaultIssueExcludeHelp() string {
 	parts := []string{"Use or not use default excludes:"}
 	for _, ep := range config.DefaultExcludePatterns {
@@ -286,11 +279,10 @@ func (e *Executor) initRun() {
 		Use:   "run",
 		Short: "Run the linters",
 		Run:   e.executeRun,
-		PreRunE: func(_ *cobra.Command, _ []string) error {
+		PreRun: func(_ *cobra.Command, _ []string) {
 			if ok := e.acquireFileLock(); !ok {
-				return errors.New("parallel golangci-lint is running")
+				e.log.Fatalf("Parallel golangci-lint is running")
 			}
-			return nil
 		},
 		PostRun: func(_ *cobra.Command, _ []string) {
 			e.releaseFileLock()
@@ -357,9 +349,9 @@ func (e *Executor) runAnalysis(ctx context.Context, args []string) ([]result.Iss
 	if err != nil {
 		return nil, errors.Wrap(err, "context loading failed")
 	}
-	lintCtx.Log = e.log.Child(logutils.DebugKeyLintersContext)
+	lintCtx.Log = e.log.Child("linters context")
 
-	runner, err := lint.NewRunner(e.cfg, e.log.Child(logutils.DebugKeyRunner),
+	runner, err := lint.NewRunner(e.cfg, e.log.Child("runner"),
 		e.goenv, e.EnabledLintersSet, e.lineCache, e.DBManager, lintCtx.Packages)
 	if err != nil {
 		return nil, err
@@ -397,7 +389,7 @@ func (e *Executor) runAndPrint(ctx context.Context, args []string) error {
 		e.log.Warnf("Failed to discover go env: %s", err)
 	}
 
-	if !logutils.HaveDebugTag(logutils.DebugKeyLintersOutput) {
+	if !logutils.HaveDebugTag("linters_output") {
 		// Don't allow linters and loader to print anything
 		log.SetOutput(io.Discard)
 		savedStdout, savedStderr := e.setOutputToDevNull()
@@ -481,9 +473,9 @@ func (e *Executor) createPrinter(format string, w io.Writer) (printers.Printer, 
 	case config.OutFormatColoredLineNumber, config.OutFormatLineNumber:
 		p = printers.NewText(e.cfg.Output.PrintIssuedLine,
 			format == config.OutFormatColoredLineNumber, e.cfg.Output.PrintLinterName,
-			e.log.Child(logutils.DebugKeyTextPrinter), w)
+			e.log.Child("text_printer"), w)
 	case config.OutFormatTab:
-		p = printers.NewTab(e.cfg.Output.PrintLinterName, e.log.Child(logutils.DebugKeyTabPrinter), w)
+		p = printers.NewTab(e.cfg.Output.PrintLinterName, e.log.Child("tab_printer"), w)
 	case config.OutFormatCheckstyle:
 		p = printers.NewCheckstyle(w)
 	case config.OutFormatCodeClimate:
@@ -552,7 +544,7 @@ func (e *Executor) setupExitCode(ctx context.Context) {
 		return
 	}
 
-	needFailOnWarnings := os.Getenv(lintersdb.EnvTestRun) == "1" || os.Getenv(envFailOnWarnings) == "1"
+	needFailOnWarnings := os.Getenv("GL_TEST_RUN") == "1" || os.Getenv("FAIL_ON_WARNINGS") == "1"
 	if needFailOnWarnings && len(e.reportData.Warnings) != 0 {
 		e.exitCode = exitcodes.WarningInTest
 		return
@@ -576,7 +568,7 @@ func watchResources(ctx context.Context, done chan struct{}, logger logutils.Log
 	ticker := time.NewTicker(intervalMS * time.Millisecond)
 	defer ticker.Stop()
 
-	logEveryRecord := os.Getenv(envMemLogEvery) == "1"
+	logEveryRecord := os.Getenv("GL_MEM_LOG_EVERY") == "1"
 	const MB = 1024 * 1024
 
 	track := func() {

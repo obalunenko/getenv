@@ -119,34 +119,33 @@ var (
 	}
 )
 
-func NewGovet(settings *config.GovetSettings) *goanalysis.Linter {
-	var conf map[string]map[string]interface{}
-	if settings != nil {
-		conf = settings.Settings
+func NewGovet(cfg *config.GovetSettings) *goanalysis.Linter {
+	var settings map[string]map[string]interface{}
+	if cfg != nil {
+		settings = cfg.Settings
 	}
-
 	return goanalysis.NewLinter(
 		"govet",
 		"Vet examines Go source code and reports suspicious constructs, "+
 			"such as Printf calls whose arguments do not align with the format string",
-		analyzersFromConfig(settings),
-		conf,
+		analyzersFromConfig(cfg),
+		settings,
 	).WithLoadMode(goanalysis.LoadModeTypesInfo)
 }
 
-func analyzersFromConfig(settings *config.GovetSettings) []*analysis.Analyzer {
-	if settings == nil {
+func analyzersFromConfig(cfg *config.GovetSettings) []*analysis.Analyzer {
+	if cfg == nil {
 		return defaultAnalyzers
 	}
 
-	if settings.CheckShadowing {
+	if cfg.CheckShadowing {
 		// Keeping for backward compatibility.
-		settings.Enable = append(settings.Enable, shadow.Analyzer.Name)
+		cfg.Enable = append(cfg.Enable, shadow.Analyzer.Name)
 	}
 
 	var enabledAnalyzers []*analysis.Analyzer
 	for _, a := range allAnalyzers {
-		if isAnalyzerEnabled(a.Name, settings, defaultAnalyzers) {
+		if isAnalyzerEnabled(a.Name, cfg, defaultAnalyzers) {
 			enabledAnalyzers = append(enabledAnalyzers, a)
 		}
 	}
@@ -155,6 +154,11 @@ func analyzersFromConfig(settings *config.GovetSettings) []*analysis.Analyzer {
 }
 
 func isAnalyzerEnabled(name string, cfg *config.GovetSettings, defaultAnalyzers []*analysis.Analyzer) bool {
+	if (name == nilness.Analyzer.Name || name == unusedwrite.Analyzer.Name) &&
+		config.IsGreaterThanOrEqualGo118(cfg.Go) {
+		return false
+	}
+
 	if cfg.EnableAll {
 		for _, n := range cfg.Disable {
 			if n == name {

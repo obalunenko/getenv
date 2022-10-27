@@ -3,23 +3,21 @@ package brew
 import "github.com/goreleaser/goreleaser/pkg/config"
 
 type templateData struct {
-	Name                 string
-	Desc                 string
-	Homepage             string
-	Version              string
-	License              string
-	Caveats              []string
-	Plist                string
-	PostInstall          []string
-	Dependencies         []config.HomebrewDependency
-	Conflicts            []string
-	Tests                []string
-	CustomRequire        string
-	CustomBlock          []string
-	LinuxPackages        []releasePackage
-	MacOSPackages        []releasePackage
-	Service              []string
-	HasOnlyAmd64MacOsPkg bool
+	Name          string
+	Desc          string
+	Homepage      string
+	Version       string
+	License       string
+	Caveats       []string
+	Plist         string
+	PostInstall   string
+	Dependencies  []config.HomebrewDependency
+	Conflicts     []string
+	Tests         []string
+	CustomRequire string
+	CustomBlock   []string
+	LinuxPackages []releasePackage
+	MacOSPackages []releasePackage
 }
 
 type releasePackage struct {
@@ -45,13 +43,6 @@ class {{ .Name }} < Formula
   {{- if .License }}
   license "{{ .License }}"
   {{- end }}
-  {{- with .Dependencies }}
-  {{ range $index, $element := . }}
-  depends_on "{{ .Name }}"
-  {{- if .Type }} => :{{ .Type }}{{- else if .Version }} => "{{ .Version }}"{{- end }}
-  {{- end }}
-  {{- end -}}
-
   {{- if and (not .LinuxPackages) .MacOSPackages }}
   depends_on :macos
   {{- end }}
@@ -65,33 +56,13 @@ class {{ .Name }} < Formula
   {{- range $element := .MacOSPackages }}
     {{- if eq $element.Arch "all" }}
     url "{{ $element.DownloadURL }}"
-	{{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ $element.SHA256 }}"
 
     def install
       {{- range $index, $element := .Install }}
       {{ . -}}
       {{- end }}
-    end
-    {{- else if $.HasOnlyAmd64MacOsPkg }}
-    url "{{ $element.DownloadURL }}"
-	{{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
-    sha256 "{{ $element.SHA256 }}"
-
-    def install
-      {{- range $index, $element := .Install }}
-      {{ . -}}
-      {{- end }}
-    end
-
-    if Hardware::CPU.arm?
-      def caveats
-        <<~EOS
-          The darwin_arm64 architecture is not supported for the {{ $.Name }}
-          formula at this time. The darwin_amd64 binary may work in compatibility
-          mode, but it might not be fully supported.
-        EOS
-      end
     end
     {{- else }}
     {{- if eq $element.Arch "amd64" }}
@@ -101,7 +72,7 @@ class {{ .Name }} < Formula
     if Hardware::CPU.arm?
     {{- end}}
       url "{{ $element.DownloadURL }}"
-      {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
+      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
 
       def install
@@ -130,7 +101,7 @@ class {{ .Name }} < Formula
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
     {{- end }}
       url "{{ $element.DownloadURL }}"
-	  {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
+      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
 
       def install
@@ -143,55 +114,49 @@ class {{ .Name }} < Formula
   end
   {{- end }}
 
-  {{- with .Conflicts }}
-  {{ range $index, $element := . }}
-  conflicts_with "{{ . }}"
-  {{- end }}
-  {{- end }}
-
   {{- with .CustomBlock }}
   {{ range $index, $element := . }}
   {{ . }}
   {{- end }}
   {{- end }}
 
+  {{- with .Dependencies }}
+  {{ range $index, $element := . }}
+  depends_on "{{ .Name }}"
+  {{- if .Type }} => :{{ .Type }}{{- end }}
+  {{- end }}
+  {{- end -}}
+
+  {{- with .Conflicts }}
+  {{ range $index, $element := . }}
+  conflicts_with "{{ . }}"
+  {{- end }}
+  {{- end }}
+
   {{- with .PostInstall }}
 
   def post_install
-    {{- range . }}
     {{ . }}
-    {{- end }}
   end
   {{- end -}}
 
   {{- with .Caveats }}
 
-  def caveats
-    <<~EOS
+  def caveats; <<~EOS
     {{- range $index, $element := . }}
-      {{ . -}}
+    {{ . -}}
     {{- end }}
-    EOS
+  EOS
   end
   {{- end -}}
 
   {{- with .Plist }}
 
-  plist_options startup: false
+  plist_options :startup => false
 
-  def plist
-    <<~EOS
-      {{ . }}
-    EOS
-  end
-  {{- end -}}
-
-  {{- with .Service }}
-
-  service do
-    {{- range . }}
+  def plist; <<~EOS
     {{ . }}
-    {{- end }}
+  EOS
   end
   {{- end -}}
 

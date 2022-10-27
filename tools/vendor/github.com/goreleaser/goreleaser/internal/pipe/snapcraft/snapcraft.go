@@ -11,14 +11,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
+	"gopkg.in/yaml.v2"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -51,39 +52,12 @@ type Metadata struct {
 }
 
 // AppMetadata for the binaries that will be in the snap package.
-// See: https://snapcraft.io/docs/snapcraft-app-and-service-metadata
 type AppMetadata struct {
-	Command string
-
-	Adapter          string                 `yaml:",omitempty"`
-	After            []string               `yaml:",omitempty"`
-	Aliases          []string               `yaml:",omitempty"`
-	Autostart        string                 `yaml:",omitempty"`
-	Before           []string               `yaml:",omitempty"`
-	BusName          string                 `yaml:"bus-name,omitempty"`
-	CommandChain     []string               `yaml:"command-chain,omitempty"`
-	CommonID         string                 `yaml:"common-id,omitempty"`
-	Completer        string                 `yaml:",omitempty"`
-	Daemon           string                 `yaml:",omitempty"`
-	Desktop          string                 `yaml:",omitempty"`
-	Environment      map[string]interface{} `yaml:",omitempty"`
-	Extensions       []string               `yaml:",omitempty"`
-	InstallMode      string                 `yaml:"install-mode,omitempty"`
-	Passthrough      map[string]interface{} `yaml:",omitempty"`
-	Plugs            []string               `yaml:",omitempty"`
-	PostStopCommand  string                 `yaml:"post-stop-command,omitempty"`
-	RefreshMode      string                 `yaml:"refresh-mode,omitempty"`
-	ReloadCommand    string                 `yaml:"reload-command,omitempty"`
-	RestartCondition string                 `yaml:"restart-condition,omitempty"`
-	RestartDelay     string                 `yaml:"restart-delay,omitempty"`
-	Slots            []string               `yaml:",omitempty"`
-	Sockets          map[string]interface{} `yaml:",omitempty"`
-	StartTimeout     string                 `yaml:"start-timeout,omitempty"`
-	StopCommand      string                 `yaml:"stop-command,omitempty"`
-	StopMode         string                 `yaml:"stop-mode,omitempty"`
-	StopTimeout      string                 `yaml:"stop-timeout,omitempty"`
-	Timer            string                 `yaml:",omitempty"`
-	WatchdogTimeout  string                 `yaml:"watchdog-timeout,omitempty"`
+	Command          string
+	Plugs            []string `yaml:",omitempty"`
+	Daemon           string   `yaml:",omitempty"`
+	Completer        string   `yaml:",omitempty"`
+	RestartCondition string   `yaml:"restart-condition,omitempty"`
 }
 
 type LayoutMetadata struct {
@@ -93,7 +67,7 @@ type LayoutMetadata struct {
 	Type     string `yaml:",omitempty"`
 }
 
-const defaultNameTemplate = `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
+const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
 // Pipe for snapcraft packaging.
 type Pipe struct{}
@@ -139,17 +113,6 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, snap config.Snapcraft) error {
-	tpl := tmpl.New(ctx)
-	summary, err := tpl.Apply(snap.Summary)
-	if err != nil {
-		return err
-	}
-	description, err := tpl.Apply(snap.Description)
-	if err != nil {
-		return err
-	}
-	snap.Summary = summary
-	snap.Description = description
 	if snap.Summary == "" && snap.Description == "" {
 		return pipe.Skip("no summary nor description were provided")
 	}
@@ -159,7 +122,7 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 	if snap.Description == "" {
 		return ErrNoDescription
 	}
-	_, err = exec.LookPath("snapcraft")
+	_, err := exec.LookPath("snapcraft")
 	if err != nil {
 		return ErrNoSnapcraft
 	}
@@ -187,7 +150,7 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 
 func isValidArch(arch string) bool {
 	// https://snapcraft.io/docs/architectures
-	for _, a := range []string{"s390x", "ppc64el", "arm64", "armhf", "i386", "amd64"} {
+	for _, a := range []string{"s390x", "ppc64el", "arm64", "armhf", "amd64", "i386"} {
 		if arch == a {
 			return true
 		}
@@ -201,12 +164,14 @@ func (Pipe) Publish(ctx *context.Context) error {
 		return pipe.ErrSkipPublishEnabled
 	}
 	snaps := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, snap := range snaps {
-		if err := push(ctx, snap); err != nil {
-			return err
-		}
+		snap := snap
+		g.Go(func() error {
+			return push(ctx, snap)
+		})
 	}
-	return nil
+	return g.Wait()
 }
 
 func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries []*artifact.Artifact) error {
@@ -322,35 +287,9 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				command,
 				config.Args,
 			}, " ")),
-			Adapter:          config.Adapter,
-			After:            config.After,
-			Aliases:          config.Aliases,
-			Autostart:        config.Autostart,
-			Before:           config.Before,
-			BusName:          config.BusName,
-			CommandChain:     config.CommandChain,
-			CommonID:         config.CommonID,
-			Completer:        config.Completer,
-			Daemon:           config.Daemon,
-			Desktop:          config.Desktop,
-			Environment:      config.Environment,
-			Extensions:       config.Extensions,
-			InstallMode:      config.InstallMode,
-			Passthrough:      config.Passthrough,
 			Plugs:            config.Plugs,
-			PostStopCommand:  config.PostStopCommand,
-			RefreshMode:      config.RefreshMode,
-			ReloadCommand:    config.ReloadCommand,
+			Daemon:           config.Daemon,
 			RestartCondition: config.RestartCondition,
-			RestartDelay:     config.RestartDelay,
-			Slots:            config.Slots,
-			Sockets:          config.Sockets,
-			StartTimeout:     config.StartTimeout,
-			StopCommand:      config.StopCommand,
-			StopMode:         config.StopMode,
-			StopTimeout:      config.StopTimeout,
-			Timer:            config.Timer,
-			WatchdogTimeout:  config.WatchdogTimeout,
 		}
 
 		if config.Completer != "" {
@@ -394,13 +333,12 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		return nil
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:    artifact.PublishableSnapcraft,
-		Name:    folder + ".snap",
-		Path:    snapFile,
-		Goos:    binaries[0].Goos,
-		Goarch:  binaries[0].Goarch,
-		Goarm:   binaries[0].Goarm,
-		Goamd64: binaries[0].Goamd64,
+		Type:   artifact.PublishableSnapcraft,
+		Name:   folder + ".snap",
+		Path:   snapFile,
+		Goos:   binaries[0].Goos,
+		Goarch: binaries[0].Goarch,
+		Goarm:  binaries[0].Goarm,
 		Extra: map[string]interface{}{
 			releasesExtra: channels,
 		},
@@ -416,7 +354,7 @@ const (
 
 func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
-	releases := artifact.ExtraOr(*snap, releasesExtra, []string{})
+	releases := snap.Extra[releasesExtra].([]string)
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
 	log.WithField("args", cmd.Args).Info("pushing snap")
@@ -458,18 +396,10 @@ var archToSnap = map[string]string{
 	"ppc64le": "ppc64el",
 }
 
-// TODO: write tests for this
 func linuxArch(key string) string {
 	// XXX: list of all linux arches: `go tool dist list | grep linux`
 	arch := strings.TrimPrefix(key, "linux")
-	for _, suffix := range []string{
-		"hardfloat",
-		"softfloat",
-		"v1",
-		"v2",
-		"v3",
-		"v4",
-	} {
+	for _, suffix := range []string{"hardfloat", "softfloat"} {
 		arch = strings.TrimSuffix(arch, suffix)
 	}
 

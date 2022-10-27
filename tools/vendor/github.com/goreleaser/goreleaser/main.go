@@ -6,9 +6,7 @@ import (
 	"runtime"
 	"runtime/debug"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/cmd"
-	"github.com/muesli/termenv"
 )
 
 // nolint: gochecknoglobals
@@ -18,13 +16,6 @@ var (
 	date    = ""
 	builtBy = ""
 )
-
-func init() {
-	// enable colored output on github actions et al
-	if os.Getenv("CI") != "" {
-		lipgloss.SetColorProfile(termenv.TrueColor)
-	}
-}
 
 func main() {
 	cmd.Execute(

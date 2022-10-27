@@ -152,7 +152,7 @@ func NewLinter(needs Needs, excludes []string) (*Linter, error) {
 	}
 
 	return &Linter{
-		needs:           needs | NeedsMachineOnly,
+		needs:           needs,
 		excludeByLinter: excludeByName,
 	}, nil
 }
@@ -184,13 +184,11 @@ func (l Linter) Run(fset *token.FileSet, nodes ...ast.Node) ([]Issue, error) {
 					leadingSpace = leadingSpaceMatches[1]
 				}
 
-				directiveWithOptionalLeadingSpace := "//"
+				directiveWithOptionalLeadingSpace := comment.Text
 				if len(leadingSpace) > 0 {
-					directiveWithOptionalLeadingSpace += " "
+					split := strings.Split(strings.SplitN(comment.Text, ":", 2)[0], "//")
+					directiveWithOptionalLeadingSpace = "// " + strings.TrimSpace(split[1])
 				}
-
-				split := strings.Split(strings.SplitN(comment.Text, ":", 2)[0], "//")
-				directiveWithOptionalLeadingSpace += strings.TrimSpace(split[1])
 
 				pos := fset.Position(comment.Pos())
 				end := fset.Position(comment.End())
@@ -229,9 +227,8 @@ func (l Linter) Run(fset *token.FileSet, nodes ...ast.Node) ([]Issue, error) {
 				}
 
 				lintersText, explanation := fullMatches[1], fullMatches[2]
-
 				var linters []string
-				if len(lintersText) > 0 && !strings.HasPrefix(lintersText, "all") {
+				if len(lintersText) > 0 {
 					lls := strings.Split(lintersText, ",")
 					linters = make([]string, 0, len(lls))
 					rangeStart := (pos.Column - 1) + len("//") + len(leadingSpace) + len("nolint:")

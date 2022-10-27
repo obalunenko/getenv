@@ -2,7 +2,7 @@
 package milestone
 
 import (
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -28,11 +28,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 
 		if milestone.Repo.Name == "" {
-			repo, err := git.ExtractRepoFromConfig(ctx)
+			repo, err := git.ExtractRepoFromConfig()
+
 			if err != nil && !ctx.Snapshot {
-				return err
-			}
-			if err := repo.CheckSCM(); err != nil && !ctx.Snapshot {
 				return err
 			}
 

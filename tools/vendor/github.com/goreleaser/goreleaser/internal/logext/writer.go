@@ -3,10 +3,10 @@ package logext
 import (
 	"bytes"
 	"io"
-	"os"
 	"strings"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
 )
 
 // Output type of the log output.
@@ -54,17 +54,12 @@ func (w logWriter) Write(p []byte) (int, error) {
 }
 
 func newLogger(fields log.Fields) *log.Entry {
-	handler := log.New(currentWriter())
-	handler.IncreasePadding()
-	return handler.WithFields(fields)
-}
-
-func currentWriter() io.Writer {
-	logger, ok := log.Log.(*log.Logger)
-	if !ok {
-		return os.Stderr
-	}
-	return logger.Writer
+	handler := cli.New(cli.Default.Writer)
+	handler.Padding = cli.Default.Padding + 3
+	return (&log.Logger{
+		Handler: handler,
+		Level:   log.InfoLevel,
+	}).WithFields(fields)
 }
 
 func isDebug() bool {

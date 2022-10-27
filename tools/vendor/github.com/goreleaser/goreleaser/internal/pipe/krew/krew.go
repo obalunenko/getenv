@@ -13,15 +13,15 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -49,9 +49,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if krew.Name == "" {
 			krew.Name = ctx.Config.ProjectName
-		}
-		if krew.Goamd64 == "" {
-			krew.Goamd64 = "v1"
 		}
 	}
 
@@ -95,10 +92,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 			artifact.ByGoos("windows"),
 		),
 		artifact.Or(
-			artifact.And(
-				artifact.ByGoarch("amd64"),
-				artifact.ByGoamd64(krew.Goamd64),
-			),
+			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("all"),
 			artifact.And(
@@ -233,7 +227,7 @@ func manifestFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifa
 		}
 
 		for _, arch := range goarch {
-			bins := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
+			bins := art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string)
 			if len(bins) != 1 {
 				return result, fmt.Errorf("krew: only one binary per archive allowed, got %d on %q", len(bins), art.Name)
 			}
@@ -283,11 +277,8 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Client) error {
-	cfg, err := artifact.Extra[config.Krew](*manifest, krewConfigExtra)
-	if err != nil {
-		return err
-	}
-
+	cfg := manifest.Extra[krewConfigExtra].(config.Krew)
+	var err error
 	cl, err = client.NewIfToken(ctx, cl, cfg.Index.Token)
 	if err != nil {
 		return err

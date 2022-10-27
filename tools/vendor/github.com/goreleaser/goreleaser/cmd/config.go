@@ -1,19 +1,13 @@
 package cmd
 
 import (
-	"errors"
-	"io/fs"
 	"os"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
 func loadConfig(path string) (config.Project, error) {
-	if path == "-" {
-		log.Info("loading config from stdin")
-		return config.LoadReader(os.Stdin)
-	}
 	if path != "" {
 		return config.Load(path)
 	}
@@ -24,7 +18,7 @@ func loadConfig(path string) (config.Project, error) {
 		"goreleaser.yaml",
 	} {
 		proj, err := config.Load(f)
-		if err != nil && errors.Is(err, fs.ErrNotExist) {
+		if err != nil && os.IsNotExist(err) {
 			continue
 		}
 		return proj, err

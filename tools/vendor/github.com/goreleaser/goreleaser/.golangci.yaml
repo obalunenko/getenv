@@ -1,5 +1,3 @@
-run:
-  go: 1.19
 linters:
   enable:
     - thelper
@@ -11,7 +9,6 @@ linters:
     - revive
     - forbidigo
     - tagliatelle
-    - misspell
 
 linters-settings:
   forbidigo:

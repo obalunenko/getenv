@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
 )
 
 // Copy recursively copies src into dst with src's file modes.

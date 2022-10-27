@@ -12,8 +12,6 @@ import (
 	"github.com/golangci/golangci-lint/pkg/result"
 )
 
-const defaultCheckstyleSeverity = "error"
-
 type checkstyleOutput struct {
 	XMLName xml.Name          `xml:"checkstyle"`
 	Version string            `xml:"version,attr"`
@@ -32,6 +30,8 @@ type checkstyleError struct {
 	Severity string `xml:"severity,attr"`
 	Source   string `xml:"source,attr"`
 }
+
+const defaultCheckstyleSeverity = "error"
 
 type Checkstyle struct {
 	w io.Writer

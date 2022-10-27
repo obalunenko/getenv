@@ -10,6 +10,7 @@ import (
 
 func NewExhaustruct(settings *config.ExhaustructSettings) *goanalysis.Linter {
 	var include, exclude []string
+
 	if settings != nil {
 		include = settings.Include
 		exclude = settings.Exclude
@@ -20,10 +21,6 @@ func NewExhaustruct(settings *config.ExhaustructSettings) *goanalysis.Linter {
 		linterLogger.Fatalf("exhaustruct configuration: %v", err)
 	}
 
-	return goanalysis.NewLinter(
-		a.Name,
-		a.Doc,
-		[]*analysis.Analyzer{a},
-		nil,
-	).WithLoadMode(goanalysis.LoadModeTypesInfo)
+	return goanalysis.NewLinter(a.Name, a.Doc, []*analysis.Analyzer{a}, nil).
+		WithLoadMode(goanalysis.LoadModeTypesInfo)
 }

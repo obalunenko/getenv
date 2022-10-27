@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
+
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -48,14 +49,14 @@ var fakeInfo = context.GitInfo{
 }
 
 func getInfo(ctx *context.Context) (context.GitInfo, error) {
-	if !git.IsRepo(ctx) && ctx.Snapshot {
+	if !git.IsRepo() && ctx.Snapshot {
 		log.Warn("accepting to run without a git repo because this is a snapshot")
 		return fakeInfo, nil
 	}
-	if !git.IsRepo(ctx) {
+	if !git.IsRepo() {
 		return context.GitInfo{}, ErrNotRepository
 	}
-	info, err := getGitInfo(ctx)
+	info, err := getGitInfo()
 	if err != nil && ctx.Snapshot {
 		log.WithError(err).Warn("ignoring errors because this is a snapshot")
 		if info.Commit == "" {
@@ -66,28 +67,28 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 	return info, err
 }
 
-func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
-	branch, err := getBranch(ctx)
+func getGitInfo() (context.GitInfo, error) {
+	branch, err := getBranch()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get current branch: %w", err)
 	}
-	short, err := getShortCommit(ctx)
+	short, err := getShortCommit()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
 	}
-	full, err := getFullCommit(ctx)
+	full, err := getFullCommit()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
 	}
-	date, err := getCommitDate(ctx)
+	date, err := getCommitDate()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get commit date: %w", err)
 	}
-	summary, err := getSummary(ctx)
+	summary, err := getSummary()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get summary: %w", err)
 	}
-	gitURL, err := getURL(ctx)
+	gitURL, err := getURL()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get remote URL: %w", err)
 	}
@@ -101,7 +102,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		gitURL = u.String()
 	}
 
-	tag, err := getTag(ctx)
+	tag, err := getTag()
 	if err != nil {
 		return context.GitInfo{
 			Branch:      branch,
@@ -115,22 +116,17 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		}, ErrNoTag
 	}
 
-	subject, err := getTagWithFormat(ctx, tag, "contents:subject")
+	subject, err := getTagSubject(tag)
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get tag subject: %w", err)
 	}
 
-	contents, err := getTagWithFormat(ctx, tag, "contents")
+	contents, err := getTagContents(tag)
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get tag contents: %w", err)
 	}
 
-	body, err := getTagWithFormat(ctx, tag, "contents:body")
-	if err != nil {
-		return context.GitInfo{}, fmt.Errorf("couldn't get tag content body: %w", err)
-	}
-
-	previous, err := getPreviousTag(ctx, tag)
+	previous, err := getPreviousTag(tag)
 	if err != nil {
 		// shouldn't error, will only affect templates
 		log.Warnf("couldn't find any tags before %q", tag)
@@ -148,7 +144,6 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		Summary:     summary,
 		TagSubject:  subject,
 		TagContents: contents,
-		TagBody:     body,
 	}, nil
 }
 
@@ -162,10 +157,10 @@ func validate(ctx *context.Context) error {
 	if _, err := os.Stat(".git/shallow"); err == nil {
 		log.Warn("running against a shallow clone - check your CI documentation at https://goreleaser.com/ci")
 	}
-	if err := CheckDirty(ctx); err != nil {
+	if err := CheckDirty(); err != nil {
 		return err
 	}
-	_, err := git.Clean(git.Run(ctx, "describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
+	_, err := git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
 	if err != nil {
 		return ErrWrongRef{
 			commit: ctx.Git.Commit,
@@ -176,20 +171,20 @@ func validate(ctx *context.Context) error {
 }
 
 // CheckDirty returns an error if the current git repository is dirty.
-func CheckDirty(ctx *context.Context) error {
-	out, err := git.Run(ctx, "status", "--porcelain")
+func CheckDirty() error {
+	out, err := git.Run("status", "--porcelain")
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{status: out}
 	}
 	return nil
 }
 
-func getBranch(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "rev-parse", "--abbrev-ref", "HEAD", "--quiet"))
+func getBranch() (string, error) {
+	return git.Clean(git.Run("rev-parse", "--abbrev-ref", "HEAD", "--quiet"))
 }
 
-func getCommitDate(ctx *context.Context) (time.Time, error) {
-	ct, err := git.Clean(git.Run(ctx, "show", "--format='%ct'", "HEAD", "--quiet"))
+func getCommitDate() (time.Time, error) {
+	ct, err := git.Clean(git.Run("show", "--format='%ct'", "HEAD", "--quiet"))
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -204,108 +199,58 @@ func getCommitDate(ctx *context.Context) (time.Time, error) {
 	return t, nil
 }
 
-func getShortCommit(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "show", "--format=%h", "HEAD", "--quiet"))
+func getShortCommit() (string, error) {
+	return git.Clean(git.Run("show", "--format='%h'", "HEAD", "--quiet"))
 }
 
-func getFullCommit(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "show", "--format=%H", "HEAD", "--quiet"))
+func getFullCommit() (string, error) {
+	return git.Clean(git.Run("show", "--format='%H'", "HEAD", "--quiet"))
 }
 
-func getSummary(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "describe", "--always", "--dirty", "--tags"))
+func getSummary() (string, error) {
+	return git.Clean(git.Run("describe", "--always", "--dirty", "--tags"))
 }
 
-func getTagWithFormat(ctx *context.Context, tag, format string) (string, error) {
-	out, err := git.Run(ctx, "tag", "-l", "--format='%("+format+")'", tag)
-	return strings.TrimSpace(strings.TrimSuffix(strings.ReplaceAll(out, "'", ""), "\n\n")), err
+func getTagSubject(tag string) (string, error) {
+	return git.Clean(git.Run("tag", "-l", "--format='%(contents:subject)'", tag))
 }
 
-func getTag(ctx *context.Context) (string, error) {
-	for _, fn := range []func() ([]string, error){
-		getFromEnv("GORELEASER_CURRENT_TAG"),
-		func() ([]string, error) {
-			return gitTagsPointingAt(ctx, "HEAD")
+func getTagContents(tag string) (string, error) {
+	out, err := git.Run("tag", "-l", "--format='%(contents)'", tag)
+	return strings.TrimSuffix(strings.ReplaceAll(out, "'", ""), "\n\n"), err
+}
+
+func getTag() (string, error) {
+	var tag string
+	var err error
+	for _, fn := range []func() (string, error){
+		func() (string, error) {
+			return os.Getenv("GORELEASER_CURRENT_TAG"), nil
 		},
-		func() ([]string, error) {
-			// this will get the last tag, even if it wasn't made against the
-			// last commit...
-			return git.CleanAllLines(gitDescribe(ctx, "HEAD"))
+		func() (string, error) {
+			return git.Clean(git.Run("tag", "--points-at", "HEAD", "--sort", "-version:refname"))
 		},
-	} {
-		tags, err := fn()
-		if len(tags) > 0 {
-			return tags[0], err
-		}
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return "", nil
-}
-
-func getPreviousTag(ctx *context.Context, current string) (string, error) {
-	for _, fn := range []func() ([]string, error){
-		getFromEnv("GORELEASER_PREVIOUS_TAG"),
-		func() ([]string, error) {
-			sha, err := previousTagSha(ctx, current)
-			if err != nil {
-				return nil, err
-			}
-			return gitTagsPointingAt(ctx, sha)
+		func() (string, error) {
+			return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
 		},
 	} {
-		tags, err := fn()
-		if len(tags) > 0 {
-			return tags[0], err
-		}
-		if err != nil {
-			return "", err
+		tag, err = fn()
+		if tag != "" || err != nil {
+			return tag, err
 		}
 	}
 
-	return "", nil
+	return tag, err
 }
 
-func gitTagsPointingAt(ctx *context.Context, ref string) ([]string, error) {
-	return git.CleanAllLines(git.Run(
-		ctx,
-		"tag",
-		"--points-at",
-		ref,
-		"--sort",
-		"-version:refname",
-	))
-}
-
-func gitDescribe(ctx *context.Context, ref string) (string, error) {
-	return git.Clean(git.Run(
-		ctx,
-		"describe",
-		"--tags",
-		"--abbrev=0",
-		ref,
-	))
-}
-
-func previousTagSha(ctx *context.Context, current string) (string, error) {
-	tag, err := gitDescribe(ctx, fmt.Sprintf("tags/%s^", current))
-	if err != nil {
-		return "", err
+func getPreviousTag(current string) (string, error) {
+	if tag := os.Getenv("GORELEASER_PREVIOUS_TAG"); tag != "" {
+		return tag, nil
 	}
-	return git.Clean(git.Run(ctx, "rev-list", "-n1", tag))
+
+	return git.Clean(git.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)))
 }
 
-func getURL(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "ls-remote", "--get-url"))
-}
-
-func getFromEnv(s string) func() ([]string, error) {
-	return func() ([]string, error) {
-		if tag := os.Getenv(s); tag != "" {
-			return []string{tag}, nil
-		}
-		return nil, nil
-	}
+func getURL() (string, error) {
+	return git.Clean(git.Run("ls-remote", "--get-url"))
 }

@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build windows || darwin
+// +build windows darwin
 
 package robustio
 
 import (
-	"errors"
 	"math/rand"
 	"os"
 	"syscall"
 	"time"
 )
 
-const arbitraryTimeout = 2000 * time.Millisecond
+const arbitraryTimeout = 500 * time.Millisecond
+
+const ERROR_SHARING_VIOLATION = 32
 
 // retry retries ephemeral errors from f up to an arbitrary timeout
 // to work around filesystem flakiness on Windows and Darwin.
@@ -31,8 +32,7 @@ func retry(f func() (err error, mayRetry bool)) error {
 			return err
 		}
 
-		var errno syscall.Errno
-		if errors.As(err, &errno) && (lowestErrno == 0 || errno < lowestErrno) {
+		if errno, ok := err.(syscall.Errno); ok && (lowestErrno == 0 || errno < lowestErrno) {
 			bestErr = err
 			lowestErrno = errno
 		} else if bestErr == nil {
@@ -78,7 +78,8 @@ func readFile(filename string) ([]byte, error) {
 		// Unlike in rename, we do not retry errFileNotFound here: it can occur
 		// as a spurious error, but the file may also genuinely not exist, so the
 		// increase in robustness is probably not worth the extra latency.
-		return err, isEphemeralError(err) && !errors.Is(err, errFileNotFound)
+
+		return err, isEphemeralError(err) && err != errFileNotFound
 	})
 	return b, err
 }

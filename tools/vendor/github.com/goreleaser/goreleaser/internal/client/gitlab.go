@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/caarlos0/log"
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -44,14 +43,7 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 
 		options = append(options, gitlab.WithBaseURL(apiURL))
 	}
-
-	var client *gitlab.Client
-	var err error
-	if checkUseJobToken(*ctx, token) {
-		client, err = gitlab.NewJobClient(token, options...)
-	} else {
-		client, err = gitlab.NewClient(token, options...)
-	}
+	client, err := gitlab.NewClient(token, options...)
 	if err != nil {
 		return &gitlabClient{}, err
 	}
@@ -414,8 +406,7 @@ func (c *gitlabClient) Upload(
 		log.WithField("file", file.Name()).Debug("uploading file as attachment")
 		projectFile, _, err := c.client.Projects.UploadFile(
 			projectID,
-			file,
-			filepath.Base(file.Name()),
+			file.Name(),
 			nil,
 		)
 		if err != nil {
@@ -494,25 +485,4 @@ func (c *gitlabClient) getMilestoneByTitle(repo Repo, title string) (*gitlab.Mil
 	}
 
 	return nil, nil
-}
-
-// checkUseJobToken examines the context and given token, and determines if We should use NewJobClient vs NewClient
-func checkUseJobToken(ctx context.Context, token string) bool {
-	// The CI_JOB_TOKEN env var is set automatically in all GitLab runners.
-	// If this comes back as empty, we aren't in a functional GitLab runner
-	ciToken := os.Getenv("CI_JOB_TOKEN")
-	if ciToken == "" {
-		return false
-	}
-
-	// We only want to use the JobToken client if we have specified
-	// UseJobToken. Older versions of GitLab don't work with this, so we
-	// want to be specific
-	if ctx.Config.GitLabURLs.UseJobToken {
-		// We may be creating a new client with a non-CI_JOB_TOKEN, for
-		// things like Homebrew publishing. We can't use the
-		// CI_JOB_TOKEN there
-		return token == ciToken
-	}
-	return false
 }
