@@ -13,8 +13,8 @@ jobs:
       fail-fast: true
       max-parallel: 1
       matrix:
-        os: [ 'ubuntu-20.04' ]
-        go: [ '1.18' ]
+        os: [ 'ubuntu-22.04' ]
+        go: [ '1.19' ]
     runs-on: ${{ matrix.os }}
     name: Release
     steps:
