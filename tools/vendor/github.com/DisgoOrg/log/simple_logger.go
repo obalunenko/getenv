@@ -38,7 +38,8 @@ type Level int
 
 // All Level(s) which SimpleLogger supports
 const (
-	LevelDebug Level = iota
+	LevelTrace Level = iota
+	LevelDebug
 	LevelInfo
 	LevelWarn
 	LevelError
@@ -49,6 +50,8 @@ const (
 // String returns the name of the Level
 func (l Level) String() string {
 	switch l {
+	case LevelTrace:
+		return "TRACE"
 	case LevelDebug:
 		return "DEBUG"
 	case LevelInfo:
@@ -74,6 +77,7 @@ var (
 )
 
 var Styles = map[Level]Style{
+	LevelTrace: ForegroundColorBrightBlack,
 	LevelDebug: ForegroundColorWhite,
 	LevelInfo:  ForegroundColorCyan,
 	LevelWarn:  ForegroundColorYellow,
@@ -165,6 +169,16 @@ func (l *SimpleLogger) Outputf(calldepth int, level Level, format string, v ...i
 	l.Output(calldepth+1, level, fmt.Sprintf(format, v...))
 }
 
+// Trace logs on the LevelTrace
+func (l *SimpleLogger) Trace(v ...interface{}) {
+	l.Output(3, LevelTrace, v...)
+}
+
+// Tracef logs on the LevelTrace
+func (l *SimpleLogger) Tracef(format string, v ...interface{}) {
+	l.Outputf(3, LevelTrace, format, v...)
+}
+
 // Debug logs on the LevelDebug
 func (l *SimpleLogger) Debug(v ...interface{}) {
 	l.Output(3, LevelDebug, v...)
@@ -235,6 +249,18 @@ func SetLevel(level Level) {
 //goland:noinspection GoUnusedExportedFunction
 func SetFlags(flags int) {
 	Default().SetFlags(flags)
+}
+
+// Trace logs on the LevelTrace with the default SimpleLogger
+//goland:noinspection GoUnusedExportedFunction
+func Trace(v ...interface{}) {
+	Output(3, LevelTrace, v...)
+}
+
+// Tracef logs on the LevelTrace with the default SimpleLogger
+//goland:noinspection GoUnusedExportedFunction
+func Tracef(format string, v ...interface{}) {
+	Outputf(3, LevelTrace, format, v...)
 }
 
 // Debug logs on the LevelDebug with the default SimpleLogger

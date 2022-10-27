@@ -80,7 +80,7 @@ function go-group() {
 
   checkInstalled 'gogroup'
 
-  declare -a lints=$(gogroup -order std,other,prefix=github.com/obalunenko/advent-of-code/ $(find . -type f -name "*.go" | grep -v "vendor/"))
+  declare -a lints=$(goimports -l -local=$(go list -m) $(find . -type f -name "*.go" | grep -v "vendor/"))
 
   if [[ ${lints} ]]; then
     echo "fix it:"

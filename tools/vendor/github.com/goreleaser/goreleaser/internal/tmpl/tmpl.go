@@ -41,6 +41,7 @@ const (
 	summary         = "Summary"
 	tagSubject      = "TagSubject"
 	tagContents     = "TagContents"
+	tagBody         = "TagBody"
 	releaseURL      = "ReleaseURL"
 	major           = "Major"
 	minor           = "Minor"
@@ -52,14 +53,17 @@ const (
 	timestamp       = "Timestamp"
 	modulePath      = "ModulePath"
 	releaseNotes    = "ReleaseNotes"
+	runtimeK        = "Runtime"
 
 	// artifact-only keys.
 	osKey        = "Os"
+	amd64        = "Amd64"
 	arch         = "Arch"
 	arm          = "Arm"
 	mips         = "Mips"
 	binary       = "Binary"
 	artifactName = "ArtifactName"
+	artifactExt  = "ArtifactExt"
 	artifactPath = "ArtifactPath"
 
 	// build keys.
@@ -92,6 +96,7 @@ func New(ctx *context.Context) *Template {
 			summary:         ctx.Git.Summary,
 			tagSubject:      ctx.Git.TagSubject,
 			tagContents:     ctx.Git.TagContents,
+			tagBody:         ctx.Git.TagBody,
 			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
@@ -102,6 +107,7 @@ func New(ctx *context.Context) *Template {
 			prerelease:      ctx.Semver.Prerelease,
 			isSnapshot:      ctx.Snapshot,
 			releaseNotes:    ctx.ReleaseNotes,
+			runtimeK:        ctx.Runtime,
 		},
 	}
 }
@@ -111,8 +117,8 @@ func New(ctx *context.Context) *Template {
 func (t *Template) WithEnvS(envs []string) *Template {
 	result := map[string]string{}
 	for _, env := range envs {
-		parts := strings.SplitN(env, "=", 2)
-		result[parts[0]] = parts[1]
+		k, v, _ := strings.Cut(env, "=")
+		result[k] = v
 	}
 	return t.WithEnv(result)
 }
@@ -134,16 +140,14 @@ func (t *Template) WithExtraFields(f Fields) *Template {
 
 // WithArtifact populates Fields from the artifact and replacements.
 func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]string) *Template {
-	bin := a.Extra[binary]
-	if bin == nil {
-		bin = t.fields[projectName]
-	}
 	t.fields[osKey] = replace(replacements, a.Goos)
 	t.fields[arch] = replace(replacements, a.Goarch)
 	t.fields[arm] = replace(replacements, a.Goarm)
 	t.fields[mips] = replace(replacements, a.Gomips)
-	t.fields[binary] = bin.(string)
+	t.fields[amd64] = replace(replacements, a.Goamd64)
+	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
 	t.fields[artifactName] = a.Name
+	t.fields[artifactExt] = artifact.ExtraOr(*a, artifact.ExtraExt, "")
 	t.fields[artifactPath] = a.Path
 	return t
 }
@@ -172,19 +176,22 @@ func (t *Template) Apply(s string) (string, error) {
 		Option("missingkey=error").
 		Funcs(template.FuncMap{
 			"replace": strings.ReplaceAll,
+			"split":   strings.Split,
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
-			"tolower":    strings.ToLower,
-			"toupper":    strings.ToUpper,
-			"trim":       strings.TrimSpace,
-			"trimprefix": strings.TrimPrefix,
-			"trimsuffix": strings.TrimSuffix,
-			"dir":        filepath.Dir,
-			"abs":        filepath.Abs,
-			"incmajor":   incMajor,
-			"incminor":   incMinor,
-			"incpatch":   incPatch,
+			"tolower":       strings.ToLower,
+			"toupper":       strings.ToUpper,
+			"trim":          strings.TrimSpace,
+			"trimprefix":    strings.TrimPrefix,
+			"trimsuffix":    strings.TrimSuffix,
+			"dir":           filepath.Dir,
+			"abs":           filepath.Abs,
+			"incmajor":      incMajor,
+			"incminor":      incMinor,
+			"incpatch":      incPatch,
+			"filter":        filter(false),
+			"reverseFilter": filter(true),
 		}).
 		Parse(s)
 	if err != nil {
@@ -255,4 +262,22 @@ func prefix(v string) string {
 		return "v"
 	}
 	return ""
+}
+
+func filter(reverse bool) func(content, exp string) string {
+	return func(content, exp string) string {
+		re := regexp.MustCompilePOSIX(exp)
+		var lines []string
+		for _, line := range strings.Split(content, "\n") {
+			if reverse && re.MatchString(line) {
+				continue
+			}
+			if !reverse && !re.MatchString(line) {
+				continue
+			}
+			lines = append(lines, line)
+		}
+
+		return strings.Join(lines, "\n")
+	}
 }

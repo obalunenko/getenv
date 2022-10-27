@@ -2,6 +2,7 @@ package log
 
 // Logger is the logging interface you can implement/use
 type Logger interface {
+	Trace(args ...interface{})
 	Debug(args ...interface{})
 	Info(args ...interface{})
 	Warn(args ...interface{})
@@ -9,6 +10,7 @@ type Logger interface {
 	Fatal(args ...interface{})
 	Panic(args ...interface{})
 
+	Tracef(format string, args ...interface{})
 	Debugf(format string, args ...interface{})
 	Infof(format string, args ...interface{})
 	Warnf(format string, args ...interface{})
