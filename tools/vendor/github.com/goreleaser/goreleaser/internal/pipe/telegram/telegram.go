@@ -3,8 +3,8 @@ package telegram
 import (
 	"fmt"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
+	"github.com/caarlos0/log"
 	api "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -46,6 +46,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 	}
 
 	tm := api.NewMessage(ctx.Config.Announce.Telegram.ChatID, msg)
+	tm.ParseMode = "MarkdownV2"
 	_, err = bot.Send(tm)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to telegram: %w", err)

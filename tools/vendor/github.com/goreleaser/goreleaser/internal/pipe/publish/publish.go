@@ -8,11 +8,11 @@ import (
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
+	"github.com/goreleaser/goreleaser/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
-	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
@@ -35,17 +35,17 @@ type Publisher interface {
 var publishers = []Publisher{
 	blob.Pipe{},
 	upload.Pipe{},
-	custompublishers.Pipe{},
 	artifactory.Pipe{},
+	custompublishers.Pipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
 	sign.DockerPipe{},
 	snapcraft.Pipe{},
 	// This should be one of the last steps
 	release.Pipe{},
-	// brew and scoop use the release URL, so, they should be last
+	// brew et al use the release URL, so, they should be last
 	brew.Pipe{},
-	gofish.Pipe{},
+	aur.Pipe{},
 	krew.Pipe{},
 	scoop.Pipe{},
 	milestone.Pipe{},
@@ -61,10 +61,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, publisher := range publishers {
 		if err := skip.Maybe(
 			publisher,
-			logging.Log(
+			logging.PadLog(
 				publisher.String(),
 				errhandler.Handle(publisher.Publish),
-				logging.ExtraPadding,
 			),
 		)(ctx); err != nil {
 			return fmt.Errorf("%s: failed to publish artifacts: %w", publisher.String(), err)

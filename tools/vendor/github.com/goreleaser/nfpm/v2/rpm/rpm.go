@@ -6,16 +6,15 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/google/rpmpack"
 	"github.com/goreleaser/chglog"
 	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
+	"github.com/goreleaser/nfpm/v2/internal/rpmpack"
 	"github.com/goreleaser/nfpm/v2/internal/sign"
 )
 
@@ -94,6 +93,11 @@ func (*RPM) ConventionalFileName(info *nfpm.Info) string {
 	return fmt.Sprintf("%s-%s.%s.rpm", info.Name, version, info.Arch)
 }
 
+// ConventionalExtension returns the file name conventionally used for RPM packages
+func (*RPM) ConventionalExtension() string {
+	return ".rpm"
+}
+
 // Package writes a new RPM package to the given writer using the given info.
 func (*RPM) Package(info *nfpm.Info, w io.Writer) (err error) {
 	var (
@@ -162,7 +166,7 @@ func addChangeLog(info *nfpm.Info, rpm *rpmpack.RPM) error {
 
 		err := tpl.Execute(&formattedNotes, entry)
 		if err != nil {
-			return fmt.Errorf("formatting changlog notes: %w", err)
+			return fmt.Errorf("formatting changelog notes: %w", err)
 		}
 
 		changes[idx] = strings.TrimSpace(formattedNotes.String())
@@ -189,6 +193,9 @@ func buildRPMMeta(info *nfpm.Info) (*rpmpack.RPMMetaData, error) {
 		suggests,
 		conflicts rpmpack.Relations
 	)
+	if info.RPM.Compression == "" {
+		info.RPM.Compression = "gzip:-1"
+	}
 	if epoch, err = strconv.ParseUint(defaultTo(info.Epoch, "0"), 10, 32); err != nil {
 		return nil, err
 	}
@@ -276,14 +283,14 @@ func toRelation(items []string) (rpmpack.Relations, error) {
 
 func addScriptFiles(info *nfpm.Info, rpm *rpmpack.RPM) error {
 	if info.RPM.Scripts.PreTrans != "" {
-		data, err := ioutil.ReadFile(info.RPM.Scripts.PreTrans)
+		data, err := os.ReadFile(info.RPM.Scripts.PreTrans)
 		if err != nil {
 			return err
 		}
 		rpm.AddPretrans(string(data))
 	}
 	if info.Scripts.PreInstall != "" {
-		data, err := ioutil.ReadFile(info.Scripts.PreInstall)
+		data, err := os.ReadFile(info.Scripts.PreInstall)
 		if err != nil {
 			return err
 		}
@@ -291,7 +298,7 @@ func addScriptFiles(info *nfpm.Info, rpm *rpmpack.RPM) error {
 	}
 
 	if info.Scripts.PreRemove != "" {
-		data, err := ioutil.ReadFile(info.Scripts.PreRemove)
+		data, err := os.ReadFile(info.Scripts.PreRemove)
 		if err != nil {
 			return err
 		}
@@ -299,7 +306,7 @@ func addScriptFiles(info *nfpm.Info, rpm *rpmpack.RPM) error {
 	}
 
 	if info.Scripts.PostInstall != "" {
-		data, err := ioutil.ReadFile(info.Scripts.PostInstall)
+		data, err := os.ReadFile(info.Scripts.PostInstall)
 		if err != nil {
 			return err
 		}
@@ -307,7 +314,7 @@ func addScriptFiles(info *nfpm.Info, rpm *rpmpack.RPM) error {
 	}
 
 	if info.Scripts.PostRemove != "" {
-		data, err := ioutil.ReadFile(info.Scripts.PostRemove)
+		data, err := os.ReadFile(info.Scripts.PostRemove)
 		if err != nil {
 			return err
 		}
@@ -315,7 +322,7 @@ func addScriptFiles(info *nfpm.Info, rpm *rpmpack.RPM) error {
 	}
 
 	if info.RPM.Scripts.PostTrans != "" {
-		data, err := ioutil.ReadFile(info.RPM.Scripts.PostTrans)
+		data, err := os.ReadFile(info.RPM.Scripts.PostTrans)
 		if err != nil {
 			return err
 		}
@@ -390,7 +397,7 @@ func asRPMSymlink(content *files.Content) *rpmpack.RPMFile {
 }
 
 func asRPMFile(content *files.Content, fileType rpmpack.FileType) (*rpmpack.RPMFile, error) {
-	data, err := ioutil.ReadFile(content.Source)
+	data, err := os.ReadFile(content.Source)
 	if err != nil && content.Type != "ghost" {
 		return nil, err
 	}

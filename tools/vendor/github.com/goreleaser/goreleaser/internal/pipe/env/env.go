@@ -6,10 +6,11 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
@@ -146,7 +147,7 @@ func loadEnv(env, path string) (string, error) {
 		return "", err
 	}
 	f, err := os.Open(path) // #nosec
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		return "", nil
 	}
 	if err != nil {

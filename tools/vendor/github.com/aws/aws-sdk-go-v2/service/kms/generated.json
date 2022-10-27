@@ -7,6 +7,7 @@
     },
     "files": [
         "api_client.go",
+        "api_client_test.go",
         "api_op_CancelKeyDeletion.go",
         "api_op_ConnectCustomKeyStore.go",
         "api_op_CreateAlias.go",
@@ -29,6 +30,7 @@
         "api_op_GenerateDataKeyPair.go",
         "api_op_GenerateDataKeyPairWithoutPlaintext.go",
         "api_op_GenerateDataKeyWithoutPlaintext.go",
+        "api_op_GenerateMac.go",
         "api_op_GenerateRandom.go",
         "api_op_GetKeyPolicy.go",
         "api_op_GetKeyRotationStatus.go",
@@ -55,6 +57,7 @@
         "api_op_UpdateKeyDescription.go",
         "api_op_UpdatePrimaryRegion.go",
         "api_op_Verify.go",
+        "api_op_VerifyMac.go",
         "deserializers.go",
         "doc.go",
         "endpoints.go",

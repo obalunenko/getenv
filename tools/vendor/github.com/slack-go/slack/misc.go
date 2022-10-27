@@ -18,8 +18,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/slack-go/slack/internal/misc"
 )
 
 // SlackResponse handles parsing out errors from the web api.
@@ -52,7 +50,7 @@ type SlackErrorResponse struct {
 
 func (r SlackErrorResponse) Error() string { return r.Err }
 
-// RateLimitedError represents the rate limit respond from slack
+// RateLimitedError represents the rate limit response from slack
 type RateLimitedError struct {
 	RetryAfter time.Duration
 }
@@ -66,29 +64,27 @@ func (e *RateLimitedError) Retryable() bool {
 }
 
 func fileUploadReq(ctx context.Context, path string, values url.Values, r io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest("POST", path, r)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, path, r)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
-	req.URL.RawQuery = (values).Encode()
+	req.URL.RawQuery = values.Encode()
 	return req, nil
 }
 
-func downloadFile(client httpClient, token string, downloadURL string, writer io.Writer, d Debug) error {
+func downloadFile(ctx context.Context, client httpClient, token string, downloadURL string, writer io.Writer, d Debug) error {
 	if downloadURL == "" {
 		return fmt.Errorf("received empty download URL")
 	}
 
-	req, err := http.NewRequest("GET", downloadURL, &bytes.Buffer{})
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, &bytes.Buffer{})
 	if err != nil {
 		return err
 	}
 
 	var bearer = "Bearer " + token
 	req.Header.Add("Authorization", bearer)
-	req.WithContext(context.Background())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -107,8 +103,8 @@ func downloadFile(client httpClient, token string, downloadURL string, writer io
 	return err
 }
 
-func formReq(endpoint string, values url.Values) (req *http.Request, err error) {
-	if req, err = http.NewRequest("POST", endpoint, strings.NewReader(values.Encode())); err != nil {
+func formReq(ctx context.Context, endpoint string, values url.Values) (req *http.Request, err error) {
+	if req, err = http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(values.Encode())); err != nil {
 		return nil, err
 	}
 
@@ -116,13 +112,13 @@ func formReq(endpoint string, values url.Values) (req *http.Request, err error) 
 	return req, nil
 }
 
-func jsonReq(endpoint string, body interface{}) (req *http.Request, err error) {
+func jsonReq(ctx context.Context, endpoint string, body interface{}) (req *http.Request, err error) {
 	buffer := bytes.NewBuffer([]byte{})
 	if err = json.NewEncoder(buffer).Encode(body); err != nil {
 		return nil, err
 	}
 
-	if req, err = http.NewRequest("POST", endpoint, buffer); err != nil {
+	if req, err = http.NewRequestWithContext(ctx, http.MethodPost, endpoint, buffer); err != nil {
 		return nil, err
 	}
 
@@ -184,7 +180,6 @@ func postWithMultipartResponse(ctx context.Context, client httpClient, path, nam
 	}
 	req.Header.Add("Content-Type", wr.FormDataContentType())
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req = req.WithContext(ctx)
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -206,7 +201,6 @@ func postWithMultipartResponse(ctx context.Context, client httpClient, path, nam
 }
 
 func doPost(ctx context.Context, client httpClient, req *http.Request, parser responseParser, d Debug) error {
-	req = req.WithContext(ctx)
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -224,7 +218,7 @@ func doPost(ctx context.Context, client httpClient, req *http.Request, parser re
 // post JSON.
 func postJSON(ctx context.Context, client httpClient, endpoint, token string, json []byte, intf interface{}, d Debug) error {
 	reqBody := bytes.NewBuffer(json)
-	req, err := http.NewRequest("POST", endpoint, reqBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, reqBody)
 	if err != nil {
 		return err
 	}
@@ -237,7 +231,7 @@ func postJSON(ctx context.Context, client httpClient, endpoint, token string, js
 // post a url encoded form.
 func postForm(ctx context.Context, client httpClient, endpoint string, values url.Values, intf interface{}, d Debug) error {
 	reqBody := strings.NewReader(values.Encode())
-	req, err := http.NewRequest("POST", endpoint, reqBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, reqBody)
 	if err != nil {
 		return err
 	}
@@ -246,7 +240,7 @@ func postForm(ctx context.Context, client httpClient, endpoint string, values ur
 }
 
 func getResource(ctx context.Context, client httpClient, endpoint, token string, values url.Values, intf interface{}, d Debug) error {
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -303,7 +297,7 @@ func checkStatusCode(resp *http.Response, d Debug) error {
 	// Slack seems to send an HTML body along with 5xx error codes. Don't parse it.
 	if resp.StatusCode != http.StatusOK {
 		logResponse(resp, d)
-		return misc.StatusCodeError{Code: resp.StatusCode, Status: resp.Status}
+		return StatusCodeError{Code: resp.StatusCode, Status: resp.Status}
 	}
 
 	return nil

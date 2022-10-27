@@ -12,10 +12,9 @@
 *.out*
 .vscode/
 
-.idea
+.idea/
 
-bin/
-dist/
+./bin/
+./dist/
 .DS_Store
-coverage/
-tests-report.json
+./coverage/

@@ -9,7 +9,7 @@ By participating to this project, you agree to abide our [code of conduct](https
 Prerequisites:
 
 - [Task](https://taskfile.dev/#/installation)
-- [Go 1.17+](https://golang.org/doc/install)
+- [Go 1.19+](https://golang.org/doc/install)
 - [Docker](https://www.docker.com/)
 - `gpg` (probably already installed on your system)
 
@@ -72,7 +72,7 @@ An example:
 docs: Add example for --release-notes flag
 
 I added an example to the docs of the `--release-notes` flag to make
-the usage more clear.  The example is an realistic use case and might
+the usage more clear.  The example is a realistic use case and might
 help others to generate their own changelog.
 
 See #284
