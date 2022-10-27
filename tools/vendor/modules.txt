@@ -157,7 +157,7 @@ github.com/Microsoft/go-winio/pkg/guid
 # github.com/OpenPeeDeeP/depguard v1.1.1
 ## explicit; go 1.13
 github.com/OpenPeeDeeP/depguard
-# github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c
+# github.com/ProtonMail/go-crypto v0.0.0-20211112122917-428f8eabeeb3
 ## explicit; go 1.13
 github.com/ProtonMail/go-crypto/bitcurves
 github.com/ProtonMail/go-crypto/brainpool
@@ -423,7 +423,7 @@ github.com/cespare/xxhash/v2
 # github.com/charithe/durationcheck v0.0.9
 ## explicit; go 1.14
 github.com/charithe/durationcheck
-# github.com/charmbracelet/lipgloss v0.6.0
+# github.com/charmbracelet/lipgloss v0.6.1-0.20220911181249-6304a734e792
 ## explicit; go 1.15
 github.com/charmbracelet/lipgloss
 # github.com/chavacava/garif v0.0.0-20220630083739-93517212f375
@@ -1228,7 +1228,7 @@ github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.5
 ## explicit; go 1.12
 github.com/spf13/pflag
-# github.com/spf13/viper v1.12.0
+# github.com/spf13/viper v1.13.0
 ## explicit; go 1.17
 github.com/spf13/viper
 github.com/spf13/viper/internal/encoding
