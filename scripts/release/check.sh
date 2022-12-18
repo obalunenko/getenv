@@ -9,13 +9,12 @@ SCRIPTS_DIR="${REPO_ROOT}/scripts"
 
 source "${SCRIPTS_DIR}/helpers-source.sh"
 
-echo "${SCRIPT_NAME} is running... "
-
-checkInstalled 'goreleaser'
-
 APP=${APP_NAME}
 
 echo "${SCRIPT_NAME} is running fo ${APP}... "
+
+checkInstalled 'goreleaser'
+
 
 # Get new tags from the remote
 git fetch --tags -f
@@ -31,6 +30,10 @@ if [ -z "${VERSION}" ] || [ "${VERSION}" = "${SHORTCOMMIT}" ]
   VERSION="v0.0.0"
 fi
 
+
+VERSION="${VERSION}-local"
+
+
 BUILDINFO_VARS_PKG=github.com/obalunenko/version
 export GO_BUILD_LDFLAGS="-s -w \
 -X ${BUILDINFO_VARS_PKG}.version=${VERSION} \
@@ -40,4 +43,6 @@ export GO_BUILD_LDFLAGS="-s -w \
 -X ${BUILDINFO_VARS_PKG}.appname=${APP} \
 -X ${BUILDINFO_VARS_PKG}.goversion=${GOVERSION}"
 
-goreleaser release --rm-dist
+goreleaser check
+
+goreleaser build --rm-dist --single-target --snapshot
