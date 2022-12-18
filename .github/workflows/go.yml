@@ -1,9 +1,22 @@
 name: Go [lint, test]
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'master'
+    paths:
+      - 'scripts/**'
+      - 'tools/**'
+      - '**/*.go'
+      - '**/*.gohtml'
+      - '**/*.proto'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Makefile'
+      - '!**.*md'
+      - '.github/workflows/**'
+      - 'deployments/docker-compose/go-tools-docker-compose.yml'
   pull_request:
     types: [ opened, synchronize, reopened ]
     branches:
@@ -19,8 +32,56 @@ on:
       - 'Makefile'
       - '!**.*md'
       - '.github/workflows/**'
+      - 'deployments/docker-compose/go-tools-docker-compose.yml'
 
 jobs:
+  build:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        os: [ 'ubuntu-22.04' ]
+        go: [ '1.19' ]
+    runs-on: ${{ matrix.os }}
+    name: Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up go
+        uses: actions/setup-go@v3.4.0
+        with:
+          go-version: ${{ matrix.go }}
+
+      - run: |
+          go version
+        shell: bash
+
+      - name: Set up cache
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
+        with:
+          path: |
+            ${{ env.GOBIN }}
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@v3
+        with:
+          install-only: true
+
+      - name: Check release
+        run: |
+          make check-releaser
+        shell: bash
+
   testing:
     strategy:
       fail-fast: false
@@ -37,9 +98,8 @@ jobs:
           fetch-depth: 0
 
       - name: Set up go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v3.4.0
         with:
-          stable: 'true'
           go-version: ${{ matrix.go }}
 
       - run: |
@@ -70,7 +130,6 @@ jobs:
         shell: bash
 
   linting:
-    needs: testing
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -86,9 +145,8 @@ jobs:
           fetch-depth: 0
 
       - name: Set up go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v3.4.0
         with:
-          stable: 'true'
           go-version: ${{ matrix.go }}
       - run: |
           go version
@@ -123,7 +181,7 @@ jobs:
         shell: bash
 
   reports:
-    needs: testing
+    needs: [testing, linting, build]
     strategy:
       fail-fast: true
       max-parallel: 1
@@ -139,9 +197,8 @@ jobs:
           fetch-depth: 0
 
       - name: Set up go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v3.4.0
         with:
-          stable: 'true'
           go-version: ${{ matrix.go }}
       - run: |
           go version
@@ -191,3 +248,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+

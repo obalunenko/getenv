@@ -2,13 +2,6 @@
 
 set -Eeuo pipefail
 
-function cleanup() {
-  trap - SIGINT SIGTERM ERR EXIT
-  echo "cleanup running"
-}
-
-trap cleanup SIGINT SIGTERM ERR EXIT
-
 SCRIPT_NAME="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
 
 echo "${SCRIPT_NAME} is running... "
@@ -47,27 +40,28 @@ function menu() {
   printf "4 - Exit\n"
   read -r selection
 
+  SHORTCOMMIT="$(git rev-parse --short HEAD)"
 
-TAG_COMMIT=$(git rev-list --tags --max-count=1)
-CURRENT_TAG=$(git describe --tags --always ${TAG_COMMIT})
-if [ -z "${TAG_COMMIT}" ]
- then
-  CURRENT_TAG="v0.0.0"
-fi
+  PREV_VERSION="$(git tag | sort -V | tail -1)"
+  if [ -z "${PREV_VERSION}" ] || [ "${PREV_VERSION}" = "${SHORTCOMMIT}" ]
+   then
+    PREV_VERSION="v0.0.0"
+  fi
 
+  echo "Current version: ${PREV_VERSION}"
 
   case "$selection" in
   1)
     printf "Major updates......\n"
-    NEW_VERSION=$(echo "${CURRENT_TAG}" | sed 's/\(.*v\)\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2;\3;\4;\1/g' | sort -t';' -k 1,1n -k 2,2n -k 3,3n | tail -n 1 | awk -F';' '{printf "%s%d.%d.%d", $4, ($1+1),0,0 }')
+    NEW_VERSION=$(echo ${PREV_VERSION} | sed 's/\(.*v\)\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2;\3;\4;\1/g' | sort -t';' -k 1,1n -k 2,2n -k 3,3n | tail -n 1 | awk -F';' '{printf "%s%d.%d.%d", $4, ($1+1),0,0 }')
     ;;
   2)
     printf "Run Minor update.........\n"
-    NEW_VERSION=$(echo "${CURRENT_TAG}" | sed 's/\(.*v\)\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2;\3;\4;\1/g' | sort -t';' -k 1,1n -k 2,2n -k 3,3n | tail -n 1 | awk -F';' '{printf "%s%d.%d.%d", $4, $1,($2+1),0 }')
+    NEW_VERSION=$(echo ${PREV_VERSION} | sed 's/\(.*v\)\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2;\3;\4;\1/g' | sort -t';' -k 1,1n -k 2,2n -k 3,3n | tail -n 1 | awk -F';' '{printf "%s%d.%d.%d", $4, $1,($2+1),0 }')
     ;;
   3)
     printf "Patch update.........\n"
-    NEW_VERSION=$(echo "${CURRENT_TAG}" | sed 's/\(.*v\)\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2;\3;\4;\1/g' | sort -t';' -k 1,1n -k 2,2n -k 3,3n | tail -n 1 | awk -F';' '{printf "%s%d.%d.%d", $4, $1,$2,($3 + 1) }')
+    NEW_VERSION=$(echo ${PREV_VERSION}  | sed 's/\(.*v\)\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2;\3;\4;\1/g' | sort -t';' -k 1,1n -k 2,2n -k 3,3n | tail -n 1 | awk -F';' '{printf "%s%d.%d.%d", $4, $1,$2,($3 + 1) }')
     ;;
   4)
     printf "Exit................................\n"
@@ -93,14 +87,13 @@ menu
 NEW_TAG=${NEW_VERSION}
 
 echo "New version is: ${NEW_TAG}"
-
 while true; do
   echo "Is it ok? (:y)?:"
   read -r yn
   case $yn in
   [Yy]*)
 
-    git tag -a "${NEW_TAG}" && \
+    git tag -a "${NEW_TAG}" -m "${NEW_TAG}" && \
      git push --tags
 
     break

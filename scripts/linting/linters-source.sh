@@ -76,9 +76,9 @@ function go-lint() {
 }
 
 function go-group() {
-  echo "gogroup..."
+  echo "goimports..."
 
-  checkInstalled 'gogroup'
+  checkInstalled 'goimports'
 
   declare -a lints=$(goimports -l -local=$(go list -m) $(find . -type f -name "*.go" | grep -v "vendor/"))
 
