@@ -128,7 +128,7 @@ check-releaser:
 .PHONY: check-releaser
 
 ## Issue new release.
-new-version: vet test-regression build
+new-version: vet test-regression
 	./scripts/release/new-version.sh
 .PHONY: new-release
 
