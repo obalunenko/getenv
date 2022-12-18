@@ -28,9 +28,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install tools
-        run: |
-          make install-tools
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@v3
+        with:
+          install-only: true
 
       - name: Run GoReleaser
         if: success()
