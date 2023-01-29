@@ -1,5 +1,5 @@
 //nolint:staticcheck // Remove usage of deprecated functions from tests in next version.
-package tests_test
+package getenv_test
 
 import (
 	"testing"
