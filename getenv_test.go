@@ -1,4 +1,3 @@
-//nolint:staticcheck // Remove usage of deprecated functions from tests in next version.
 package getenv_test
 
 import (
