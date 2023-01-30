@@ -44,7 +44,7 @@ func NewEnvParser(v any) EnvParser {
 
 // EnvParser interface for parsing environment variables.
 type EnvParser interface {
-	ParseEnv(key string, defaltVal any, options ...Parameters) any
+	ParseEnv(key string, defaltVal any, options Parameters) any
 }
 
 type envParserWrap struct {
@@ -53,7 +53,7 @@ type envParserWrap struct {
 
 type stringParser string
 
-func (s stringParser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
+func (s stringParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := stringOrDefault(key, defaltVal.(string))
 
 	return val
@@ -61,12 +61,8 @@ func (s stringParser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
 
 type stringSliceParser []string
 
-func (s stringSliceParser) ParseEnv(key string, defaltVal any, options ...Parameters) any {
-	if len(options) != 1 {
-		panic("separator should be exact 1")
-	}
-
-	sep := options[0].Separator
+func (s stringSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
 
 	val := stringSliceOrDefault(key, defaltVal.([]string), sep)
 
@@ -75,7 +71,7 @@ func (s stringSliceParser) ParseEnv(key string, defaltVal any, options ...Parame
 
 type intParser int
 
-func (i intParser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
+func (i intParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := intOrDefault(key, defaltVal.(int))
 
 	return val
@@ -83,12 +79,8 @@ func (i intParser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
 
 type intSliceParser []int
 
-func (i intSliceParser) ParseEnv(key string, defaltVal any, options ...Parameters) any {
-	if len(options) != 1 {
-		panic("separator should be exact 1")
-	}
-
-	sep := options[0].Separator
+func (i intSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
 
 	val := intSliceOrDefault(key, defaltVal.([]int), sep)
 
@@ -97,12 +89,8 @@ func (i intSliceParser) ParseEnv(key string, defaltVal any, options ...Parameter
 
 type float64SliceParser []float64
 
-func (i float64SliceParser) ParseEnv(key string, defaltVal any, options ...Parameters) any {
-	if len(options) != 1 {
-		panic("separator should be exact 1")
-	}
-
-	sep := options[0].Separator
+func (i float64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
 
 	val := float64SliceOrDefault(key, defaltVal.([]float64), sep)
 
@@ -111,7 +99,7 @@ func (i float64SliceParser) ParseEnv(key string, defaltVal any, options ...Param
 
 type int64Parser int64
 
-func (i int64Parser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
+func (i int64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := int64OrDefault(key, defaltVal.(int64))
 
 	return val
@@ -119,21 +107,17 @@ func (i int64Parser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
 
 type in64SliceParser []int64
 
-func (i in64SliceParser) ParseEnv(key string, defaltVal any, options ...Parameters) any {
-	if len(options) != 1 {
-		panic("separator should be exact 1")
-	}
+func (i in64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
 
-	separator := options[0].Separator
-
-	val := int64SliceOrDefault(key, defaltVal.([]int64), separator)
+	val := int64SliceOrDefault(key, defaltVal.([]int64), sep)
 
 	return val
 }
 
 type float64Parser float64
 
-func (f float64Parser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
+func (f float64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := float64OrDefault(key, defaltVal.(float64))
 
 	return val
@@ -141,7 +125,7 @@ func (f float64Parser) ParseEnv(key string, defaltVal any, _ ...Parameters) any 
 
 type boolParser bool
 
-func (b boolParser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
+func (b boolParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := boolOrDefault(key, defaltVal.(bool))
 
 	return val
@@ -149,12 +133,8 @@ func (b boolParser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
 
 type timeParser time.Time
 
-func (t timeParser) ParseEnv(key string, defaltVal any, options ...Parameters) any {
-	if len(options) != 1 {
-		panic("layout should be exact 1")
-	}
-
-	layout := options[0].Layout
+func (t timeParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	layout := options.Layout
 
 	val := timeOrDefault(key, defaltVal.(time.Time), layout)
 
@@ -163,7 +143,7 @@ func (t timeParser) ParseEnv(key string, defaltVal any, options ...Parameters) a
 
 type durationParser time.Duration
 
-func (d durationParser) ParseEnv(key string, defaltVal any, _ ...Parameters) any {
+func (d durationParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := durationOrDefault(key, defaltVal.(time.Duration))
 
 	return val
