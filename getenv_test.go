@@ -458,6 +458,23 @@ func TestStringSliceOrDefault(t *testing.T) {
 			},
 		},
 		{
+			name: "env set, no separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "true,newval",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []string{"no values"},
+				sep:        "",
+			},
+			expected: expected{
+				val: []string{"no values"},
+			},
+		},
+		{
 			name: "empty env value set - default returned",
 			precond: precond{
 				setenv: setenv{
@@ -537,6 +554,40 @@ func TestIntSliceOrDefault(t *testing.T) {
 			},
 			expected: expected{
 				val: []int{1, 2},
+			},
+		},
+		{
+			name: "env set, no separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int{-99},
+				sep:        "",
+			},
+			expected: expected{
+				val: []int{-99},
+			},
+		},
+		{
+			name: "env set, wrong separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int{-99},
+				sep:        "|",
+			},
+			expected: expected{
+				val: []int{-99},
 			},
 		},
 		{
@@ -622,6 +673,40 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 			},
 		},
 		{
+			name: "env set, no separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1.05,2.07",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []float64{-99.99},
+				sep:        "",
+			},
+			expected: expected{
+				val: []float64{-99.99},
+			},
+		},
+		{
+			name: "env set, wrong separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1.05,2.07",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []float64{-99.99},
+				sep:        "|",
+			},
+			expected: expected{
+				val: []float64{-99.99},
+			},
+		},
+		{
 			name: "empty env value set - default returned",
 			precond: precond{
 				setenv: setenv{
@@ -701,6 +786,40 @@ func TestInt64SliceOrDefault(t *testing.T) {
 			},
 			expected: expected{
 				val: []int64{1, 2},
+			},
+		},
+		{
+			name: "env set, no separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int64{-99},
+				sep:        "",
+			},
+			expected: expected{
+				val: []int64{-99},
+			},
+		},
+		{
+			name: "env set, wrong separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int64{-99},
+				sep:        "|",
+			},
+			expected: expected{
+				val: []int64{-99},
 			},
 		},
 		{
