@@ -10,66 +10,65 @@ import (
 
 func ExampleEnvOrDefault() {
 	key := "GH_GETENV_TEST"
+
 	defer func() {
 		if err := os.Unsetenv("GH_GETENV_TEST"); err != nil {
 			panic(err)
 		}
 	}()
 
+	var val any
+
 	// string
 	if err := os.Setenv(key, "golly"); err != nil {
 		panic(err)
 	}
 
-	var valS string
-	valS = EnvOrDefault(key, string("golly"))
-	fmt.Println(valS)
+	// var valS string
+	val = EnvOrDefault(key, "golly")
+	fmt.Printf("[%T]: %v\n", val, val)
 
 	// int
 	if err := os.Setenv(key, "123"); err != nil {
 		panic(err)
 	}
 
-	var valI int
-	valI = EnvOrDefault(key, int(123))
-	fmt.Println(valI)
+	val = EnvOrDefault(key, -99)
+	fmt.Printf("[%T]: %v\n", val, val)
 
 	// time.Time
 	if err := os.Setenv(key, "2022-01-20"); err != nil {
 		panic(err)
 	}
 
-	var valT time.Time
-	valT = EnvOrDefault(key,
+	val = EnvOrDefault(key,
 		time.Date(1992, 12, 1, 0, 0, 0, 0, time.UTC),
 		option.WithTimeLayout("2006-01-02"),
 	)
-	fmt.Println(valT.UTC())
+	fmt.Printf("[%T]: %v\n", val, val)
 
 	// []float64
 	if err := os.Setenv(key, "26.89,0.67"); err != nil {
 		panic(err)
 	}
 
-	var valSlF64 []float64
-	valSlF64 = EnvOrDefault(key, []float64{},
+	val = EnvOrDefault(key, []float64{-99},
 		option.WithSeparator(","),
 	)
-	fmt.Println(valSlF64)
+	fmt.Printf("[%T]: %v\n", val, val)
 
 	// time.Duration
 	if err := os.Setenv(key, "2h35m"); err != nil {
 		panic(err)
 	}
 
-	var valD time.Duration
-	valD = EnvOrDefault(key, time.Second)
-	fmt.Println(valD)
+	val = EnvOrDefault(key, time.Second)
+	fmt.Printf("[%T]: %v\n", val, val)
 
 	// Output:
-	// golly
-	// 123
-	// 2022-01-20 00:00:00 +0000 UTC
-	// [26.89 0.67]
-	// 2h35m0s
+	// [string]: golly
+	// [int]: 123
+	// [time.Time]: 2022-01-20 00:00:00 +0000 UTC
+	// [[]float64]: [26.89 0.67]
+	// [time.Duration]: 2h35m0s
 }
