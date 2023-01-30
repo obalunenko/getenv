@@ -23,8 +23,7 @@ func ExampleEnvOrDefault() {
 	if err := os.Setenv(key, "golly"); err != nil {
 		panic(err)
 	}
-
-	// var valS string
+	
 	val = EnvOrDefault(key, "golly")
 	fmt.Printf("[%T]: %v\n", val, val)
 
