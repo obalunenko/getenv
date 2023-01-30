@@ -57,9 +57,19 @@ func ExampleEnvOrDefault() {
 	)
 	fmt.Println(valSlF64)
 
+	// time.Duration
+	if err := os.Setenv(key, "2h35m"); err != nil {
+		panic(err)
+	}
+
+	var valD time.Duration
+	valD = EnvOrDefault(key, time.Second)
+	fmt.Println(valD)
+
 	// Output:
 	// golly
 	// 123
 	// 2022-01-20 00:00:00 +0000 UTC
 	// [26.89 0.67]
+	// 2h35m0s
 }
