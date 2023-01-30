@@ -2,9 +2,10 @@ package getenv
 
 import (
 	"fmt"
-	"github.com/obalunenko/getenv/option"
 	"os"
 	"time"
+
+	"github.com/obalunenko/getenv/option"
 )
 
 func ExampleEnvOrDefault() {

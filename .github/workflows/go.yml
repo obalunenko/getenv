@@ -181,7 +181,7 @@ jobs:
         shell: bash
 
   reports:
-    needs: [testing, linting, build]
+    needs: [ testing, linting, build ]
     strategy:
       fail-fast: true
       max-parallel: 1

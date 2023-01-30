@@ -15,7 +15,6 @@ echo "${SCRIPT_NAME} is running fo ${APP}... "
 
 checkInstalled 'goreleaser'
 
-
 # Get new tags from the remote
 git fetch --tags -f
 
@@ -25,14 +24,11 @@ DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 VERSION="$(git tag | sort -V | tail -1)"
 GOVERSION="$(go version | awk '{print $3;}')"
 
-if [ -z "${VERSION}" ] || [ "${VERSION}" = "${SHORTCOMMIT}" ]
- then
+if [ -z "${VERSION}" ] || [ "${VERSION}" = "${SHORTCOMMIT}" ]; then
   VERSION="v0.0.0"
 fi
 
-
 VERSION="${VERSION}-local"
-
 
 BUILDINFO_VARS_PKG=github.com/obalunenko/version
 export GO_BUILD_LDFLAGS="-s -w \
