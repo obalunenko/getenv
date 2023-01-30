@@ -14,7 +14,7 @@ echo "${SCRIPT_NAME} is running... "
 checkInstalled 'goimports'
 
 echo "Making filelist"
-FILES=( $(find . -type f -name "*.go" -not -path "./vendor/*" -not -path "./tools/vendor/*" -not -path "./.git/*") )
+FILES=($(find . -type f -name "*.go" -not -path "./vendor/*" -not -path "./tools/vendor/*" -not -path "./.git/*"))
 
 LOCAL_PFX=$(go list -m)
 echo "Local packages prefix: ${LOCAL_PFX}"
@@ -25,8 +25,7 @@ for f in "${FILES[@]}"; do
   goimports -local=${LOCAL_PFX} -w "$f"
 done
 
-
-TORM=( $(find . -type f -name "*.go--" -not -path "./vendor/*" -not -path "./tools/vendor/*" -not -path "./.git/*") )
+TORM=($(find . -type f -name "*.go--" -not -path "./vendor/*" -not -path "./tools/vendor/*" -not -path "./.git/*"))
 
 for f in "${TORM[@]}"; do
   rm -rf ${f}

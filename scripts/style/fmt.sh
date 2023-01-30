@@ -14,7 +14,7 @@ echo "${SCRIPT_NAME} is running... "
 checkInstalled 'gofmt'
 
 echo "Making filelist"
-GO_FILES=( $(find . -type f -name "*.go" -not -path "./vendor/*" -not -path "./tools/vendor/*" -not -path "./.git/*") )
+GO_FILES=($(find . -type f -name "*.go" -not -path "./vendor/*" -not -path "./tools/vendor/*" -not -path "./.git/*"))
 
 LOCAL_PFX=$(go list -m)
 echo "Local packages prefix: ${LOCAL_PFX}"
