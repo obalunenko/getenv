@@ -57,6 +57,10 @@ func boolOrDefault(key string, defaultVal bool) bool {
 // by the key and separated by sep.
 // If variable not set or value is empty - defaultVal will be returned.
 func stringSliceOrDefault(key string, defaultVal []string, sep string) []string {
+	if sep == "" {
+		return defaultVal
+	}
+
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
