@@ -1,33 +1,13 @@
-package getenv_test
+package internal
 
 import (
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/obalunenko/getenv"
-	"github.com/obalunenko/getenv/option"
 )
 
-const testEnvKey = "GH_GETENV_TEST"
-
-type setenv struct {
-	isSet bool
-	val   string
-}
-
-type precondition struct {
-	setenv setenv
-}
-
-func (p precondition) maybeSetEnv(tb testing.TB, key string) {
-	if p.setenv.isSet {
-		tb.Setenv(key, p.setenv.val)
-	}
-}
-
-func BenchmarkEnvOrDefault(b *testing.B) {
+func Benchmark_float64SliceOrDefault(b *testing.B) {
 	p := precondition{
 		setenv: setenv{
 			isSet: true,
@@ -41,11 +21,11 @@ func BenchmarkEnvOrDefault(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_ = getenv.EnvOrDefault(testEnvKey, []float64{}, option.WithSeparator(","))
+		_ = float64SliceOrDefault(testEnvKey, []float64{}, ",")
 	}
 }
 
-func TestIntOrDefault(t *testing.T) {
+func Test_intOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal int
@@ -115,13 +95,13 @@ func TestIntOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			got := intOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestStringOrDefault(t *testing.T) {
+func Test_stringOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal string
@@ -175,13 +155,13 @@ func TestStringOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			got := stringOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestInt64OrDefault(t *testing.T) {
+func Test_int64OrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal int64
@@ -251,13 +231,13 @@ func TestInt64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			got := int64OrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestFloat64OrDefault(t *testing.T) {
+func Test_float64OrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal float64
@@ -327,13 +307,13 @@ func TestFloat64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			got := float64OrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestBoolOrDefault(t *testing.T) {
+func Test_boolOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal bool
@@ -403,13 +383,13 @@ func TestBoolOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			got := boolOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestStringSliceOrDefault(t *testing.T) {
+func Test_stringSliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal []string
@@ -499,13 +479,13 @@ func TestStringSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
+			got := stringSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestIntSliceOrDefault(t *testing.T) {
+func Test_intSliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal []int
@@ -612,13 +592,13 @@ func TestIntSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
+			got := intSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestFloat64SliceOrDefault(t *testing.T) {
+func Test_float64SliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal []float64
@@ -714,6 +694,24 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 			args: args{
 				key:        testEnvKey,
 				defaultVal: []float64{-99.99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []float64{-99.99},
+			},
+		},
+		{
+			name: "malformed data value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "sss,sss",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []float64{-99.99},
+				sep:        ",",
 			},
 			expected: expected{
 				val: []float64{-99.99},
@@ -725,13 +723,13 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
+			got := float64SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestInt64SliceOrDefault(t *testing.T) {
+func Test_int64SliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal []int64
@@ -832,19 +830,36 @@ func TestInt64SliceOrDefault(t *testing.T) {
 				val: []int64{-99},
 			},
 		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "sssss,999",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int64{-99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []int64{-99},
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
+			got := int64SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestTimeOrDefault(t *testing.T) {
+func Test_timeOrDefault(t *testing.T) {
 	const layout = "2006/02/01 15:04"
 
 	type args struct {
@@ -914,19 +929,36 @@ func TestTimeOrDefault(t *testing.T) {
 				val: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
 			},
 		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "20222-sdslll",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				layout:     layout,
+			},
+			expected: expected{
+				val: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithTimeLayout(tt.args.layout))
+			got := timeOrDefault(tt.args.key, tt.args.defaultVal, tt.args.layout)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestDurationOrDefault(t *testing.T) {
+func Test_durationOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal time.Duration
@@ -990,19 +1022,35 @@ func TestDurationOrDefault(t *testing.T) {
 				val: time.Second * 42,
 			},
 		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "yyydd88",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: time.Second * 42,
+			},
+			expected: expected{
+				val: time.Second * 42,
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			got := durationOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestUint64OrDefault(t *testing.T) {
+func Test_uint64OrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal uint64
@@ -1066,19 +1114,35 @@ func TestUint64OrDefault(t *testing.T) {
 				val: 999,
 			},
 		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "iii99",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 999,
+			},
+			expected: expected{
+				val: 999,
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			got := uint64OrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func TestUint64SliceOrDefault(t *testing.T) {
+func Test_uint64SliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
 		defaultVal []uint64
@@ -1185,7 +1249,7 @@ func TestUint64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
+			got := uint64SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
