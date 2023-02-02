@@ -24,7 +24,7 @@ func NewEnvParser(v any) EnvParser {
 	case int64:
 		p = int64Parser(v.(int64))
 	case []int64:
-		p = in64SliceParser(v.([]int64))
+		p = int64SliceParser(v.([]int64))
 	case float64:
 		p = float64Parser(v.(float64))
 	case []float64:
@@ -103,9 +103,9 @@ func (i int64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	return val
 }
 
-type in64SliceParser []int64
+type int64SliceParser []int64
 
-func (i in64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+func (i int64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
 	val := int64SliceOrDefault(key, defaltVal.([]int64), sep)

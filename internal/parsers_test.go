@@ -7,23 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testEnvKey = "GH_GETENV_TEST"
-
-type setenv struct {
-	isSet bool
-	val   string
-}
-
-type precond struct {
-	setenv setenv
-}
-
-func (p precond) maybeSetEnv(tb testing.TB, key string) {
-	if p.setenv.isSet {
-		tb.Setenv(key, p.setenv.val)
-	}
-}
-
 func Benchmark_float64SliceOrDefault(b *testing.B) {
 	p := precond{
 		setenv: setenv{
@@ -39,33 +22,6 @@ func Benchmark_float64SliceOrDefault(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		_ = float64SliceOrDefault(testEnvKey, []float64{}, ",")
-	}
-}
-
-func TestNewEnvParser(t *testing.T) {
-	type args struct {
-		v any
-	}
-	
-	tests := []struct {
-		name string
-		args args
-		want EnvParser
-	}{
-		{
-			name: "",
-			args: args{
-				v: int64(0),
-			},
-			want: int64Parser(0),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewEnvParser(tt.args.v)
-			assert.Equal(t, tt.want, got)
-		})
 	}
 }
 
@@ -738,6 +694,24 @@ func Test_float64SliceOrDefault(t *testing.T) {
 			args: args{
 				key:        testEnvKey,
 				defaultVal: []float64{-99.99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []float64{-99.99},
+			},
+		},
+		{
+			name: "malformed data value set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "sss,sss",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []float64{-99.99},
+				sep:        ",",
 			},
 			expected: expected{
 				val: []float64{-99.99},
@@ -856,6 +830,23 @@ func Test_int64SliceOrDefault(t *testing.T) {
 				val: []int64{-99},
 			},
 		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "sssss,999",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int64{-99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []int64{-99},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -927,6 +918,23 @@ func Test_timeOrDefault(t *testing.T) {
 				setenv: setenv{
 					isSet: true,
 					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				layout:     layout,
+			},
+			expected: expected{
+				val: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+			},
+		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "20222-sdslll",
 				},
 			},
 			args: args{
@@ -1014,6 +1022,22 @@ func Test_durationOrDefault(t *testing.T) {
 				val: time.Second * 42,
 			},
 		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "yyydd88",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: time.Second * 42,
+			},
+			expected: expected{
+				val: time.Second * 42,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1080,6 +1104,22 @@ func Test_uint64OrDefault(t *testing.T) {
 				setenv: setenv{
 					isSet: true,
 					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 999,
+			},
+			expected: expected{
+				val: 999,
+			},
+		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "iii99",
 				},
 			},
 			args: args{
