@@ -17,18 +17,18 @@ type setenv struct {
 	val   string
 }
 
-type precond struct {
+type precondition struct {
 	setenv setenv
 }
 
-func (p precond) maybeSetEnv(tb testing.TB, key string) {
+func (p precondition) maybeSetEnv(tb testing.TB, key string) {
 	if p.setenv.isSet {
 		tb.Setenv(key, p.setenv.val)
 	}
 }
 
 func BenchmarkEnvOrDefault(b *testing.B) {
-	p := precond{
+	p := precondition{
 		setenv: setenv{
 			isSet: true,
 			val:   "1235.67,87.98",
@@ -57,13 +57,13 @@ func TestIntOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "128",
@@ -79,7 +79,7 @@ func TestIntOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "128",
@@ -95,7 +95,7 @@ func TestIntOrDefault(t *testing.T) {
 		},
 		{
 			name: "invalid env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "128s7",
@@ -133,13 +133,13 @@ func TestStringOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "newval",
@@ -155,7 +155,7 @@ func TestStringOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "newval",
@@ -193,13 +193,13 @@ func TestInt64OrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "newval",
@@ -215,7 +215,7 @@ func TestInt64OrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1024",
@@ -231,7 +231,7 @@ func TestInt64OrDefault(t *testing.T) {
 		},
 		{
 			name: "invalid env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "128s7",
@@ -269,13 +269,13 @@ func TestFloat64OrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "newval",
@@ -291,7 +291,7 @@ func TestFloat64OrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1024.123",
@@ -307,7 +307,7 @@ func TestFloat64OrDefault(t *testing.T) {
 		},
 		{
 			name: "invalid env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "128s7",
@@ -345,13 +345,13 @@ func TestBoolOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "true",
@@ -367,7 +367,7 @@ func TestBoolOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "true",
@@ -383,7 +383,7 @@ func TestBoolOrDefault(t *testing.T) {
 		},
 		{
 			name: "invalid env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "128s7",
@@ -422,13 +422,13 @@ func TestStringSliceOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "true,newval",
@@ -445,7 +445,7 @@ func TestStringSliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "true,newval",
@@ -462,7 +462,7 @@ func TestStringSliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, no separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "true,newval",
@@ -479,7 +479,7 @@ func TestStringSliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "empty env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "",
@@ -518,13 +518,13 @@ func TestIntSliceOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "1,2",
@@ -541,7 +541,7 @@ func TestIntSliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -558,7 +558,7 @@ func TestIntSliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, no separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -575,7 +575,7 @@ func TestIntSliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, wrong separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -592,7 +592,7 @@ func TestIntSliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "empty env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "",
@@ -631,13 +631,13 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "1.05,2.07",
@@ -654,7 +654,7 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1.05,2.07",
@@ -671,7 +671,7 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, no separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1.05,2.07",
@@ -688,7 +688,7 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, wrong separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1.05,2.07",
@@ -705,7 +705,7 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "empty env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "",
@@ -744,13 +744,13 @@ func TestInt64SliceOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "1.05,2.07",
@@ -767,7 +767,7 @@ func TestInt64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -784,7 +784,7 @@ func TestInt64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, no separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -801,7 +801,7 @@ func TestInt64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, wrong separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -818,7 +818,7 @@ func TestInt64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "empty env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "",
@@ -859,13 +859,13 @@ func TestTimeOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "2018/21/04 22:30",
@@ -882,7 +882,7 @@ func TestTimeOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "2018/21/04 22:30",
@@ -899,7 +899,7 @@ func TestTimeOrDefault(t *testing.T) {
 		},
 		{
 			name: "empty env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "",
@@ -938,13 +938,13 @@ func TestDurationOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "12s",
@@ -960,7 +960,7 @@ func TestDurationOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12s",
@@ -976,7 +976,7 @@ func TestDurationOrDefault(t *testing.T) {
 		},
 		{
 			name: "empty env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "",
@@ -1014,13 +1014,13 @@ func TestUint64OrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "12",
@@ -1036,7 +1036,7 @@ func TestUint64OrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12",
@@ -1052,7 +1052,7 @@ func TestUint64OrDefault(t *testing.T) {
 		},
 		{
 			name: "empty env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "",
@@ -1091,13 +1091,13 @@ func TestUint64SliceOrDefault(t *testing.T) {
 
 	var tests = []struct {
 		name     string
-		precond  precond
+		precond  precondition
 		args     args
 		expected expected
 	}{
 		{
 			name: "env not set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: false,
 					val:   "1,27",
@@ -1114,7 +1114,7 @@ func TestUint64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set - env value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -1131,7 +1131,7 @@ func TestUint64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, no separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -1148,7 +1148,7 @@ func TestUint64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "env set, wrong separator - default value returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "1,2",
@@ -1165,7 +1165,7 @@ func TestUint64SliceOrDefault(t *testing.T) {
 		},
 		{
 			name: "empty env value set - default returned",
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "",

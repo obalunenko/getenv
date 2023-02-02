@@ -156,7 +156,7 @@ func Test_ParseEnv(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		precond precond
+		precond precondition
 		s       EnvParser
 		args    args
 		want    any
@@ -164,7 +164,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "boolParser",
 			s:    boolParser(true),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "true",
@@ -180,7 +180,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "stringParser",
 			s:    stringParser(""),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "golly",
@@ -196,7 +196,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "stringSliceParser",
 			s:    stringSliceParser(nil),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "golly,sally",
@@ -215,7 +215,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "float64Parser",
 			s:    float64Parser(0),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "-1.2",
@@ -231,7 +231,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "float64Parser",
 			s:    float64SliceParser(nil),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "-1.2,0.2",
@@ -250,7 +250,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "uint64Parser",
 			s:    uint64Parser(0),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12",
@@ -269,7 +269,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "uint64SliceParser",
 			s:    uint64SliceParser(nil),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12,89",
@@ -288,7 +288,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "int64Parser",
 			s:    int64Parser(0),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12",
@@ -307,7 +307,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "int64SliceParser",
 			s:    int64SliceParser(nil),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12,89",
@@ -326,7 +326,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "intParser",
 			s:    intParser(0),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12",
@@ -345,7 +345,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "intSliceParser",
 			s:    intSliceParser(nil),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12,89",
@@ -364,7 +364,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "durationParser",
 			s:    durationParser(0),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "12s",
@@ -383,7 +383,7 @@ func Test_ParseEnv(t *testing.T) {
 		{
 			name: "timeParser",
 			s:    timeParser(time.Time{}),
-			precond: precond{
+			precond: precondition{
 				setenv: setenv{
 					isSet: true,
 					val:   "2022-03-24",
@@ -405,7 +405,7 @@ func Test_ParseEnv(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, testEnvKey)
 
-			assert.Equalf(t, tt.want, tt.s.ParseEnv(tt.args.key, tt.args.defaltVal, tt.args.in2), "ParseEnv(%v, %v, %v)", tt.args.key, tt.args.defaltVal, tt.args.in2)
+			assert.Equal(t, tt.want, tt.s.ParseEnv(tt.args.key, tt.args.defaltVal, tt.args.in2))
 		})
 	}
 }

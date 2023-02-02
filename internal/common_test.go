@@ -15,11 +15,11 @@ type setenv struct {
 	val   string
 }
 
-type precond struct {
+type precondition struct {
 	setenv setenv
 }
 
-func (p precond) maybeSetEnv(tb testing.TB, key string) {
+func (p precondition) maybeSetEnv(tb testing.TB, key string) {
 	if p.setenv.isSet {
 		tb.Setenv(key, p.setenv.val)
 	}
