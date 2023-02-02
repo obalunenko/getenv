@@ -99,9 +99,6 @@ func TestIntOrDefault(t *testing.T) {
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.IntOrDefault(tt.args.key, tt.args.defaultVal)
-			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
@@ -161,9 +158,6 @@ func TestStringOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
-			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.StringOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -241,9 +235,6 @@ func TestInt64OrDefault(t *testing.T) {
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.Int64OrDefault(tt.args.key, tt.args.defaultVal)
-			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
@@ -320,9 +311,6 @@ func TestFloat64OrDefault(t *testing.T) {
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.Float64OrDefault(tt.args.key, tt.args.defaultVal)
-			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
@@ -398,9 +386,6 @@ func TestBoolOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
-			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.BoolOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -497,9 +482,6 @@ func TestStringSliceOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
-			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.StringSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -614,9 +596,6 @@ func TestIntSliceOrDefault(t *testing.T) {
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
 			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.IntSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
-			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
@@ -729,9 +708,6 @@ func TestFloat64SliceOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
-			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.Float64SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -846,9 +822,6 @@ func TestInt64SliceOrDefault(t *testing.T) {
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
 			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.Int64SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
-			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
@@ -930,9 +903,6 @@ func TestTimeOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithTimeLayout(tt.args.layout))
-			assert.Equal(t, tt.expected.val, got)
-
-			got = getenv.TimeOrDefault(tt.args.key, tt.args.defaultVal, tt.args.layout)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
