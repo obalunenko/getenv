@@ -41,18 +41,12 @@ func NewEnvParser(v any) EnvParser {
 		panic(fmt.Sprintf("unsupported type :%T", i))
 	}
 
-	return envParserWrap{
-		EnvParser: p,
-	}
+	return p
 }
 
 // EnvParser interface for parsing environment variables.
 type EnvParser interface {
 	ParseEnv(key string, defaltVal any, options Parameters) any
-}
-
-type envParserWrap struct {
-	EnvParser
 }
 
 type stringParser string
