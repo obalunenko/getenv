@@ -1010,8 +1010,194 @@ func TestDurationOrDefault(t *testing.T) {
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
 
-			got = getenv.DurationOrDefault(tt.args.key, tt.args.defaultVal)
+func TestUint64OrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal uint64
+	}
+
+	type expected struct {
+		val uint64
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precond
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: false,
+					val:   "12",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 999,
+			},
+			expected: expected{
+				val: 999,
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "12",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 999,
+			},
+			expected: expected{
+				val: 12,
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 999,
+			},
+			expected: expected{
+				val: 999,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func TestUint64SliceOrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal []uint64
+		sep        string
+	}
+
+	type expected struct {
+		val []uint64
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precond
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: false,
+					val:   "1,27",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint64{99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []uint64{99},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint64{99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []uint64{1, 2},
+			},
+		},
+		{
+			name: "env set, no separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint64{99},
+				sep:        "",
+			},
+			expected: expected{
+				val: []uint64{99},
+			},
+		},
+		{
+			name: "env set, wrong separator - default value returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint64{99},
+				sep:        "|",
+			},
+			expected: expected{
+				val: []uint64{99},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precond{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint64{99},
+			},
+			expected: expected{
+				val: []uint64{99},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
