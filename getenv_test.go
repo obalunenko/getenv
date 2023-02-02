@@ -27,6 +27,24 @@ func (p precond) maybeSetEnv(tb testing.TB, key string) {
 	}
 }
 
+func BenchmarkEnvOrDefault(b *testing.B) {
+	p := precond{
+		setenv: setenv{
+			isSet: true,
+			val:   "1235.67,87.98",
+		},
+	}
+
+	p.maybeSetEnv(b, testEnvKey)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_ = getenv.EnvOrDefault(testEnvKey, []float64{}, option.WithSeparator(","))
+	}
+}
+
 func TestIntOrDefault(t *testing.T) {
 	type args struct {
 		key        string

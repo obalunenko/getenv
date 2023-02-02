@@ -24,6 +24,24 @@ func (p precond) maybeSetEnv(tb testing.TB, key string) {
 	}
 }
 
+func Benchmark_float64SliceOrDefault(b *testing.B) {
+	p := precond{
+		setenv: setenv{
+			isSet: true,
+			val:   "1235.67,87.98",
+		},
+	}
+
+	p.maybeSetEnv(b, testEnvKey)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_ = float64SliceOrDefault(testEnvKey, []float64{}, ",")
+	}
+}
+
 func TestNewEnvParser(t *testing.T) {
 	type args struct {
 		v any
