@@ -10,21 +10,21 @@ import (
 func NewEnvParser(v any) EnvParser {
 	var p EnvParser
 
-	switch v.(type) {
+	switch t := v.(type) {
 	case string, []string:
-		p = newStringParser(v)
+		p = newStringParser(t)
 	case int, []int, int64, []int64, uint64, []uint64, uint, []uint, uint32, []uint32:
-		p = newIntParser(v)
+		p = newIntParser(t)
 	case bool:
-		p = boolParser(v.(bool))
+		p = boolParser(t)
 	case float64:
-		p = float64Parser(v.(float64))
+		p = float64Parser(t)
 	case []float64:
-		p = float64SliceParser(v.([]float64))
+		p = float64SliceParser(t)
 	case time.Time:
-		p = timeParser(v.(time.Time))
+		p = timeParser(t)
 	case time.Duration:
-		p = durationParser(v.(time.Duration))
+		p = durationParser(t)
 	default:
 		p = nil
 	}
@@ -37,40 +37,38 @@ func NewEnvParser(v any) EnvParser {
 }
 
 func newStringParser(v any) EnvParser {
-	switch v.(type) {
+	switch t := v.(type) {
 	case string:
-		return stringParser(v.(string))
+		return stringParser(t)
 	case []string:
-		return stringSliceParser(v.([]string))
+		return stringSliceParser(t)
 	default:
 		return nil
 	}
 }
 
 func newIntParser(v any) EnvParser {
-	switch v.(type) {
+	switch t := v.(type) {
 	case int:
-		return intParser(v.(int))
+		return intParser(t)
 	case []int:
-		return intSliceParser(v.([]int))
-	case bool:
-		return boolParser(v.(bool))
+		return intSliceParser(t)
 	case int64:
-		return int64Parser(v.(int64))
+		return int64Parser(t)
 	case []int64:
-		return int64SliceParser(v.([]int64))
+		return int64SliceParser(t)
 	case uint64:
-		return uint64Parser(v.(uint64))
+		return uint64Parser(t)
 	case []uint64:
-		return uint64SliceParser(v.([]uint64))
+		return uint64SliceParser(t)
 	case uint:
-		return uintParser(v.(uint))
+		return uintParser(t)
 	case []uint:
-		return uintSliceParser(v.([]uint))
+		return uintSliceParser(t)
 	case []uint32:
-		return uint32SliceParser(v.([]uint32))
+		return uint32SliceParser(t)
 	case uint32:
-		return uint32Parser(v.(uint32))
+		return uint32Parser(t)
 	default:
 		return nil
 	}
