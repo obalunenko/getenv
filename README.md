@@ -20,6 +20,10 @@ Package getenv provides functionality for loading environment variables and pars
 - []int64
 - uint64
 - []uint64
+- uint
+- []uint
+- uint32
+- []uint32
 - float64
 - []float64
 - time.Time
