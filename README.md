@@ -8,7 +8,10 @@
 # getenv
 
 Package getenv provides functionality for loading environment variables and parse them into go builtin types.
+
 Types supported:
+
+```text
 - string
 - []string
 - int
@@ -26,6 +29,7 @@ Types supported:
 - time.Time
 - time.Duration
 - bool
+```
 
 ## Examples
 
