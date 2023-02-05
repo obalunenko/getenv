@@ -10,42 +10,70 @@ import (
 func NewEnvParser(v any) EnvParser {
 	var p EnvParser
 
-	switch i := v.(type) {
-	case string:
-		p = stringParser(v.(string))
-	case []string:
-		p = stringSliceParser(v.([]string))
-	case int:
-		p = intParser(v.(int))
-	case []int:
-		p = intSliceParser(v.([]int))
+	switch v.(type) {
+	case string, []string:
+		p = newStringParser(v)
+	case int, []int, int64, []int64, uint64, []uint64, uint, []uint, uint32, []uint32:
+		p = newIntParser(v)
 	case bool:
 		p = boolParser(v.(bool))
-	case int64:
-		p = int64Parser(v.(int64))
-	case []int64:
-		p = int64SliceParser(v.([]int64))
 	case float64:
 		p = float64Parser(v.(float64))
 	case []float64:
 		p = float64SliceParser(v.([]float64))
-	case uint64:
-		p = uint64Parser(v.(uint64))
-	case []uint64:
-		p = uint64SliceParser(v.([]uint64))
-	case uint:
-		p = uintParser(v.(uint))
-	case []uint:
-		p = uintSliceParser(v.([]uint))
 	case time.Time:
 		p = timeParser(v.(time.Time))
 	case time.Duration:
 		p = durationParser(v.(time.Duration))
 	default:
-		panic(fmt.Sprintf("unsupported type :%T", i))
+		p = nil
+	}
+
+	if p == nil {
+		panic(fmt.Sprintf("unsupported type :%T", v))
 	}
 
 	return p
+}
+
+func newStringParser(v any) EnvParser {
+	switch v.(type) {
+	case string:
+		return stringParser(v.(string))
+	case []string:
+		return stringSliceParser(v.([]string))
+	default:
+		return nil
+	}
+}
+
+func newIntParser(v any) EnvParser {
+	switch v.(type) {
+	case int:
+		return intParser(v.(int))
+	case []int:
+		return intSliceParser(v.([]int))
+	case bool:
+		return boolParser(v.(bool))
+	case int64:
+		return int64Parser(v.(int64))
+	case []int64:
+		return int64SliceParser(v.([]int64))
+	case uint64:
+		return uint64Parser(v.(uint64))
+	case []uint64:
+		return uint64SliceParser(v.([]uint64))
+	case uint:
+		return uintParser(v.(uint))
+	case []uint:
+		return uintSliceParser(v.([]uint))
+	case []uint32:
+		return uint32SliceParser(v.([]uint32))
+	case uint32:
+		return uint32Parser(v.(uint32))
+	default:
+		return nil
+	}
 }
 
 // EnvParser interface for parsing environment variables.
@@ -183,6 +211,24 @@ func (i uintSliceParser) ParseEnv(key string, defaltVal any, options Parameters)
 	sep := options.Separator
 
 	val := uintSliceOrDefault(key, defaltVal.([]uint), sep)
+
+	return val
+}
+
+type uint32SliceParser []uint32
+
+func (i uint32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
+
+	val := uint32SliceOrDefault(key, defaltVal.([]uint32), sep)
+
+	return val
+}
+
+type uint32Parser uint
+
+func (d uint32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
+	val := uint32OrDefault(key, defaltVal.(uint32))
 
 	return val
 }
