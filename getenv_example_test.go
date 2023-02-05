@@ -1,10 +1,11 @@
-package getenv
+package getenv_test
 
 import (
 	"fmt"
 	"os"
 	"time"
 
+	"github.com/obalunenko/getenv"
 	"github.com/obalunenko/getenv/option"
 )
 
@@ -24,7 +25,7 @@ func ExampleEnvOrDefault() {
 		panic(err)
 	}
 
-	val = EnvOrDefault(key, "golly")
+	val = getenv.EnvOrDefault(key, "golly")
 	fmt.Printf("[%T]: %v\n", val, val)
 
 	// int
@@ -32,7 +33,7 @@ func ExampleEnvOrDefault() {
 		panic(err)
 	}
 
-	val = EnvOrDefault(key, -99)
+	val = getenv.EnvOrDefault(key, -99)
 	fmt.Printf("[%T]: %v\n", val, val)
 
 	// time.Time
@@ -40,7 +41,7 @@ func ExampleEnvOrDefault() {
 		panic(err)
 	}
 
-	val = EnvOrDefault(key,
+	val = getenv.EnvOrDefault(key,
 		time.Date(1992, 12, 1, 0, 0, 0, 0, time.UTC),
 		option.WithTimeLayout("2006-01-02"),
 	)
@@ -51,7 +52,7 @@ func ExampleEnvOrDefault() {
 		panic(err)
 	}
 
-	val = EnvOrDefault(key, []float64{-99},
+	val = getenv.EnvOrDefault(key, []float64{-99},
 		option.WithSeparator(","),
 	)
 	fmt.Printf("[%T]: %v\n", val, val)
@@ -61,7 +62,7 @@ func ExampleEnvOrDefault() {
 		panic(err)
 	}
 
-	val = EnvOrDefault(key, time.Second)
+	val = getenv.EnvOrDefault(key, time.Second)
 	fmt.Printf("[%T]: %v\n", val, val)
 
 	// Output:
