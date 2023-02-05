@@ -51,6 +51,22 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
+			name: "uint",
+			args: args{
+				v: uint(1),
+			},
+			want:      uintParser(1),
+			wantPanic: assert.NotPanics,
+		},
+		{
+			name: "[]uint",
+			args: args{
+				v: []uint{1},
+			},
+			want:      uintSliceParser{1},
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "int",
 			args: args{
 				v: 1,
@@ -284,6 +300,44 @@ func Test_ParseEnv(t *testing.T) {
 				},
 			},
 			want: []uint64{12, 89},
+		},
+		{
+			name: "uintParser",
+			s:    uintParser(0),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "12",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: uint(99),
+				in2: Parameters{
+					Separator: ",",
+					Layout:    "",
+				},
+			},
+			want: uint(12),
+		},
+		{
+			name: "uintSliceParser",
+			s:    uintSliceParser(nil),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "12,89",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []uint{99},
+				in2: Parameters{
+					Separator: ",",
+					Layout:    "",
+				},
+			},
+			want: []uint{12, 89},
 		},
 		{
 			name: "int64Parser",

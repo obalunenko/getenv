@@ -33,6 +33,10 @@ func NewEnvParser(v any) EnvParser {
 		p = uint64Parser(v.(uint64))
 	case []uint64:
 		p = uint64SliceParser(v.([]uint64))
+	case uint:
+		p = uintParser(v.(uint))
+	case []uint:
+		p = uintSliceParser(v.([]uint))
 	case time.Time:
 		p = timeParser(v.(time.Time))
 	case time.Duration:
@@ -161,6 +165,24 @@ func (i uint64SliceParser) ParseEnv(key string, defaltVal any, options Parameter
 	sep := options.Separator
 
 	val := uint64SliceOrDefault(key, defaltVal.([]uint64), sep)
+
+	return val
+}
+
+type uintParser uint
+
+func (d uintParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
+	val := uintOrDefault(key, defaltVal.(uint))
+
+	return val
+}
+
+type uintSliceParser []uint
+
+func (i uintSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
+
+	val := uintSliceOrDefault(key, defaltVal.([]uint), sep)
 
 	return val
 }
