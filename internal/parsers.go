@@ -378,6 +378,27 @@ func int32OrDefault(key string, defaultVal int32) int32 {
 	return int32(val)
 }
 
+// float32OrDefault retrieves the float32 value of the environment variable named
+// by the key.
+// If variable not set or value is empty - defaultVal will be returned.
+func float32OrDefault(key string, defaultVal float32) float32 {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	const (
+		bitsize = 32
+	)
+
+	val, err := strconv.ParseFloat(env, bitsize)
+	if err != nil {
+		return defaultVal
+	}
+
+	return float32(val)
+}
+
 // float64OrDefault retrieves the float64 value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.

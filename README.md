@@ -30,6 +30,7 @@ Types supported:
 - []uint
 - uint32
 - []uint32
+- float32
 - float64
 - []float64
 - time.Time
