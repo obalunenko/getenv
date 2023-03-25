@@ -532,6 +532,25 @@ func Test_ParseEnv(t *testing.T) {
 			want: 12,
 		},
 		{
+			name: "int8SliceParser",
+			s:    int8SliceParser(nil),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "12,89",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []int8{99},
+				in2: Parameters{
+					Separator: ",",
+					Layout:    "",
+				},
+			},
+			want: []int8{12, 89},
+		},
+		{
 			name: "intSliceParser",
 			s:    intSliceParser(nil),
 			precond: precondition{

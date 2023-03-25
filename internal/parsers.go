@@ -149,6 +149,34 @@ func int64SliceOrDefault(key string, defaultVal []int64, sep string) []int64 {
 	return val
 }
 
+// int8SliceOrDefault retrieves the int8 slice value of the environment variable named
+// by the key and separated by sep.
+// If variable not set or value is empty - defaultVal will be returned.
+func int8SliceOrDefault(key string, defaultVal []int8, sep string) []int8 {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]int8, 0, len(valraw))
+
+	const (
+		base    = 10
+		bitsize = 8
+	)
+
+	for _, s := range valraw {
+		v, err := strconv.ParseInt(s, base, bitsize)
+		if err != nil {
+			return defaultVal
+		}
+
+		val = append(val, int8(v))
+	}
+
+	return val
+}
+
 // int32SliceOrDefault retrieves the int32 slice value of the environment variable named
 // by the key and separated by sep.
 // If variable not set or value is empty - defaultVal will be returned.

@@ -1011,6 +1011,136 @@ func Test_int32SliceOrDefault(t *testing.T) {
 	}
 }
 
+func Test_int8SliceOrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal []int8
+		sep        string
+	}
+
+	type expected struct {
+		val []int8
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "1.05,2.07",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int8{-99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []int8{-99},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int8{-99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []int8{1, 2},
+			},
+		},
+		{
+			name: "env set, no separator - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int8{-99},
+				sep:        "",
+			},
+			expected: expected{
+				val: []int8{-99},
+			},
+		},
+		{
+			name: "env set, wrong separator - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int8{-99},
+				sep:        "|",
+			},
+			expected: expected{
+				val: []int8{-99},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int8{-99},
+			},
+			expected: expected{
+				val: []int8{-99},
+			},
+		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "sssss,999",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int8{-99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []int8{-99},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := int8SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func Test_int64SliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
