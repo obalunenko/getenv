@@ -19,6 +19,14 @@ func TestNewEnvParser(t *testing.T) {
 		wantPanic panicAssertionFunc
 	}{
 		{
+			name: "int32",
+			args: args{
+				v: int32(1),
+			},
+			want:      int32Parser(1),
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "int64",
 			args: args{
 				v: int64(1),

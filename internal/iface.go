@@ -13,14 +13,12 @@ func NewEnvParser(v any) EnvParser {
 	switch t := v.(type) {
 	case string, []string:
 		p = newStringParser(t)
-	case int, []int, int64, []int64, uint64, []uint64, uint, []uint, uint32, []uint32:
+	case int, []int, int32, int64, []int64, uint64, []uint64, uint, []uint, uint32, []uint32:
 		p = newIntParser(t)
 	case bool:
 		p = boolParser(t)
-	case float64:
-		p = float64Parser(t)
-	case []float64:
-		p = float64SliceParser(t)
+	case float64, []float64:
+		p = newFloatParser(t)
 	case time.Time:
 		p = timeParser(t)
 	case time.Duration:
@@ -53,6 +51,8 @@ func newIntParser(v any) EnvParser {
 		return intParser(t)
 	case []int:
 		return intSliceParser(t)
+	case int32:
+		return int32Parser(t)
 	case int64:
 		return int64Parser(t)
 	case []int64:
@@ -69,6 +69,17 @@ func newIntParser(v any) EnvParser {
 		return uint32SliceParser(t)
 	case uint32:
 		return uint32Parser(t)
+	default:
+		return nil
+	}
+}
+
+func newFloatParser(v any) EnvParser {
+	switch t := v.(type) {
+	case float64:
+		return float64Parser(t)
+	case []float64:
+		return float64SliceParser(t)
 	default:
 		return nil
 	}
@@ -129,6 +140,14 @@ type int64Parser int64
 
 func (i int64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := int64OrDefault(key, defaltVal.(int64))
+
+	return val
+}
+
+type int32Parser int32
+
+func (i int32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
+	val := int32OrDefault(key, defaltVal.(int32))
 
 	return val
 }
