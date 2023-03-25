@@ -283,6 +283,28 @@ func int8OrDefault(key string, defaultVal int8) int8 {
 	return int8(val)
 }
 
+// int16OrDefault retrieves the int16 value of the environment variable named
+// by the key.
+// If variable not set or value is empty - defaultVal will be returned.
+func int16OrDefault(key string, defaultVal int16) int16 {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	const (
+		base    = 10
+		bitsize = 16
+	)
+
+	val, err := strconv.ParseInt(env, base, bitsize)
+	if err != nil {
+		return defaultVal
+	}
+
+	return int16(val)
+}
+
 // int32OrDefault retrieves the int32 value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.

@@ -1946,3 +1946,79 @@ func TestUint32OrDefault(t *testing.T) {
 		})
 	}
 }
+
+func TestInt16OrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal int16
+	}
+
+	type expected struct {
+		val int16
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "12",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 999,
+			},
+			expected: expected{
+				val: 999,
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "12",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 999,
+			},
+			expected: expected{
+				val: 12,
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 999,
+			},
+			expected: expected{
+				val: 999,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
