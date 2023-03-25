@@ -13,7 +13,7 @@ func NewEnvParser(v any) EnvParser {
 	switch t := v.(type) {
 	case string, []string:
 		p = newStringParser(t)
-	case int, []int, int8, []int8, int16, int32, []int32, int64, []int64:
+	case int, []int, int8, []int8, int16, []int16, int32, []int32, int64, []int64:
 		p = newIntParser(t)
 	case uint64, []uint64, uint, []uint, uint32, []uint32:
 		p = newUintParser(t)
@@ -59,6 +59,8 @@ func newIntParser(v any) EnvParser {
 		return int8SliceParser(t)
 	case int16:
 		return int16Parser(t)
+	case []int16:
+		return int16SliceParser(t)
 	case int32:
 		return int32Parser(t)
 	case []int32:
@@ -191,6 +193,16 @@ func (i int8SliceParser) ParseEnv(key string, defaltVal any, options Parameters)
 	sep := options.Separator
 
 	val := int8SliceOrDefault(key, defaltVal.([]int8), sep)
+
+	return val
+}
+
+type int16SliceParser []int16
+
+func (i int16SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
+
+	val := int16SliceOrDefault(key, defaltVal.([]int16), sep)
 
 	return val
 }

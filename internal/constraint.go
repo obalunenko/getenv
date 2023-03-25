@@ -17,7 +17,7 @@ type (
 
 	// Int is a constraint for integer and slice of integers.
 	Int interface {
-		int | []int | int8 | []int8 | int16 | int32 | []int32 | int64 | []int64
+		int | []int | int8 | []int8 | int16 | []int16 | int32 | []int32 | int64 | []int64
 	}
 
 	// Uint is a constraint for unsigned integer and slice of unsigned integers.

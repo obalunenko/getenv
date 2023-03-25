@@ -131,6 +131,22 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
+			name: "[]int16",
+			args: args{
+				v: []int16{1},
+			},
+			want:      int16SliceParser([]int16{1}),
+			wantPanic: assert.NotPanics,
+		},
+		{
+			name: "int16",
+			args: args{
+				v: int16(1),
+			},
+			want:      int16Parser(int16(1)),
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "string",
 			args: args{
 				v: "s",
@@ -500,6 +516,25 @@ func Test_ParseEnv(t *testing.T) {
 				},
 			},
 			want: int32(12),
+		},
+		{
+			name: "int16SliceParser",
+			s:    int16SliceParser(nil),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "12,89",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []int16{99},
+				in2: Parameters{
+					Separator: ",",
+					Layout:    "",
+				},
+			},
+			want: []int16{12, 89},
 		},
 		{
 			name: "int32SliceParser",

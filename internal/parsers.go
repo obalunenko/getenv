@@ -205,6 +205,34 @@ func int32SliceOrDefault(key string, defaultVal []int32, sep string) []int32 {
 	return val
 }
 
+// int16SliceOrDefault retrieves the int16 slice value of the environment variable named
+// by the key and separated by sep.
+// If variable not set or value is empty - defaultVal will be returned.
+func int16SliceOrDefault(key string, defaultVal []int16, sep string) []int16 {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]int16, 0, len(valraw))
+
+	const (
+		base    = 10
+		bitsize = 32
+	)
+
+	for _, s := range valraw {
+		v, err := strconv.ParseInt(s, base, bitsize)
+		if err != nil {
+			return defaultVal
+		}
+
+		val = append(val, int16(v))
+	}
+
+	return val
+}
+
 // durationOrDefault retrieves the time.Duration value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.
