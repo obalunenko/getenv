@@ -16,6 +16,7 @@ Types supported:
 - []string
 - int
 - []int
+- int8
 - int32
 - []int32
 - int64
