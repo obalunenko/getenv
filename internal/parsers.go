@@ -218,7 +218,7 @@ func int16SliceOrDefault(key string, defaultVal []int16, sep string) []int16 {
 
 	const (
 		base    = 10
-		bitsize = 32
+		bitsize = 16
 	)
 
 	for _, s := range valraw {
