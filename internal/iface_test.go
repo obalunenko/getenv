@@ -139,11 +139,11 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
-			name: "int16",
+			name: "[]int8",
 			args: args{
-				v: int16(1),
+				v: []int8{1},
 			},
-			want:      int16Parser(int16(1)),
+			want:      int8SliceParser([]int8{1}),
 			wantPanic: assert.NotPanics,
 		},
 		{
