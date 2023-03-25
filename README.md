@@ -18,6 +18,8 @@ Types supported:
 - []int
 - int8
 - []int8
+- int16
+- []int16
 - int32
 - []int32
 - int64
@@ -31,6 +33,7 @@ Types supported:
 - float64
 - []float64
 - time.Time
+- []time.Time
 - time.Duration
 - bool
 ```

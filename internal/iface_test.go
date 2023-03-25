@@ -107,6 +107,14 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
+			name: "int16",
+			args: args{
+				v: int16(1),
+			},
+			want:      int16Parser(1),
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "int8",
 			args: args{
 				v: int8(1),
@@ -120,6 +128,22 @@ func TestNewEnvParser(t *testing.T) {
 				v: []int{1},
 			},
 			want:      intSliceParser([]int{1}),
+			wantPanic: assert.NotPanics,
+		},
+		{
+			name: "[]int16",
+			args: args{
+				v: []int16{1},
+			},
+			want:      int16SliceParser([]int16{1}),
+			wantPanic: assert.NotPanics,
+		},
+		{
+			name: "[]int8",
+			args: args{
+				v: []int8{1},
+			},
+			want:      int8SliceParser([]int8{1}),
 			wantPanic: assert.NotPanics,
 		},
 		{
@@ -168,6 +192,14 @@ func TestNewEnvParser(t *testing.T) {
 				v: time.Time{},
 			},
 			want:      timeParser(time.Time{}),
+			wantPanic: assert.NotPanics,
+		},
+		{
+			name: "[]time.Time",
+			args: args{
+				v: []time.Time{},
+			},
+			want:      timeSliceParser([]time.Time{}),
 			wantPanic: assert.NotPanics,
 		},
 		{
@@ -380,6 +412,25 @@ func Test_ParseEnv(t *testing.T) {
 			want: int8(12),
 		},
 		{
+			name: "int16Parser",
+			s:    int16Parser(0),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "12",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: int16(99),
+				in2: Parameters{
+					Separator: ",",
+					Layout:    "",
+				},
+			},
+			want: int16(12),
+		},
+		{
 			name: "uint32SliceParser",
 			s:    uint32SliceParser(nil),
 			precond: precondition{
@@ -473,6 +524,25 @@ func Test_ParseEnv(t *testing.T) {
 				},
 			},
 			want: int32(12),
+		},
+		{
+			name: "int16SliceParser",
+			s:    int16SliceParser(nil),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "12,89",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []int16{99},
+				in2: Parameters{
+					Separator: ",",
+					Layout:    "",
+				},
+			},
+			want: []int16{12, 89},
 		},
 		{
 			name: "int32SliceParser",
@@ -606,6 +676,28 @@ func Test_ParseEnv(t *testing.T) {
 				},
 			},
 			want: time.Date(2022, time.March, 24, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			name: "timeSliceParser",
+			s:    timeSliceParser([]time.Time{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2022-03-24,2023-03-24",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []time.Time{},
+				in2: Parameters{
+					Separator: ",",
+					Layout:    time.DateOnly,
+				},
+			},
+			want: []time.Time{
+				time.Date(2022, time.March, 24, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.March, 24, 0, 0, 0, 0, time.UTC),
+			},
 		},
 	}
 

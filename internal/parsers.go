@@ -205,6 +205,34 @@ func int32SliceOrDefault(key string, defaultVal []int32, sep string) []int32 {
 	return val
 }
 
+// int16SliceOrDefault retrieves the int16 slice value of the environment variable named
+// by the key and separated by sep.
+// If variable not set or value is empty - defaultVal will be returned.
+func int16SliceOrDefault(key string, defaultVal []int16, sep string) []int16 {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]int16, 0, len(valraw))
+
+	const (
+		base    = 10
+		bitsize = 16
+	)
+
+	for _, s := range valraw {
+		v, err := strconv.ParseInt(s, base, bitsize)
+		if err != nil {
+			return defaultVal
+		}
+
+		val = append(val, int16(v))
+	}
+
+	return val
+}
+
 // durationOrDefault retrieves the time.Duration value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.
@@ -234,6 +262,29 @@ func timeOrDefault(key string, defaultVal time.Time, layout string) time.Time {
 	val, err := time.Parse(layout, env)
 	if err != nil {
 		return defaultVal
+	}
+
+	return val
+}
+
+// timeSliceOrDefault retrieves the []time.Time value of the environment variable named
+// by the key represented by layout.
+// If variable not set or value is empty - defaultVal will be returned.
+func timeSliceOrDefault(key string, defaultVal []time.Time, layout, separator string) []time.Time {
+	valraw := stringSliceOrDefault(key, nil, separator)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]time.Time, 0, len(valraw))
+
+	for _, s := range valraw {
+		v, err := time.Parse(layout, s)
+		if err != nil {
+			return defaultVal
+		}
+
+		val = append(val, v)
 	}
 
 	return val
@@ -281,6 +332,28 @@ func int8OrDefault(key string, defaultVal int8) int8 {
 	}
 
 	return int8(val)
+}
+
+// int16OrDefault retrieves the int16 value of the environment variable named
+// by the key.
+// If variable not set or value is empty - defaultVal will be returned.
+func int16OrDefault(key string, defaultVal int16) int16 {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	const (
+		base    = 10
+		bitsize = 16
+	)
+
+	val, err := strconv.ParseInt(env, base, bitsize)
+	if err != nil {
+		return defaultVal
+	}
+
+	return int16(val)
 }
 
 // int32OrDefault retrieves the int32 value of the environment variable named

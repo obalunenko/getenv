@@ -313,6 +313,82 @@ func Test_int8OrDefault(t *testing.T) {
 	}
 }
 
+func Test_int16OrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal int16
+	}
+
+	type expected struct {
+		val int16
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "newval",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 956,
+			},
+			expected: expected{
+				val: 956,
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1024",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 42,
+			},
+			expected: expected{
+				val: 1024,
+			},
+		},
+		{
+			name: "invalid env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "128s7",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: 44,
+			},
+			expected: expected{
+				val: 44,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := int16OrDefault(tt.args.key, tt.args.defaultVal)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func Test_int32OrDefault(t *testing.T) {
 	type args struct {
 		key        string
@@ -881,6 +957,136 @@ func Test_float64SliceOrDefault(t *testing.T) {
 	}
 }
 
+func Test_int16SliceOrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal []int16
+		sep        string
+	}
+
+	type expected struct {
+		val []int16
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "1.05,2.07",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int16{-99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []int16{-99},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int16{-99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []int16{1, 2},
+			},
+		},
+		{
+			name: "env set, no separator - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int16{-99},
+				sep:        "",
+			},
+			expected: expected{
+				val: []int16{-99},
+			},
+		},
+		{
+			name: "env set, wrong separator - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int16{-99},
+				sep:        "|",
+			},
+			expected: expected{
+				val: []int16{-99},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int16{-99},
+			},
+			expected: expected{
+				val: []int16{-99},
+			},
+		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "sssss,999",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []int16{-99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []int16{-99},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := int16SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func Test_int32SliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
@@ -1365,6 +1571,127 @@ func Test_timeOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := timeOrDefault(tt.args.key, tt.args.defaultVal, tt.args.layout)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func Test_timeSliceOrDefault(t *testing.T) {
+	const layout = "2006/02/01 15:04"
+
+	type args struct {
+		key        string
+		defaultVal []time.Time
+		layout     string
+		separator  string
+	}
+
+	type expected struct {
+		val []time.Time
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "2018/21/04 22:30,2023/21/04 22:30",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				defaultVal: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+				layout:    layout,
+				separator: ",",
+			},
+			expected: expected{
+				val: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2018/21/04 22:30,2023/21/04 22:30",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				defaultVal: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+				layout:    layout,
+				separator: ",",
+			},
+			expected: expected{
+				val: []time.Time{
+					time.Date(2018, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2023, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				defaultVal: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+				layout:    layout,
+				separator: ",",
+			},
+			expected: expected{
+				val: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+			},
+		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "20222-sdslll",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				defaultVal: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+				layout:    layout,
+				separator: ",",
+			},
+			expected: expected{
+				val: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := timeSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.layout, tt.args.separator)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}

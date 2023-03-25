@@ -13,14 +13,18 @@ func NewEnvParser(v any) EnvParser {
 	switch t := v.(type) {
 	case string, []string:
 		p = newStringParser(t)
-	case int, []int, int8, []int8, int32, []int32, int64, []int64, uint64, []uint64, uint, []uint, uint32, []uint32:
+	case int, []int, int8, []int8, int16, []int16, int32, []int32, int64, []int64:
 		p = newIntParser(t)
+	case uint64, []uint64, uint, []uint, uint32, []uint32:
+		p = newUintParser(t)
 	case bool:
 		p = boolParser(t)
 	case float64, []float64:
 		p = newFloatParser(t)
 	case time.Time:
 		p = timeParser(t)
+	case []time.Time:
+		p = timeSliceParser(t)
 	case time.Duration:
 		p = durationParser(t)
 	default:
@@ -55,6 +59,10 @@ func newIntParser(v any) EnvParser {
 		return int8Parser(t)
 	case []int8:
 		return int8SliceParser(t)
+	case int16:
+		return int16Parser(t)
+	case []int16:
+		return int16SliceParser(t)
 	case int32:
 		return int32Parser(t)
 	case []int32:
@@ -63,6 +71,13 @@ func newIntParser(v any) EnvParser {
 		return int64Parser(t)
 	case []int64:
 		return int64SliceParser(t)
+	default:
+		return nil
+	}
+}
+
+func newUintParser(v any) EnvParser {
+	switch t := v.(type) {
 	case uint64:
 		return uint64Parser(t)
 	case []uint64:
@@ -158,6 +173,14 @@ func (i int8Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	return val
 }
 
+type int16Parser int16
+
+func (i int16Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
+	val := int16OrDefault(key, defaltVal.(int16))
+
+	return val
+}
+
 type int32Parser int32
 
 func (i int32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
@@ -172,6 +195,16 @@ func (i int8SliceParser) ParseEnv(key string, defaltVal any, options Parameters)
 	sep := options.Separator
 
 	val := int8SliceOrDefault(key, defaltVal.([]int8), sep)
+
+	return val
+}
+
+type int16SliceParser []int16
+
+func (i int16SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
+
+	val := int16SliceOrDefault(key, defaltVal.([]int16), sep)
 
 	return val
 }
@@ -218,6 +251,17 @@ func (t timeParser) ParseEnv(key string, defaltVal any, options Parameters) any 
 	layout := options.Layout
 
 	val := timeOrDefault(key, defaltVal.(time.Time), layout)
+
+	return val
+}
+
+type timeSliceParser []time.Time
+
+func (t timeSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	layout := options.Layout
+	sep := options.Separator
+
+	val := timeSliceOrDefault(key, defaltVal.([]time.Time), layout, sep)
 
 	return val
 }
