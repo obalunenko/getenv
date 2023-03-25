@@ -33,6 +33,7 @@ Types supported:
 - float64
 - []float64
 - time.Time
+- []time.Time
 - time.Duration
 - bool
 ```

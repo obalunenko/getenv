@@ -23,6 +23,8 @@ func NewEnvParser(v any) EnvParser {
 		p = newFloatParser(t)
 	case time.Time:
 		p = timeParser(t)
+	case []time.Time:
+		p = timeSliceParser(t)
 	case time.Duration:
 		p = durationParser(t)
 	default:
@@ -249,6 +251,17 @@ func (t timeParser) ParseEnv(key string, defaltVal any, options Parameters) any 
 	layout := options.Layout
 
 	val := timeOrDefault(key, defaltVal.(time.Time), layout)
+
+	return val
+}
+
+type timeSliceParser []time.Time
+
+func (t timeSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	layout := options.Layout
+	sep := options.Separator
+
+	val := timeSliceOrDefault(key, defaltVal.([]time.Time), layout, sep)
 
 	return val
 }

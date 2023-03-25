@@ -32,6 +32,6 @@ type (
 
 	// Time is a constraint for time.Time and time.Duration.
 	Time interface {
-		time.Time | time.Duration
+		time.Time | []time.Time | time.Duration
 	}
 )

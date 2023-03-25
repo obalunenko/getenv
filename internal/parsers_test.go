@@ -1576,6 +1576,127 @@ func Test_timeOrDefault(t *testing.T) {
 	}
 }
 
+func Test_timeSliceOrDefault(t *testing.T) {
+	const layout = "2006/02/01 15:04"
+
+	type args struct {
+		key        string
+		defaultVal []time.Time
+		layout     string
+		separator  string
+	}
+
+	type expected struct {
+		val []time.Time
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "2018/21/04 22:30,2023/21/04 22:30",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				defaultVal: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+				layout:    layout,
+				separator: ",",
+			},
+			expected: expected{
+				val: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2018/21/04 22:30,2023/21/04 22:30",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				defaultVal: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+				layout:    layout,
+				separator: ",",
+			},
+			expected: expected{
+				val: []time.Time{
+					time.Date(2018, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2023, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				defaultVal: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+				layout:    layout,
+				separator: ",",
+			},
+			expected: expected{
+				val: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+			},
+		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "20222-sdslll",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				defaultVal: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+				layout:    layout,
+				separator: ",",
+			},
+			expected: expected{
+				val: []time.Time{
+					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := timeSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.layout, tt.args.separator)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func Test_durationOrDefault(t *testing.T) {
 	type args struct {
 		key        string
