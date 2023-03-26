@@ -37,6 +37,11 @@ services:
       service: tools
     entrypoint: /bin/sh -c './scripts/update-readme-coverage.sh'
 
+  update-readme-doc:
+    extends:
+      service: tools
+    entrypoint: /bin/sh -c './scripts/update-readme-doc.sh'
+
   lint-full:
     extends:
       service: tools
