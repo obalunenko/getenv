@@ -13,6 +13,7 @@
 // - []int32
 // - int64
 // - []int64
+// - uint8
 // - uint64
 // - []uint64
 // - uint

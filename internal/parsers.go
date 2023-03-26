@@ -470,7 +470,29 @@ func uint64SliceOrDefault(key string, defaultVal []uint64, sep string) []uint64 
 	return val
 }
 
-// uintOrDefault retrieves the unt64 value of the environment variable named
+// uint8OrDefault retrieves the unt8 value of the environment variable named
+// by the key.
+// If variable not set or value is empty - defaultVal will be returned.
+func uint8OrDefault(key string, defaultVal uint8) uint8 {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	const (
+		base    = 10
+		bitsize = 8
+	)
+
+	val, err := strconv.ParseUint(env, base, bitsize)
+	if err != nil {
+		return defaultVal
+	}
+
+	return uint8(val)
+}
+
+// uintOrDefault retrieves the unt value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.
 func uintOrDefault(key string, defaultVal uint) uint {

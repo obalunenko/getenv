@@ -54,6 +54,11 @@ update-readme-cover: prepare-cover-report
 	$(COMPOSE_TOOLS_CMD_UP) update-readme-coverage update-readme-coverage
 .PHONY: update-readme-cover
 
+## Update readme doc.
+update-readme-doc:
+	$(COMPOSE_TOOLS_CMD_UP) update-readme-doc update-readme-doc
+.PHONY: update-readme-doc
+
 ## Run tests.
 test:
 	$(COMPOSE_TOOLS_CMD_UP) run-tests run-tests
