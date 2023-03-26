@@ -28,6 +28,7 @@
 // - []time.Time
 // - time.Duration
 // - bool
+// - url.URL
 package getenv
 
 import (

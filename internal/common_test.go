@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type panicAssertionFunc func(t assert.TestingT, f assert.PanicTestFunc, msgAndArgs ...interface{}) bool
@@ -23,4 +25,11 @@ func (p precondition) maybeSetEnv(tb testing.TB, key string) {
 	if p.setenv.isSet {
 		tb.Setenv(key, p.setenv.val)
 	}
+}
+
+func getURL(tb testing.TB, rawURL string) url.URL {
+	val, err := url.Parse(rawURL)
+	require.NoError(tb, err)
+
+	return *val
 }
