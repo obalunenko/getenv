@@ -570,6 +570,28 @@ func uint32SliceOrDefault(key string, defaultVal []uint32, sep string) []uint32 
 	return val
 }
 
+// uint16OrDefault retrieves the unt16 value of the environment variable named
+// by the key.
+// If variable not set or value is empty - defaultVal will be returned.
+func uint16OrDefault(key string, defaultVal uint16) uint16 {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	const (
+		base    = 10
+		bitsize = 16
+	)
+
+	val, err := strconv.ParseUint(env, base, bitsize)
+	if err != nil {
+		return defaultVal
+	}
+
+	return uint16(val)
+}
+
 // uint32OrDefault retrieves the unt32 value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.
