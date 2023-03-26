@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type notsupported struct {
+	name string
+}
+
 func TestNewEnvParser(t *testing.T) {
 	type args struct {
 		v any
@@ -83,7 +87,15 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
-			name: "uint23",
+			name: "uint8",
+			args: args{
+				v: uint8(1),
+			},
+			want:      uint8Parser(1),
+			wantPanic: assert.NotPanics,
+		},
+		{
+			name: "uint32",
 			args: args{
 				v: uint32(1),
 			},
@@ -221,7 +233,9 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			name: "not supported - panics",
 			args: args{
-				v: byte(1),
+				v: notsupported{
+					name: "name",
+				},
 			},
 			want:      nil,
 			wantPanic: assert.Panics,
@@ -358,6 +372,25 @@ func Test_ParseEnv(t *testing.T) {
 				},
 			},
 			want: []float64{-1.2, 0.2},
+		},
+		{
+			name: "uint8Parser",
+			s:    uint8Parser(0),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "12",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: uint8(99),
+				in2: Parameters{
+					Separator: ",",
+					Layout:    "",
+				},
+			},
+			want: uint8(12),
 		},
 		{
 			name: "uint64Parser",

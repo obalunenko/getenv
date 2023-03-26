@@ -22,7 +22,7 @@ type (
 
 	// Uint is a constraint for unsigned integer and slice of unsigned integers.
 	Uint interface {
-		uint64 | []uint64 | uint | []uint | []uint32 | uint32
+		uint | []uint | uint8 | uint32 | []uint32 | uint64 | []uint64
 	}
 
 	// Float is a constraint for floats and slice of floats.

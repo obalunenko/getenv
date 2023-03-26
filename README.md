@@ -10,8 +10,6 @@
 Package getenv provides functionality for loading environment variables and parse them into go builtin types.
 
 Types supported:
-
-```text
 - string
 - []string
 - int
@@ -24,6 +22,7 @@ Types supported:
 - []int32
 - int64
 - []int64
+- uint8
 - uint64
 - []uint64
 - uint
@@ -37,7 +36,6 @@ Types supported:
 - []time.Time
 - time.Duration
 - bool
-```
 
 ## Examples
 
@@ -119,7 +117,7 @@ func main() {
 
 ```
 
- Output:
+Output:
 
 ```
 [string]: golly

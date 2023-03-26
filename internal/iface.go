@@ -15,7 +15,7 @@ func NewEnvParser(v any) EnvParser {
 		p = newStringParser(t)
 	case int, []int, int8, []int8, int16, []int16, int32, []int32, int64, []int64:
 		p = newIntParser(t)
-	case uint64, []uint64, uint, []uint, uint32, []uint32:
+	case uint, []uint, uint8, uint32, []uint32, uint64, []uint64:
 		p = newUintParser(t)
 	case bool:
 		p = boolParser(t)
@@ -78,18 +78,20 @@ func newIntParser(v any) EnvParser {
 
 func newUintParser(v any) EnvParser {
 	switch t := v.(type) {
-	case uint64:
-		return uint64Parser(t)
-	case []uint64:
-		return uint64SliceParser(t)
+	case uint8:
+		return uint8Parser(t)
 	case uint:
 		return uintParser(t)
 	case []uint:
 		return uintSliceParser(t)
-	case []uint32:
-		return uint32SliceParser(t)
 	case uint32:
 		return uint32Parser(t)
+	case []uint32:
+		return uint32SliceParser(t)
+	case uint64:
+		return uint64Parser(t)
+	case []uint64:
+		return uint64SliceParser(t)
 	default:
 		return nil
 	}
@@ -298,6 +300,14 @@ func (i uint64SliceParser) ParseEnv(key string, defaltVal any, options Parameter
 	sep := options.Separator
 
 	val := uint64SliceOrDefault(key, defaltVal.([]uint64), sep)
+
+	return val
+}
+
+type uint8Parser uint
+
+func (d uint8Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
+	val := uint8OrDefault(key, defaltVal.(uint8))
 
 	return val
 }
