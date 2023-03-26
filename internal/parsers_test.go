@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net/url"
 	"testing"
 	"time"
 
@@ -1647,6 +1648,84 @@ func Test_timeOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := timeOrDefault(tt.args.key, tt.args.defaultVal, tt.args.layout)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func TestURLOrDefault(t *testing.T) {
+	const rawDefault = "https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history"
+
+	type args struct {
+		key        string
+		defaultVal url.URL
+	}
+
+	type expected struct {
+		val url.URL
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "postgres://user:pass@host.com:5432/path?k=v#f",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getURL(t, rawDefault),
+			},
+			expected: expected{
+				val: getURL(t, rawDefault),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "postgres://user:pass@host.com:5432/path?k=v#f",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getURL(t, rawDefault),
+			},
+			expected: expected{
+				val: getURL(t, "postgres://user:pass@host.com:5432/path?k=v#f"),
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getURL(t, rawDefault),
+			},
+			expected: expected{
+				val: getURL(t, rawDefault),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := urlOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}

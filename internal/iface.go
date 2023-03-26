@@ -3,6 +3,7 @@ package internal
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 )
 
@@ -27,6 +28,8 @@ func NewEnvParser(v any) EnvParser {
 		p = timeSliceParser(t)
 	case time.Duration:
 		p = durationParser(t)
+	case url.URL:
+		p = urlParser(t)
 	default:
 		p = nil
 	}
@@ -354,6 +357,14 @@ type uint32Parser uint
 
 func (d uint32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := uint32OrDefault(key, defaltVal.(uint32))
+
+	return val
+}
+
+type urlParser url.URL
+
+func (t urlParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
+	val := urlOrDefault(key, defaltVal.(url.URL))
 
 	return val
 }

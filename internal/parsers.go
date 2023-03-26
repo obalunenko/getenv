@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -612,4 +613,21 @@ func uint32OrDefault(key string, defaultVal uint32) uint32 {
 	}
 
 	return uint32(val)
+}
+
+// urlOrDefault retrieves the url.URL value of the environment variable named
+// by the key represented by layout.
+// If variable not set or value is empty - defaultVal will be returned.
+func urlOrDefault(key string, defaultVal url.URL) url.URL {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	val, err := url.Parse(env)
+	if err != nil {
+		return defaultVal
+	}
+
+	return *val
 }

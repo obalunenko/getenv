@@ -1,10 +1,12 @@
 package getenv_test
 
 import (
+	"net/url"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/obalunenko/getenv"
 	"github.com/obalunenko/getenv/option"
@@ -2450,6 +2452,91 @@ func TestInt16SliceOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func getURL(tb testing.TB, rawURL string) url.URL {
+	val, err := url.Parse(rawURL)
+	require.NoError(tb, err)
+
+	return *val
+}
+
+func TestURLOrDefault(t *testing.T) {
+	const rawDefault = "https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history"
+
+	type args struct {
+		key        string
+		defaultVal url.URL
+	}
+
+	type expected struct {
+		val url.URL
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "postgres://user:pass@host.com:5432/path?k=v#f",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getURL(t, rawDefault),
+			},
+			expected: expected{
+				val: getURL(t, rawDefault),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "postgres://user:pass@host.com:5432/path?k=v#f",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getURL(t, rawDefault),
+			},
+			expected: expected{
+				val: getURL(t, "postgres://user:pass@host.com:5432/path?k=v#f"),
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getURL(t, rawDefault),
+			},
+			expected: expected{
+				val: getURL(t, rawDefault),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
