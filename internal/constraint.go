@@ -27,7 +27,7 @@ type (
 
 	// Float is a constraint for floats and slice of floats.
 	Float interface {
-		float64 | []float64
+		float32 | float64 | []float64
 	}
 
 	// Time is a constraint for time.Time and time.Duration.

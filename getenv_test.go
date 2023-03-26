@@ -333,6 +333,82 @@ func TestInt32OrDefault(t *testing.T) {
 	}
 }
 
+func TestFloat32OrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal float32
+	}
+
+	type expected struct {
+		val float32
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "newval",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: float32(956.02),
+			},
+			expected: expected{
+				val: float32(956.02),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1024.123",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: float32(42),
+			},
+			expected: expected{
+				val: float32(1024.123),
+			},
+		},
+		{
+			name: "invalid env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "128s7",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: float32(44),
+			},
+			expected: expected{
+				val: float32(44),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func TestFloat64OrDefault(t *testing.T) {
 	type args struct {
 		key        string

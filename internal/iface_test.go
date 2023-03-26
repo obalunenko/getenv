@@ -171,6 +171,14 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
+			name: "float32",
+			args: args{
+				v: float32(1.1),
+			},
+			want:      float32Parser(float32(1.1)),
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "float64",
 			args: args{
 				v: 1.1,
@@ -315,6 +323,22 @@ func Test_ParseEnv(t *testing.T) {
 				in2:       Parameters{},
 			},
 			want: -1.2,
+		},
+		{
+			name: "float32Parser",
+			s:    float32Parser(0),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "-1.2",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: float32(99),
+				in2:       Parameters{},
+			},
+			want: float32(-1.2),
 		},
 		{
 			name: "float64Parser",
