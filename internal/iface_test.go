@@ -257,6 +257,14 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
+			name: "[]time.Duration",
+			args: args{
+				v: []time.Duration{},
+			},
+			want:      durationSliceParser([]time.Duration{}),
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "time.Duration",
 			args: args{
 				v: time.Minute,
@@ -880,6 +888,27 @@ func Test_ParseEnv(t *testing.T) {
 			want: []time.Time{
 				time.Date(2022, time.March, 24, 0, 0, 0, 0, time.UTC),
 				time.Date(2023, time.March, 24, 0, 0, 0, 0, time.UTC),
+			},
+		},
+		{
+			name: "durationSliceParser",
+			s:    durationSliceParser([]time.Duration{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2m,3h",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []time.Duration{},
+				in2: Parameters{
+					Separator: ",",
+				},
+			},
+			want: []time.Duration{
+				2 * time.Minute,
+				3 * time.Hour,
 			},
 		},
 		{

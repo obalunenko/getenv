@@ -319,6 +319,29 @@ func timeSliceOrDefault(key string, defaultVal []time.Time, layout, separator st
 	return val
 }
 
+// durationSliceOrDefault retrieves the []time.Duration value of the environment variable named
+// by the key represented by layout.
+// If variable not set or value is empty - defaultVal will be returned.
+func durationSliceOrDefault(key string, defaultVal []time.Duration, separator string) []time.Duration {
+	valraw := stringSliceOrDefault(key, nil, separator)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]time.Duration, 0, len(valraw))
+
+	for _, s := range valraw {
+		v, err := time.ParseDuration(s)
+		if err != nil {
+			return defaultVal
+		}
+
+		val = append(val, v)
+	}
+
+	return val
+}
+
 // int64OrDefault retrieves the int64 value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.
