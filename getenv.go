@@ -14,6 +14,7 @@
 // - int64
 // - []int64
 // - uint8
+// - []uint8
 // - uint16
 // - uint64
 // - []uint64
