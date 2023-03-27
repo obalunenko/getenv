@@ -739,6 +739,29 @@ func urlOrDefault(key string, defaultVal url.URL) url.URL {
 	return *val
 }
 
+// urlSliceOrDefault retrieves the url.URL slice value of the environment variable named
+// by the key and separated by sep.
+// If variable not set or value is empty - defaultVal will be returned.
+func urlSliceOrDefault(key string, defaultVal []url.URL, sep string) []url.URL {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]url.URL, 0, len(valraw))
+
+	for _, s := range valraw {
+		v, err := url.Parse(s)
+		if err != nil {
+			return defaultVal
+		}
+
+		val = append(val, *v)
+	}
+
+	return val
+}
+
 // ipOrDefault retrieves the net.IP value of the environment variable named
 // by the key represented by layout.
 // If variable not set or value is empty - defaultVal will be returned.

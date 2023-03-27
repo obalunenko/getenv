@@ -33,6 +33,7 @@
 // - []time.Duration
 // - bool
 // - url.URL
+// - []url.URL
 // - net.IP
 package getenv
 

@@ -281,6 +281,14 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
+			name: "[]url.URL",
+			args: args{
+				v: []url.URL{},
+			},
+			want:      urlSliceParser([]url.URL{}),
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "net.IP",
 			args: args{
 				v: net.IP{},
@@ -917,7 +925,7 @@ func Test_ParseEnv(t *testing.T) {
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
-					val:   "https.google.com",
+					val:   "https://google.com",
 				},
 			},
 			args: args{
@@ -928,7 +936,29 @@ func Test_ParseEnv(t *testing.T) {
 					Layout:    time.DateOnly,
 				},
 			},
-			want: getURL(t, "https.google.com"),
+			want: getURL(t, "https://google.com"),
+		},
+		{
+			name: "urlSliceParser",
+			s:    urlSliceParser([]url.URL{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "https://google.com,https://bing.com",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []url.URL{},
+				in2: Parameters{
+					Separator: ",",
+					Layout:    time.DateOnly,
+				},
+			},
+			want: []url.URL{
+				getURL(t, "https://google.com"),
+				getURL(t, "https://bing.com"),
+			},
 		},
 		{
 			name: "ipParser",
