@@ -30,7 +30,7 @@ func (p precondition) maybeSetEnv(tb testing.TB, key string) {
 
 func getURL(tb testing.TB, rawURL string) url.URL {
 	tb.Helper()
-	
+
 	val, err := url.Parse(rawURL)
 	require.NoError(tb, err)
 
