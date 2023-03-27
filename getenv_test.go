@@ -3049,3 +3049,86 @@ func TestIPOrDefault(t *testing.T) {
 		})
 	}
 }
+
+func TestURLSliceOrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal []url.URL
+		separator  string
+	}
+
+	type expected struct {
+		val []url.URL
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "https://google.com,https://github.com",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []url.URL{getURL(t, "https://bing.com")},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []url.URL{getURL(t, "https://bing.com")},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "https://google.com,https://github.com",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []url.URL{getURL(t, "https://bing.com")},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []url.URL{
+					getURL(t, "https://google.com"),
+					getURL(t, "https://github.com"),
+				},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []url.URL{getURL(t, "https://bing.com")},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []url.URL{getURL(t, "https://bing.com")},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(","))
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}

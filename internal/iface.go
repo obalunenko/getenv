@@ -27,6 +27,8 @@ func NewEnvParser(v any) EnvParser {
 		p = newTimeParser(t)
 	case url.URL:
 		p = urlParser(t)
+	case []url.URL:
+		p = urlSliceParser(t)
 	case net.IP:
 		p = ipParser(t)
 	default:
@@ -425,6 +427,16 @@ type urlParser url.URL
 
 func (t urlParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := urlOrDefault(key, defaltVal.(url.URL))
+
+	return val
+}
+
+type urlSliceParser []url.URL
+
+func (t urlSliceParser) ParseEnv(key string, defaltVal any, opts Parameters) any {
+	separator := opts.Separator
+
+	val := urlSliceOrDefault(key, defaltVal.([]url.URL), separator)
 
 	return val
 }
