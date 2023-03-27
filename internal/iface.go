@@ -21,7 +21,7 @@ func NewEnvParser(v any) EnvParser {
 		p = newUintParser(t)
 	case bool:
 		p = boolParser(t)
-	case float32, float64, []float64:
+	case float32, []float32, float64, []float64:
 		p = newFloatParser(t)
 	case time.Time:
 		p = timeParser(t)
@@ -113,6 +113,8 @@ func newFloatParser(v any) EnvParser {
 	switch t := v.(type) {
 	case float32:
 		return float32Parser(t)
+	case []float32:
+		return float32SliceParser(t)
 	case float64:
 		return float64Parser(t)
 	case []float64:
@@ -159,6 +161,16 @@ func (i intSliceParser) ParseEnv(key string, defaltVal any, options Parameters) 
 	sep := options.Separator
 
 	val := intSliceOrDefault(key, defaltVal.([]int), sep)
+
+	return val
+}
+
+type float32SliceParser []float32
+
+func (i float32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
+
+	val := float32SliceOrDefault(key, defaltVal.([]float32), sep)
 
 	return val
 }

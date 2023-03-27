@@ -96,7 +96,34 @@ func intSliceOrDefault(key string, defaultVal []int, sep string) []int {
 	return val
 }
 
-// intSliceOrDefault retrieves the int slice value of the environment variable named
+// float32SliceOrDefault retrieves the float32 slice value of the environment variable named
+// by the key and separated by sep.
+// If variable not set or value is empty - defaultVal will be returned.
+func float32SliceOrDefault(key string, defaultVal []float32, sep string) []float32 {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]float32, 0, len(valraw))
+
+	const (
+		bitsize = 32
+	)
+
+	for _, s := range valraw {
+		v, err := strconv.ParseFloat(s, bitsize)
+		if err != nil {
+			return defaultVal
+		}
+
+		val = append(val, float32(v))
+	}
+
+	return val
+}
+
+// float64SliceOrDefault retrieves the float64 slice value of the environment variable named
 // by the key and separated by sep.
 // If variable not set or value is empty - defaultVal will be returned.
 func float64SliceOrDefault(key string, defaultVal []float64, sep string) []float64 {

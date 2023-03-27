@@ -225,6 +225,14 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
+			name: "[]float32",
+			args: args{
+				v: []float32{1.1},
+			},
+			want:      float32SliceParser([]float32{1.1}),
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "[]float64",
 			args: args{
 				v: []float64{1.1},
@@ -397,7 +405,26 @@ func Test_ParseEnv(t *testing.T) {
 			want: float32(-1.2),
 		},
 		{
-			name: "float64Parser",
+			name: "float32SliceParser",
+			s:    float32SliceParser(nil),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "-1.2,0.2",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []float32{99},
+				in2: Parameters{
+					Separator: ",",
+					Layout:    "",
+				},
+			},
+			want: []float32{-1.2, 0.2},
+		},
+		{
+			name: "float64SliceParser",
 			s:    float64SliceParser(nil),
 			precond: precondition{
 				setenv: setenv{
