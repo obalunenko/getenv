@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net"
 	"net/url"
 	"testing"
 	"time"
@@ -253,6 +254,14 @@ func TestNewEnvParser(t *testing.T) {
 				v: url.URL{},
 			},
 			want:      urlParser(url.URL{}),
+			wantPanic: assert.NotPanics,
+		},
+		{
+			name: "net.IP",
+			args: args{
+				v: net.IP{},
+			},
+			want:      ipParser(net.IP{}),
 			wantPanic: assert.NotPanics,
 		},
 		{
@@ -837,6 +846,25 @@ func Test_ParseEnv(t *testing.T) {
 				},
 			},
 			want: getURL(t, "https.google.com"),
+		},
+		{
+			name: "ipParser",
+			s:    ipParser(net.IP{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2001:cb8::17",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: net.IP{},
+				in2: Parameters{
+					Separator: "",
+					Layout:    time.DateOnly,
+				},
+			},
+			want: getIP(t, "2001:cb8::17"),
 		},
 	}
 

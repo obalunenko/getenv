@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net"
 	"net/url"
 	"testing"
 	"time"
@@ -1783,7 +1784,7 @@ func Test_timeOrDefault(t *testing.T) {
 	}
 }
 
-func TestURLOrDefault(t *testing.T) {
+func Test_urlOrDefault(t *testing.T) {
 	const rawDefault = "https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history"
 
 	type args struct {
@@ -2642,6 +2643,84 @@ func Test_uint32OrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := uint32OrDefault(tt.args.key, tt.args.defaultVal)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func Test_ipOrDefault(t *testing.T) {
+	const rawDefault = "0.0.0.0"
+
+	type args struct {
+		key        string
+		defaultVal net.IP
+	}
+
+	type expected struct {
+		val net.IP
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "192.168.8.0",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getIP(t, rawDefault),
+			},
+			expected: expected{
+				val: getIP(t, rawDefault),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getIP(t, rawDefault),
+			},
+			expected: expected{
+				val: getIP(t, "192.168.8.0"),
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getIP(t, rawDefault),
+			},
+			expected: expected{
+				val: getIP(t, rawDefault),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := ipOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}

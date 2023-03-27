@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -658,4 +659,21 @@ func urlOrDefault(key string, defaultVal url.URL) url.URL {
 	}
 
 	return *val
+}
+
+// ipOrDefault retrieves the net.IP value of the environment variable named
+// by the key represented by layout.
+// If variable not set or value is empty - defaultVal will be returned.
+func ipOrDefault(key string, defaultVal net.IP) net.IP {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	val := net.ParseIP(env)
+	if val == nil {
+		return defaultVal
+	}
+
+	return val
 }
