@@ -1426,6 +1426,136 @@ func Test_int32SliceOrDefault(t *testing.T) {
 	}
 }
 
+func Test_uintSliceOrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal []uint
+		sep        string
+	}
+
+	type expected struct {
+		val []uint
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "1.05,2.07",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint{99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []uint{99},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint{99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []uint{1, 2},
+			},
+		},
+		{
+			name: "env set, no separator - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint{99},
+				sep:        "",
+			},
+			expected: expected{
+				val: []uint{99},
+			},
+		},
+		{
+			name: "env set, wrong separator - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint{99},
+				sep:        "|",
+			},
+			expected: expected{
+				val: []uint{99},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint{99},
+			},
+			expected: expected{
+				val: []uint{99},
+			},
+		},
+		{
+			name: "malformed env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "sssss,999",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint{99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []uint{99},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := uintSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func Test_uint8SliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
@@ -2226,6 +2356,22 @@ func Test_urlOrDefault(t *testing.T) {
 			},
 		},
 		{
+			name: "env set, corrupted - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "postgres://user:pass@host.com:5432/path?k=v#f%%2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getURL(t, rawDefault),
+			},
+			expected: expected{
+				val: getURL(t, rawDefault),
+			},
+		},
+		{
 			name: "empty env value set - default returned",
 			precond: precondition{
 				setenv: setenv{
@@ -2425,6 +2571,23 @@ func Test_durationSliceOrDefault(t *testing.T) {
 				val: []time.Duration{
 					2 * time.Minute, 3 * time.Hour,
 				},
+			},
+		},
+		{
+			name: "env set, corrupted - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2m,3hddd",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []time.Duration{time.Second},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []time.Duration{time.Second},
 			},
 		},
 		{
@@ -3173,6 +3336,22 @@ func Test_ipOrDefault(t *testing.T) {
 			},
 		},
 		{
+			name: "env set, corrupted - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0ssss",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getIP(t, rawDefault),
+			},
+			expected: expected{
+				val: getIP(t, rawDefault),
+			},
+		},
+		{
 			name: "empty env value set - default returned",
 			precond: precondition{
 				setenv: setenv{
@@ -3255,6 +3434,23 @@ func Test_urlSliceOrDefault(t *testing.T) {
 			},
 		},
 		{
+			name: "env set, corrupted - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "https://google.com,htps://%%2github.com",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []url.URL{getURL(t, "https://bing.com")},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []url.URL{getURL(t, "https://bing.com")},
+			},
+		},
+		{
 			name: "empty env value set - default returned",
 			precond: precondition{
 				setenv: setenv{
@@ -3278,6 +3474,108 @@ func Test_urlSliceOrDefault(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
 			got := urlSliceOrDefault(tt.args.key, tt.args.defaultVal, ",")
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func Test_ipSliceOrDefault(t *testing.T) {
+	const rawDefault = "0.0.0.0"
+
+	type args struct {
+		key        string
+		defaultVal []net.IP
+		separator  string
+	}
+
+	type expected struct {
+		val []net.IP
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "192.168.8.0,2001:cb8::17",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []net.IP{getIP(t, rawDefault)},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []net.IP{getIP(t, rawDefault)},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0,2001:cb8::17",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []net.IP{getIP(t, rawDefault)},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []net.IP{
+					getIP(t, "192.168.8.0"),
+					getIP(t, "2001:cb8::17"),
+				},
+			},
+		},
+		{
+			name: "env set, corrupted - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0,sdsdsd",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []net.IP{getIP(t, rawDefault)},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []net.IP{getIP(t, rawDefault)},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []net.IP{getIP(t, rawDefault)},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []net.IP{getIP(t, rawDefault)},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := ipSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
