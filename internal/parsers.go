@@ -572,6 +572,34 @@ func uint8SliceOrDefault(key string, defaultVal []uint8, sep string) []uint8 {
 	return val
 }
 
+// uint16SliceOrDefault retrieves the uint16 slice value of the environment variable named
+// by the key and separated by sep.
+// If variable not set or value is empty - defaultVal will be returned.
+func uint16SliceOrDefault(key string, defaultVal []uint16, sep string) []uint16 {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]uint16, 0, len(valraw))
+
+	const (
+		base    = 10
+		bitsize = 16
+	)
+
+	for _, s := range valraw {
+		v, err := strconv.ParseUint(s, base, bitsize)
+		if err != nil {
+			return defaultVal
+		}
+
+		val = append(val, uint16(v))
+	}
+
+	return val
+}
+
 // uint32SliceOrDefault retrieves the uint32 slice value of the environment variable named
 // by the key and separated by sep.
 // If variable not set or value is empty - defaultVal will be returned.
