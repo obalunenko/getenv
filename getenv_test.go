@@ -3050,6 +3050,91 @@ func TestIPOrDefault(t *testing.T) {
 	}
 }
 
+func TestIPSliceOrDefault(t *testing.T) {
+	const rawDefault = "0.0.0.0"
+
+	type args struct {
+		key        string
+		defaultVal []net.IP
+		separator  string
+	}
+
+	type expected struct {
+		val []net.IP
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "192.168.8.0,2001:cb8::17",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []net.IP{getIP(t, rawDefault)},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []net.IP{getIP(t, rawDefault)},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0,2001:cb8::17",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []net.IP{getIP(t, rawDefault)},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []net.IP{
+					getIP(t, "192.168.8.0"),
+					getIP(t, "2001:cb8::17"),
+				},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []net.IP{getIP(t, rawDefault)},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []net.IP{getIP(t, rawDefault)},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.separator))
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func TestURLSliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string

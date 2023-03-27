@@ -778,3 +778,26 @@ func ipOrDefault(key string, defaultVal net.IP) net.IP {
 
 	return val
 }
+
+// ipSliceOrDefault retrieves the net.IP slice value of the environment variable named
+// by the key and separated by sep.
+// If variable not set or value is empty - defaultVal will be returned.
+func ipSliceOrDefault(key string, defaultVal []net.IP, sep string) []net.IP {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val := make([]net.IP, 0, len(valraw))
+
+	for _, s := range valraw {
+		v := net.ParseIP(s)
+		if v == nil {
+			return defaultVal
+		}
+
+		val = append(val, v)
+	}
+
+	return val
+}

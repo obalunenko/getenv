@@ -35,6 +35,7 @@
 // - url.URL
 // - []url.URL
 // - net.IP
+// - []net.IP
 package getenv
 
 import (

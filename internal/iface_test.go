@@ -297,6 +297,14 @@ func TestNewEnvParser(t *testing.T) {
 			wantPanic: assert.NotPanics,
 		},
 		{
+			name: "[]net.IP",
+			args: args{
+				v: []net.IP{},
+			},
+			want:      ipSliceParser([]net.IP{}),
+			wantPanic: assert.NotPanics,
+		},
+		{
 			name: "not supported - panics",
 			args: args{
 				v: notsupported{
@@ -972,12 +980,30 @@ func Test_ParseEnv(t *testing.T) {
 			args: args{
 				key:       testEnvKey,
 				defaltVal: net.IP{},
-				in2: Parameters{
-					Separator: "",
-					Layout:    time.DateOnly,
-				},
+				in2:       Parameters{},
 			},
 			want: getIP(t, "2001:cb8::17"),
+		},
+		{
+			name: "ipSliceParser",
+			s:    ipSliceParser([]net.IP{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2001:cb8::17,192.168.0.1",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []net.IP{},
+				in2: Parameters{
+					Separator: ",",
+				},
+			},
+			want: []net.IP{
+				getIP(t, "2001:cb8::17"),
+				getIP(t, "192.168.0.1"),
+			},
 		},
 	}
 

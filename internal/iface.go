@@ -31,6 +31,8 @@ func NewEnvParser(v any) EnvParser {
 		p = urlSliceParser(t)
 	case net.IP:
 		p = ipParser(t)
+	case []net.IP:
+		p = ipSliceParser(t)
 	default:
 		p = nil
 	}
@@ -445,6 +447,16 @@ type ipParser net.IP
 
 func (t ipParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := ipOrDefault(key, defaltVal.(net.IP))
+
+	return val
+}
+
+type ipSliceParser []net.IP
+
+func (t ipSliceParser) ParseEnv(key string, defaltVal any, opts Parameters) any {
+	separator := opts.Separator
+
+	val := ipSliceOrDefault(key, defaltVal.([]net.IP), separator)
 
 	return val
 }
