@@ -2,7 +2,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/obalunenko/getenv.svg)](https://pkg.go.dev/github.com/obalunenko/getenv)
 [![Go Report Card](https://goreportcard.com/badge/github.com/obalunenko/getenv)](https://goreportcard.com/report/github.com/obalunenko/getenv)
 [![codecov](https://codecov.io/gh/obalunenko/getenv/branch/master/graph/badge.svg)](https://codecov.io/gh/obalunenko/getenv)
-![coverbadger-tag-do-not-edit](https://img.shields.io/badge/coverage-97.66%25-brightgreen?longCache=true&style=flat)
+![coverbadger-tag-do-not-edit](https://img.shields.io/badge/coverage-98.25%25-brightgreen?longCache=true&style=flat)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=obalunenko_getenv&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=obalunenko_getenv)
 
 # getenv
@@ -25,6 +25,7 @@ Types supported:
 - uint8
 - []uint8
 - uint16
+- []uint16
 - uint64
 - []uint64
 - uint
@@ -53,7 +54,7 @@ package main
 
 import (
 	"fmt"
-	url "net/url"
+	"net/url"
 	"os"
 	"time"
 
