@@ -2374,6 +2374,89 @@ func Test_timeSliceOrDefault(t *testing.T) {
 	}
 }
 
+func Test_durationSliceOrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal []time.Duration
+		separator  string
+	}
+
+	type expected struct {
+		val []time.Duration
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "2m,3h",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []time.Duration{time.Second},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []time.Duration{time.Second},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2m,3h",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []time.Duration{time.Second},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []time.Duration{
+					2 * time.Minute, 3 * time.Hour,
+				},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []time.Duration{time.Second},
+				separator:  ",",
+			},
+			expected: expected{
+				val: []time.Duration{time.Second},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := durationSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func Test_durationOrDefault(t *testing.T) {
 	type args struct {
 		key        string

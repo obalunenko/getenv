@@ -23,12 +23,8 @@ func NewEnvParser(v any) EnvParser {
 		p = boolParser(t)
 	case float32, []float32, float64, []float64:
 		p = newFloatParser(t)
-	case time.Time:
-		p = timeParser(t)
-	case []time.Time:
-		p = timeSliceParser(t)
-	case time.Duration:
-		p = durationParser(t)
+	case time.Time, []time.Time, time.Duration, []time.Duration:
+		p = newTimeParser(t)
 	case url.URL:
 		p = urlParser(t)
 	case net.IP:
@@ -119,6 +115,21 @@ func newFloatParser(v any) EnvParser {
 		return float64Parser(t)
 	case []float64:
 		return float64SliceParser(t)
+	default:
+		return nil
+	}
+}
+
+func newTimeParser(v any) EnvParser {
+	switch t := v.(type) {
+	case time.Time:
+		return timeParser(t)
+	case []time.Time:
+		return timeSliceParser(t)
+	case time.Duration:
+		return durationParser(t)
+	case []time.Duration:
+		return durationSliceParser(t)
 	default:
 		return nil
 	}
@@ -298,6 +309,16 @@ func (t timeSliceParser) ParseEnv(key string, defaltVal any, options Parameters)
 	sep := options.Separator
 
 	val := timeSliceOrDefault(key, defaltVal.([]time.Time), layout, sep)
+
+	return val
+}
+
+type durationSliceParser []time.Duration
+
+func (t durationSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+	sep := options.Separator
+
+	val := durationSliceOrDefault(key, defaltVal.([]time.Duration), sep)
 
 	return val
 }

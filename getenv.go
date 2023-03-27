@@ -30,6 +30,7 @@
 // - time.Time
 // - []time.Time
 // - time.Duration
+// - []time.Duration
 // - bool
 // - url.URL
 // - net.IP
