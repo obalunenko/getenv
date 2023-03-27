@@ -2457,6 +2457,119 @@ func TestUint8SliceOrDefault(t *testing.T) {
 	}
 }
 
+func TestUint16SliceOrDefault(t *testing.T) {
+	type args struct {
+		key        string
+		defaultVal []uint16
+		sep        string
+	}
+
+	type expected struct {
+		val []uint16
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "1,27",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint16{99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []uint16{99},
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint16{99},
+				sep:        ",",
+			},
+			expected: expected{
+				val: []uint16{1, 2},
+			},
+		},
+		{
+			name: "env set, no separator - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint16{99},
+				sep:        "",
+			},
+			expected: expected{
+				val: []uint16{99},
+			},
+		},
+		{
+			name: "env set, wrong separator - default value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint16{99},
+				sep:        "|",
+			},
+			expected: expected{
+				val: []uint16{99},
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: []uint16{99},
+			},
+			expected: expected{
+				val: []uint16{99},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithSeparator(tt.args.sep))
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func TestInt16SliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
