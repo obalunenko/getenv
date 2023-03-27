@@ -31,6 +31,7 @@
 // - time.Duration
 // - bool
 // - url.URL
+// - net.IP
 package getenv
 
 import (

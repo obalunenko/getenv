@@ -1,6 +1,7 @@
 package getenv_test
 
 import (
+	"net"
 	"net/url"
 	"testing"
 	"time"
@@ -2684,6 +2685,8 @@ func TestInt16SliceOrDefault(t *testing.T) {
 }
 
 func getURL(tb testing.TB, rawURL string) url.URL {
+	tb.Helper()
+
 	val, err := url.Parse(rawURL)
 	require.NoError(tb, err)
 
@@ -2754,6 +2757,90 @@ func TestURLOrDefault(t *testing.T) {
 			},
 			expected: expected{
 				val: getURL(t, rawDefault),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal)
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func getIP(tb testing.TB, raw string) net.IP {
+	tb.Helper()
+
+	return net.ParseIP(raw)
+}
+
+func TestIPOrDefault(t *testing.T) {
+	const rawDefault = "0.0.0.0"
+
+	type args struct {
+		key        string
+		defaultVal net.IP
+	}
+
+	type expected struct {
+		val net.IP
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "192.168.8.0",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getIP(t, rawDefault),
+			},
+			expected: expected{
+				val: getIP(t, rawDefault),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getIP(t, rawDefault),
+			},
+			expected: expected{
+				val: getIP(t, "192.168.8.0"),
+			},
+		},
+		{
+			name: "empty env value set - default returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:        testEnvKey,
+				defaultVal: getIP(t, rawDefault),
+			},
+			expected: expected{
+				val: getIP(t, rawDefault),
 			},
 		},
 	}

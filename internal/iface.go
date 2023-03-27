@@ -3,6 +3,7 @@ package internal
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"time"
 )
@@ -30,6 +31,8 @@ func NewEnvParser(v any) EnvParser {
 		p = durationParser(t)
 	case url.URL:
 		p = urlParser(t)
+	case net.IP:
+		p = ipParser(t)
 	default:
 		p = nil
 	}
@@ -389,6 +392,14 @@ type urlParser url.URL
 
 func (t urlParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 	val := urlOrDefault(key, defaltVal.(url.URL))
+
+	return val
+}
+
+type ipParser net.IP
+
+func (t ipParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
+	val := ipOrDefault(key, defaltVal.(net.IP))
 
 	return val
 }

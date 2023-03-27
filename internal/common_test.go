@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net"
 	"net/url"
 	"testing"
 
@@ -28,8 +29,16 @@ func (p precondition) maybeSetEnv(tb testing.TB, key string) {
 }
 
 func getURL(tb testing.TB, rawURL string) url.URL {
+	tb.Helper()
+
 	val, err := url.Parse(rawURL)
 	require.NoError(tb, err)
 
 	return *val
+}
+
+func getIP(tb testing.TB, raw string) net.IP {
+	tb.Helper()
+
+	return net.ParseIP(raw)
 }

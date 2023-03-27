@@ -2,6 +2,7 @@ package getenv_test
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"time"
@@ -74,6 +75,14 @@ func ExampleEnvOrDefault() {
 	val = getenv.EnvOrDefault(key, url.URL{})
 	fmt.Printf("[%T]: %v\n", val, val)
 
+	// net.IP
+	if err := os.Setenv(key, "2001:cb8::17"); err != nil {
+		panic(err)
+	}
+
+	val = getenv.EnvOrDefault(key, net.IP{})
+	fmt.Printf("[%T]: %v\n", val, val)
+
 	// Output:
 	// [string]: golly
 	// [int]: 123
@@ -81,4 +90,5 @@ func ExampleEnvOrDefault() {
 	// [[]float64]: [26.89 0.67]
 	// [time.Duration]: 2h35m0s
 	// [url.URL]: {https  test:abcd123 golangbyexample.com:8000 /tutorials/intro  false false type=advance&compact=false history }
+	// [net.IP]: 2001:cb8::17
 }

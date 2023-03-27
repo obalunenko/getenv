@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"net"
 	"net/url"
 	"time"
 )
@@ -8,7 +9,7 @@ import (
 type (
 	// EnvParsable is a constraint for supported environment variable types parsers.
 	EnvParsable interface {
-		String | Int | Uint | Float | Time | bool | url.URL
+		String | Int | Uint | Float | Time | bool | url.URL | net.IP
 	}
 
 	// String is a constraint for strings and slice of strings.
