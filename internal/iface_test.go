@@ -12,7 +12,7 @@ import (
 
 // notsupported is a type that is not supported by the parser.
 type notsupported struct {
-	name string
+	_ string
 }
 
 // TestNewEnvParser tests the NewEnvParser function.
@@ -25,7 +25,7 @@ func TestNewEnvParser(t *testing.T) {
 
 	tests := []input{
 		{
-			v:         string(""),
+			v:         "",
 			wantPanic: assert.NotPanics,
 			want:      stringParser(""),
 		},

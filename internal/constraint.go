@@ -52,6 +52,7 @@ type (
 		net.IP | []net.IP
 	}
 
+	// Complex is a constraint for complex and slice of complex.
 	Complex interface {
 		complex64 | []complex64 | complex128 | []complex128
 	}

@@ -884,7 +884,11 @@ func complex64OrDefault(key string, defaultVal complex64) complex64 {
 		return defaultVal
 	}
 
-	val, err := strconv.ParseComplex(env, 64)
+	const (
+		bitsize = 64
+	)
+
+	val, err := strconv.ParseComplex(env, bitsize)
 	if err != nil {
 		return defaultVal
 	}
@@ -901,10 +905,14 @@ func complex64SliceOrDefault(key string, defaultVal []complex64, sep string) []c
 		return defaultVal
 	}
 
+	const (
+		bitsize = 64
+	)
+
 	val := make([]complex64, 0, len(valraw))
 
 	for _, s := range valraw {
-		v, err := strconv.ParseComplex(s, 64)
+		v, err := strconv.ParseComplex(s, bitsize)
 		if err != nil {
 			return defaultVal
 		}
@@ -924,12 +932,16 @@ func complex128OrDefault(key string, defaultVal complex128) complex128 {
 		return defaultVal
 	}
 
-	val, err := strconv.ParseComplex(env, 128)
+	const (
+		bitsize = 128
+	)
+
+	val, err := strconv.ParseComplex(env, bitsize)
 	if err != nil {
 		return defaultVal
 	}
 
-	return complex128(val)
+	return val
 }
 
 // complex128SliceOrDefault retrieves the complex128 slice value of the environment variable named
@@ -941,15 +953,19 @@ func complex128SliceOrDefault(key string, defaultVal []complex128, sep string) [
 		return defaultVal
 	}
 
+	const (
+		bitsize = 128
+	)
+
 	val := make([]complex128, 0, len(valraw))
 
 	for _, s := range valraw {
-		v, err := strconv.ParseComplex(s, 128)
+		v, err := strconv.ParseComplex(s, bitsize)
 		if err != nil {
 			return defaultVal
 		}
 
-		val = append(val, complex128(v))
+		val = append(val, v)
 	}
 
 	return val
