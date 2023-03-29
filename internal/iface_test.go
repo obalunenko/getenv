@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"net"
 	"net/url"
 	"testing"
@@ -9,324 +10,836 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// notsupported is a type that is not supported by the parser.
 type notsupported struct {
 	name string
 }
 
+// TestNewEnvParser tests the NewEnvParser function.
 func TestNewEnvParser(t *testing.T) {
+	type input struct {
+		v         any
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}
+
+	tests := []input{
+		{
+			v:         string(""),
+			wantPanic: assert.NotPanics,
+			want:      stringParser(""),
+		},
+		{
+			v:         []string{""},
+			wantPanic: assert.NotPanics,
+			want:      stringSliceParser([]string{""}),
+		},
+		{
+			v:         int(0),
+			wantPanic: assert.NotPanics,
+			want:      intParser(0),
+		},
+		{
+			v:         []int{0},
+			wantPanic: assert.NotPanics,
+			want:      intSliceParser([]int{0}),
+		},
+		{
+			v:         int8(0),
+			wantPanic: assert.NotPanics,
+			want:      int8Parser(0),
+		},
+		{
+			v:         []int8{0},
+			wantPanic: assert.NotPanics,
+			want:      int8SliceParser([]int8{0}),
+		},
+		{
+			v:         int16(0),
+			wantPanic: assert.NotPanics,
+			want:      int16Parser(0),
+		},
+		{
+			v:         []int16{0},
+			wantPanic: assert.NotPanics,
+			want:      int16SliceParser([]int16{0}),
+		},
+		{
+			v:         int32(0),
+			wantPanic: assert.NotPanics,
+			want:      int32Parser(0),
+		},
+		{
+			v:         []int32{0},
+			wantPanic: assert.NotPanics,
+			want:      int32SliceParser([]int32{0}),
+		},
+		{
+			v:         int64(0),
+			wantPanic: assert.NotPanics,
+			want:      int64Parser(0),
+		},
+		{
+			v:         []int64{0},
+			wantPanic: assert.NotPanics,
+			want:      int64SliceParser([]int64{0}),
+		},
+		{
+			v:         uint(0),
+			wantPanic: assert.NotPanics,
+			want:      uintParser(0),
+		},
+		{
+			v:         []uint{0},
+			wantPanic: assert.NotPanics,
+			want:      uintSliceParser([]uint{0}),
+		},
+		{
+			v:         uint8(0),
+			wantPanic: assert.NotPanics,
+			want:      uint8Parser(0),
+		},
+		{
+			v:         []uint8{0},
+			wantPanic: assert.NotPanics,
+			want:      uint8SliceParser([]uint8{0}),
+		},
+		{
+			v:         uint16(0),
+			wantPanic: assert.NotPanics,
+			want:      uint16Parser(0),
+		},
+		{
+			v:         []uint16{0},
+			wantPanic: assert.NotPanics,
+			want:      uint16SliceParser([]uint16{0}),
+		},
+		{
+			v:         uint32(0),
+			wantPanic: assert.NotPanics,
+			want:      uint32Parser(0),
+		},
+		{
+			v:         []uint32{0},
+			wantPanic: assert.NotPanics,
+			want:      uint32SliceParser([]uint32{0}),
+		},
+		{
+			v:         uint64(0),
+			wantPanic: assert.NotPanics,
+			want:      uint64Parser(0),
+		},
+		{
+			v:         []uint64{0},
+			wantPanic: assert.NotPanics,
+			want:      uint64SliceParser([]uint64{0}),
+		},
+		{
+			v:         float32(0),
+			wantPanic: assert.NotPanics,
+			want:      float32Parser(0),
+		},
+		{
+			v:         []float32{0},
+			wantPanic: assert.NotPanics,
+			want:      float32SliceParser([]float32{0}),
+		},
+		{
+			v:         float64(0),
+			wantPanic: assert.NotPanics,
+			want:      float64Parser(0),
+		},
+		{
+			v:         []float64{0},
+			wantPanic: assert.NotPanics,
+			want:      float64SliceParser([]float64{0}),
+		},
+		{
+			v:         false,
+			wantPanic: assert.NotPanics,
+			want:      boolParser(false),
+		},
+		{
+			v:         notsupported{},
+			wantPanic: assert.Panics,
+			want:      nil,
+		},
+		{
+			v:         nil,
+			wantPanic: assert.Panics,
+			want:      nil,
+		},
+		{
+			v:         (*string)(nil),
+			wantPanic: assert.Panics,
+			want:      nil,
+		},
+		{
+			v:         (*int)(nil),
+			wantPanic: assert.Panics,
+			want:      nil,
+		},
+		{
+			v:         time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC),
+			wantPanic: assert.NotPanics,
+			want:      timeParser(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)),
+		},
+		{
+			v:         []time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)},
+			wantPanic: assert.NotPanics,
+			want:      timeSliceParser([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}),
+		},
+		{
+			v:         time.Minute,
+			wantPanic: assert.NotPanics,
+			want:      durationParser(time.Minute),
+		},
+		{
+			v:         []time.Duration{time.Minute},
+			wantPanic: assert.NotPanics,
+			want:      durationSliceParser([]time.Duration{time.Minute}),
+		},
+		{
+			v:         getURL(t, "http://example.com"),
+			wantPanic: assert.NotPanics,
+			want:      urlParser(getURL(t, "http://example.com")),
+		},
+		{
+			v:         []url.URL{getURL(t, "http://example.com")},
+			wantPanic: assert.NotPanics,
+			want:      urlSliceParser([]url.URL{getURL(t, "http://example.com")}),
+		},
+		{
+			v:         getIP(t, "0.0.0.0"),
+			wantPanic: assert.NotPanics,
+			want:      ipParser(getIP(t, "0.0.0.0")),
+		},
+		{
+			v:         []net.IP{getIP(t, "0.0.0.0")},
+			wantPanic: assert.NotPanics,
+			want:      ipSliceParser([]net.IP{getIP(t, "0.0.0.0")}),
+		},
+		{
+			v:         uintptr(2),
+			wantPanic: assert.NotPanics,
+			want:      uintptrParser(2),
+		},
+		{
+			v:         []uintptr{2},
+			wantPanic: assert.NotPanics,
+			want:      uintptrSliceParser([]uintptr{2}),
+		},
+		{
+			v:         complex64(1),
+			wantPanic: assert.NotPanics,
+			want:      complex64Parser(1),
+		},
+		{
+			v:         []complex64{1},
+			wantPanic: assert.NotPanics,
+			want:      complex64SliceParser([]complex64{1}),
+		},
+		{
+			v:         complex128(1),
+			wantPanic: assert.NotPanics,
+			want:      complex128Parser(1),
+		},
+		{
+			v:         []complex128{1},
+			wantPanic: assert.NotPanics,
+			want:      complex128SliceParser([]complex128{1}),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%T", tt.v), func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, NewEnvParser(tt.v))
+			})
+		})
+	}
+}
+
+// Implement tests for newUintParser function.
+func Test_newUintParser(t *testing.T) {
 	type args struct {
 		v any
 	}
 
-	tests := []struct {
+	var tests = []struct {
 		name      string
 		args      args
-		want      EnvParser
 		wantPanic panicAssertionFunc
+		want      EnvParser
 	}{
-		{
-			name: "int32",
-			args: args{
-				v: int32(1),
-			},
-			want:      int32Parser(1),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "int64",
-			args: args{
-				v: int64(1),
-			},
-			want:      int64Parser(1),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]int32",
-			args: args{
-				v: []int32{1},
-			},
-			want:      int32SliceParser([]int32{1}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]int64",
-			args: args{
-				v: []int64{1},
-			},
-			want:      int64SliceParser([]int64{1}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "uint64",
-			args: args{
-				v: uint64(1),
-			},
-			want:      uint64Parser(1),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]uint64",
-			args: args{
-				v: []uint64{1},
-			},
-			want:      uint64SliceParser([]uint64{1}),
-			wantPanic: assert.NotPanics,
-		},
 		{
 			name: "uint",
 			args: args{
-				v: uint(1),
+				v: uint(0),
 			},
-			want:      uintParser(1),
 			wantPanic: assert.NotPanics,
+			want:      uintParser(0),
 		},
 		{
-			name: "[]uint",
+			name: "uint slice",
 			args: args{
-				v: []uint{1},
+				v: []uint{0},
 			},
-			want:      uintSliceParser{1},
 			wantPanic: assert.NotPanics,
+			want:      uintSliceParser([]uint{0}),
 		},
 		{
 			name: "uint8",
 			args: args{
-				v: uint8(1),
+				v: uint8(0),
 			},
-			want:      uint8Parser(1),
 			wantPanic: assert.NotPanics,
+			want:      uint8Parser(0),
+		},
+		{
+			name: "uint8 slice",
+			args: args{
+				v: []uint8{0},
+			},
+			wantPanic: assert.NotPanics,
+			want:      uint8SliceParser([]uint8{0}),
 		},
 		{
 			name: "uint16",
 			args: args{
-				v: uint16(1),
+				v: uint16(0),
 			},
-			want:      uint16Parser(1),
 			wantPanic: assert.NotPanics,
+			want:      uint16Parser(0),
+		},
+		{
+			name: "uint16 slice",
+			args: args{
+				v: []uint16{0},
+			},
+			wantPanic: assert.NotPanics,
+			want:      uint16SliceParser([]uint16{0}),
 		},
 		{
 			name: "uint32",
 			args: args{
-				v: uint32(1),
+				v: uint32(0),
 			},
-			want:      uint32Parser(1),
+
 			wantPanic: assert.NotPanics,
+			want:      uint32Parser(0),
 		},
 		{
-			name: "[]uint16",
+			name: "uint32 slice",
 			args: args{
-				v: []uint16{1},
+				v: []uint32{0},
 			},
-			want:      uint16SliceParser{1},
 			wantPanic: assert.NotPanics,
+			want:      uint32SliceParser([]uint32{0}),
 		},
 		{
-			name: "[]uint32",
+			name: "uint64",
 			args: args{
-				v: []uint32{1},
+				v: uint64(0),
 			},
-			want:      uint32SliceParser{1},
 			wantPanic: assert.NotPanics,
+			want:      uint64Parser(0),
 		},
 		{
-			name: "int",
+			name: "uint64 slice",
 			args: args{
-				v: 1,
+				v: []uint64{0},
 			},
-			want:      intParser(1),
 			wantPanic: assert.NotPanics,
+			want:      uint64SliceParser([]uint64{0}),
 		},
 		{
-			name: "int16",
+			name: "uintptr",
 			args: args{
-				v: int16(1),
+				v: uintptr(0),
 			},
-			want:      int16Parser(1),
 			wantPanic: assert.NotPanics,
+			want:      uintptrParser(0),
 		},
 		{
-			name: "int8",
+			name: "uintptr slice",
 			args: args{
-				v: int8(1),
+				v: []uintptr{0},
 			},
-			want:      int8Parser(1),
 			wantPanic: assert.NotPanics,
+			want:      uintptrSliceParser([]uintptr{0}),
 		},
 		{
-			name: "[]int",
+			name: "invalid type",
 			args: args{
-				v: []int{1},
+				v: notsupported{},
 			},
-			want:      intSliceParser([]int{1}),
 			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]int16",
-			args: args{
-				v: []int16{1},
-			},
-			want:      int16SliceParser([]int16{1}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]uint8",
-			args: args{
-				v: []uint8{1},
-			},
-			want:      uint8SliceParser([]uint8{1}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]int8",
-			args: args{
-				v: []int8{1},
-			},
-			want:      int8SliceParser([]int8{1}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "string",
-			args: args{
-				v: "s",
-			},
-			want:      stringParser("s"),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]string",
-			args: args{
-				v: []string{"s"},
-			},
-			want:      stringSliceParser([]string{"s"}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "bool",
-			args: args{
-				v: true,
-			},
-			want:      boolParser(true),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "float32",
-			args: args{
-				v: float32(1.1),
-			},
-			want:      float32Parser(float32(1.1)),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "float64",
-			args: args{
-				v: 1.1,
-			},
-			want:      float64Parser(1.1),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]float32",
-			args: args{
-				v: []float32{1.1},
-			},
-			want:      float32SliceParser([]float32{1.1}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]float64",
-			args: args{
-				v: []float64{1.1},
-			},
-			want:      float64SliceParser([]float64{1.1}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "time.Time",
-			args: args{
-				v: time.Time{},
-			},
-			want:      timeParser(time.Time{}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]time.Time",
-			args: args{
-				v: []time.Time{},
-			},
-			want:      timeSliceParser([]time.Time{}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]time.Duration",
-			args: args{
-				v: []time.Duration{},
-			},
-			want:      durationSliceParser([]time.Duration{}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "time.Duration",
-			args: args{
-				v: time.Minute,
-			},
-			want:      durationParser(time.Minute),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "url.URL",
-			args: args{
-				v: url.URL{},
-			},
-			want:      urlParser(url.URL{}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]url.URL",
-			args: args{
-				v: []url.URL{},
-			},
-			want:      urlSliceParser([]url.URL{}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "net.IP",
-			args: args{
-				v: net.IP{},
-			},
-			want:      ipParser(net.IP{}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "[]net.IP",
-			args: args{
-				v: []net.IP{},
-			},
-			want:      ipSliceParser([]net.IP{}),
-			wantPanic: assert.NotPanics,
-		},
-		{
-			name: "not supported - panics",
-			args: args{
-				v: notsupported{
-					name: "name",
-				},
-			},
 			want:      nil,
-			wantPanic: assert.Panics,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var got EnvParser
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newUintParser(tt.args.v))
+			})
+		})
+	}
+}
 
-			if !tt.wantPanic(t, func() {
-				got = NewEnvParser(tt.args.v)
-			}) {
-				return
-			}
+// Implement tests for newFloatParser function.
+func Test_newFloatParser(t *testing.T) {
+	type args struct {
+		v any
+	}
 
-			assert.Equal(t, tt.want, got)
+	var tests = []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "float32",
+			args: args{
+				v: float32(0),
+			},
+			wantPanic: assert.NotPanics,
+			want:      float32Parser(0),
+		},
+		{
+			name: "float32 slice",
+			args: args{
+				v: []float32{0},
+			},
+			wantPanic: assert.NotPanics,
+			want:      float32SliceParser([]float32{0}),
+		},
+		{
+			name: "float64",
+			args: args{
+				v: float64(0),
+			},
+			wantPanic: assert.NotPanics,
+			want:      float64Parser(0),
+		},
+		{
+			name: "float64 slice",
+			args: args{
+				v: []float64{0},
+			},
+			wantPanic: assert.NotPanics,
+			want:      float64SliceParser([]float64{0}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newFloatParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Implement tests for newTimeParser function.
+func Test_newTimeParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	var tests = []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "time.Time",
+			args: args{
+				v: time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC),
+			},
+			wantPanic: assert.NotPanics,
+			want:      timeParser(time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)),
+		},
+		{
+			name: "time.Time slice",
+			args: args{
+				v: []time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)},
+			},
+			wantPanic: assert.NotPanics,
+			want:      timeSliceParser([]time.Time{time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+		{
+			name: "time.Time pointer",
+			args: args{
+				v: &time.Time{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+		{
+			name: "time.Time slice pointer",
+			args: args{
+				v: &[]time.Time{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+		{
+			name: "time.Duration",
+			args: args{
+				v: time.Second,
+			},
+			wantPanic: assert.NotPanics,
+			want:      durationParser(time.Second),
+		},
+		{
+			name: "time.Duration slice",
+			args: args{
+				v: []time.Duration{time.Second},
+			},
+			wantPanic: assert.NotPanics,
+			want:      durationSliceParser([]time.Duration{time.Second}),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newTimeParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Implement tests for newStringParser function.
+func Test_newStringParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	var tests = []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "string",
+			args: args{
+				v: "string",
+			},
+			wantPanic: assert.NotPanics,
+			want:      stringParser("string"),
+		},
+		{
+			name: "string slice",
+			args: args{
+				v: []string{"string"},
+			},
+			wantPanic: assert.NotPanics,
+			want:      stringSliceParser([]string{"string"}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newStringParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Implement tests for newBoolParser function.
+func Test_newBoolParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	var tests = []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "bool",
+			args: args{
+				v: true,
+			},
+			wantPanic: assert.NotPanics,
+			want:      boolParser(true),
+		},
+		{
+			name: "bool slice",
+			args: args{
+				v: []bool{true},
+			},
+			wantPanic: assert.NotPanics,
+			want:      boolSliceParser([]bool{true}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newBoolParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Test_newIntParser tests newIntParser function.
+func Test_newIntParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	var tests = []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "int",
+			args: args{
+				v: 1,
+			},
+			wantPanic: assert.NotPanics,
+			want:      intParser(1),
+		},
+		{
+			name: "int slice",
+			args: args{
+				v: []int{1},
+			},
+			wantPanic: assert.NotPanics,
+			want:      intSliceParser([]int{1}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newIntParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Test_newIPParser tests newIPParser function.
+func Test_newIPParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	var tests = []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "net.IP",
+			args: args{
+				v: net.IPv4(127, 0, 0, 1),
+			},
+			wantPanic: assert.NotPanics,
+			want:      ipParser(net.IPv4(127, 0, 0, 1)),
+		},
+		{
+			name: "net.IP slice",
+			args: args{
+				v: []net.IP{net.IPv4(127, 0, 0, 1)},
+			},
+			wantPanic: assert.NotPanics,
+			want:      ipSliceParser([]net.IP{net.IPv4(127, 0, 0, 1)}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newIPParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Test_newURLParser tests newURLParser function.
+func Test_newURLParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	var tests = []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "url.URL",
+			args: args{
+				v: url.URL{
+					Scheme: "http",
+					Host:   "localhost",
+				},
+			},
+			wantPanic: assert.NotPanics,
+			want: urlParser(url.URL{
+				Scheme: "http",
+				Host:   "localhost",
+			}),
+		},
+		{
+			name: "url.URL slice",
+			args: args{
+				v: []url.URL{
+					{
+						Scheme: "http",
+						Host:   "localhost",
+					},
+				},
+			},
+			wantPanic: assert.NotPanics,
+			want: urlSliceParser([]url.URL{
+				{
+					Scheme: "http",
+					Host:   "localhost",
+				},
+			}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newURLParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Test_newComplexParser tests newComplexParser function.
+func Test_newComplexParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	var tests = []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "complex64",
+			args: args{
+				v: complex64(1),
+			},
+			wantPanic: assert.NotPanics,
+			want:      complex64Parser(complex64(1)),
+		},
+		{
+			name: "complex64 slice",
+			args: args{
+				v: []complex64{1},
+			},
+			wantPanic: assert.NotPanics,
+			want:      complex64SliceParser([]complex64{1}),
+		},
+		{
+			name: "complex128",
+			args: args{
+				v: complex128(1),
+			},
+			wantPanic: assert.NotPanics,
+			want:      complex128Parser(complex128(1)),
+		},
+		{
+			name: "complex128 slice",
+			args: args{
+				v: []complex128{1},
+			},
+			wantPanic: assert.NotPanics,
+			want:      complex128SliceParser([]complex128{1}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newComplexParser(tt.args.v))
+			})
 		})
 	}
 }
@@ -1004,6 +1517,136 @@ func Test_ParseEnv(t *testing.T) {
 				getIP(t, "2001:cb8::17"),
 				getIP(t, "192.168.0.1"),
 			},
+		},
+		{
+			name: "boolSliceParser",
+			s:    boolSliceParser([]bool{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "true,false",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []bool{},
+				in2: Parameters{
+					Separator: ",",
+				},
+			},
+			want: []bool{
+				true,
+				false,
+			},
+		},
+		{
+			name: "uintptrSliceParser",
+			s:    uintptrSliceParser([]uintptr{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []uintptr{},
+				in2: Parameters{
+					Separator: ",",
+				},
+			},
+			want: []uintptr{
+				1,
+				2,
+			},
+		},
+		{
+			name: "uintptrParser",
+			s:    uintptrParser(uintptr(0)),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: uintptr(0),
+			},
+			want: uintptr(1),
+		},
+		{
+			name: "complex64SliceParser",
+			s:    complex64SliceParser([]complex64{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1+2i,3+4i",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []complex64{},
+				in2: Parameters{
+					Separator: ",",
+				},
+			},
+			want: []complex64{
+				complex(1, 2),
+				complex(3, 4),
+			},
+		},
+		{
+			name: "complex64Parser",
+			s:    complex64Parser(complex64(0)),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1+2i",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: complex64(0),
+			},
+			want: complex64(complex(1, 2)),
+		},
+		{
+			name: "complex128SliceParser",
+			s:    complex128SliceParser([]complex128{}),
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1+2i,3+4i",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: []complex128{},
+				in2: Parameters{
+					Separator: ",",
+				},
+			},
+			want: []complex128{
+				complex(1, 2),
+				complex(3, 4),
+			},
+		},
+		{
+			name: "complex128Parser",
+			s:    complex128Parser(complex128(0)),
+			precond: precondition{
+
+				setenv: setenv{
+					isSet: true,
+					val:   "1+2i",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				defaltVal: complex128(0),
+			},
+			want: complex128(complex(1, 2)),
 		},
 	}
 
