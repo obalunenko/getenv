@@ -83,6 +83,30 @@ func ExampleEnvOrDefault() {
 	val = getenv.EnvOrDefault(key, net.IP{})
 	fmt.Printf("[%T]: %v\n", val, val)
 
+	// []string
+	if err := os.Setenv(key, "a,b,c,d"); err != nil {
+		panic(err)
+	}
+
+	val = getenv.EnvOrDefault(key, []string{}, option.WithSeparator(","))
+	fmt.Printf("[%T]: %v\n", val, val)
+
+	// complex128
+	if err := os.Setenv(key, "1+2i"); err != nil {
+		panic(err)
+	}
+
+	val = getenv.EnvOrDefault(key, complex128(0))
+	fmt.Printf("[%T]: %v\n", val, val)
+
+	// []complex64
+	if err := os.Setenv(key, "1+2i,3+4i"); err != nil {
+		panic(err)
+	}
+
+	val = getenv.EnvOrDefault(key, []complex64{}, option.WithSeparator(","))
+	fmt.Printf("[%T]: %v\n", val, val)
+
 	// Output:
 	// [string]: golly
 	// [int]: 123
@@ -91,4 +115,7 @@ func ExampleEnvOrDefault() {
 	// [time.Duration]: 2h35m0s
 	// [url.URL]: {https  test:abcd123 golangbyexample.com:8000 /tutorials/intro  false false type=advance&compact=false history }
 	// [net.IP]: 2001:cb8::17
+	// [[]string]: [a b c d]
+	// [complex128]: (1+2i)
+	// [[]complex64]: [(1+2i) (3+4i)]
 }
