@@ -3826,3 +3826,196 @@ func TestComplex128SliceOrDefault(t *testing.T) {
 		})
 	}
 }
+
+// TestEnvInt tests the Env function with an int.
+func TestEnvInt(t *testing.T) {
+	type args struct {
+		key string
+	}
+
+	type expected struct {
+		val       int
+		wantError assert.ErrorAssertionFunc
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "123",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val: 0,
+				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrNotSet)
+				},
+			},
+		},
+		{
+			name: "env set",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "123",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:       123,
+				wantError: assert.NoError,
+			},
+		},
+		{
+			name: "env set, corrupted",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "asd",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val: 0,
+				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrInvalidValue)
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got, err := getenv.Env[int](tt.args.key)
+			if !tt.expected.wantError(t, err) {
+				return
+			}
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+// TestEnvIntSlice tests the Env function with a []int.
+func TestEnvIntSlice(t *testing.T) {
+	type args struct {
+		key       string
+		separator string
+	}
+
+	type expected struct {
+		val       []int
+		wantError assert.ErrorAssertionFunc
+	}
+
+	var tests = []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "1,2,3",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val: nil,
+				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrNotSet)
+				},
+			},
+		},
+		{
+			name: "env set",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,2,3",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val:       []int{1, 2, 3},
+				wantError: assert.NoError,
+			},
+		},
+		{
+			name: "env set, corrupted",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "1,asd,3",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val: nil,
+				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrInvalidValue)
+				},
+			},
+		},
+		{
+			name: "empty env value set",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val: nil,
+				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrInvalidValue)
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got, err := getenv.Env[[]int](tt.args.key, option.WithSeparator(tt.args.separator))
+			if !tt.expected.wantError(t, err) {
+				return
+			}
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
