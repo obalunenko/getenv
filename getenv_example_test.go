@@ -120,7 +120,6 @@ func ExampleEnvOrDefault() {
 	// [[]complex64]: [(1+2i) (3+4i)]
 }
 
-// ExampleEnv is a simple example of using the Env function.
 func ExampleEnv() {
 	key := "GH_GETENV_TEST"
 
