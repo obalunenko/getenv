@@ -77,21 +77,23 @@ import (
 )
 
 func main() {
-	key := "GH_GETENV_TEST"
-
-	defer func() {
-		if err := os.Unsetenv("GH_GETENV_TEST"); err != nil {
-			panic(err)
-		}
-	}()
+	const (
+		key = "GH_GETENV_TEST"
+	)
 
 	var (
 		val any
 		err error
 	)
 
+	defer func() {
+		if err = os.Unsetenv(key); err != nil {
+			panic(err)
+		}
+	}()
+
 	// string
-	if err := os.Setenv(key, "golly"); err != nil {
+	if err = os.Setenv(key, "golly"); err != nil {
 		panic(err)
 	}
 
@@ -99,7 +101,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// int
-	if err := os.Setenv(key, "123"); err != nil {
+	if err = os.Setenv(key, "123"); err != nil {
 		panic(err)
 	}
 
@@ -107,7 +109,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// int conversion error
-	if err := os.Setenv(key, "123s4"); err != nil {
+	if err = os.Setenv(key, "123s4"); err != nil {
 		panic(err)
 	}
 
@@ -115,7 +117,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// time.Time
-	if err := os.Setenv(key, "2022-01-20"); err != nil {
+	if err = os.Setenv(key, "2022-01-20"); err != nil {
 		panic(err)
 	}
 
@@ -123,7 +125,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// []float64
-	if err := os.Setenv(key, "26.89,0.67"); err != nil {
+	if err = os.Setenv(key, "26.89,0.67"); err != nil {
 		panic(err)
 	}
 
@@ -131,7 +133,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// time.Duration
-	if err := os.Setenv(key, "2h35m"); err != nil {
+	if err = os.Setenv(key, "2h35m"); err != nil {
 		panic(err)
 	}
 
@@ -139,7 +141,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// url.URL
-	if err := os.Setenv(key, "https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history"); err != nil {
+	if err = os.Setenv(key, "https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history"); err != nil {
 		panic(err)
 	}
 
@@ -147,7 +149,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// net.IP
-	if err := os.Setenv(key, "2001:cb8::17"); err != nil {
+	if err = os.Setenv(key, "2001:cb8::17"); err != nil {
 		panic(err)
 	}
 
@@ -155,7 +157,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// []string
-	if err := os.Setenv(key, "a,b,c,d"); err != nil {
+	if err = os.Setenv(key, "a,b,c,d"); err != nil {
 		panic(err)
 	}
 
@@ -163,7 +165,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// complex128
-	if err := os.Setenv(key, "1+2i"); err != nil {
+	if err = os.Setenv(key, "1+2i"); err != nil {
 		panic(err)
 	}
 
@@ -171,7 +173,7 @@ func main() {
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// []complex64
-	if err := os.Setenv(key, "1+2i,3+4i"); err != nil {
+	if err = os.Setenv(key, "1+2i,3+4i"); err != nil {
 		panic(err)
 	}
 
@@ -220,10 +222,12 @@ import (
 )
 
 func main() {
-	key := "GH_GETENV_TEST"
+	const (
+		key = "GH_GETENV_TEST"
+	)
 
 	defer func() {
-		if err := os.Unsetenv("GH_GETENV_TEST"); err != nil {
+		if err := os.Unsetenv(key); err != nil {
 			panic(err)
 		}
 	}()
