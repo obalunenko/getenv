@@ -12,10 +12,12 @@ import (
 )
 
 func ExampleEnvOrDefault() {
-	key := "GH_GETENV_TEST"
+	const (
+		key = "GH_GETENV_TEST"
+	)
 
 	defer func() {
-		if err := os.Unsetenv("GH_GETENV_TEST"); err != nil {
+		if err := os.Unsetenv(key); err != nil {
 			panic(err)
 		}
 	}()
@@ -121,18 +123,20 @@ func ExampleEnvOrDefault() {
 }
 
 func ExampleEnv() {
-	key := "GH_GETENV_TEST"
-
-	defer func() {
-		if err := os.Unsetenv("GH_GETENV_TEST"); err != nil {
-			panic(err)
-		}
-	}()
+	const (
+		key = "GH_GETENV_TEST"
+	)
 
 	var (
 		val any
 		err error
 	)
+
+	defer func() {
+		if err := os.Unsetenv(key); err != nil {
+			panic(err)
+		}
+	}()
 
 	// string
 	if err := os.Setenv(key, "golly"); err != nil {
@@ -234,5 +238,4 @@ func ExampleEnv() {
 	// [[]string]: [a b c d]; err: <nil>
 	// [complex128]: (1+2i); err: <nil>
 	// [[]complex64]: [(1+2i) (3+4i)]; err: <nil>
-
 }
