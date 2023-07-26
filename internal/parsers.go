@@ -105,9 +105,7 @@ func parseFloatGen[T Float](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	tVal := any(T(val)).(T)
-
-	return tVal, nil
+	return any(T(val)).(T), nil
 }
 
 func parseIntGen[T Int](raw string) (T, error) {
@@ -139,9 +137,7 @@ func parseIntGen[T Int](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	tVal := any(T(val)).(T)
-
-	return tVal, nil
+	return any(T(val)).(T), nil
 }
 
 func intOrDefaultGen[T Int](key string, defaultVal T) T {
@@ -332,9 +328,7 @@ func parseUintGen[T Uint](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	tVal := any(T(val)).(T)
-
-	return tVal, nil
+	return any(T(val)).(T), nil
 }
 
 func uintOrDefaultGen[T Uint](key string, defaultVal T) T {
@@ -470,9 +464,7 @@ func parseComplexGen[T Complex](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	tVal := any(T(val)).(T)
-
-	return tVal, nil
+	return any(T(val)).(T), nil
 }
 
 func complexOrDefaultGen[T complex64 | complex128](key string, defaultVal T) T {
