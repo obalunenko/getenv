@@ -21,7 +21,7 @@ echo "Local packages prefix: ${LOCAL_PFX}"
 
 for f in "${GO_FILES[@]}"; do
   echo "Fixing fmt at ${f}"
-  gofmt -s -w "$f"
+  gofumpt -l -w "$f"
 done
 
 echo "${SCRIPT_NAME} done."
