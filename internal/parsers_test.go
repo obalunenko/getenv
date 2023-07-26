@@ -1550,7 +1550,7 @@ func Test_uintSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1680,7 +1680,7 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uint8SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1810,7 +1810,7 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uint16SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1940,7 +1940,7 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uint32SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}

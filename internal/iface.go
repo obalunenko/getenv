@@ -434,7 +434,7 @@ type uintSliceParser []uint
 func (i uintSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uintSliceOrDefault(key, defaltVal.([]uint), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint), sep)
 
 	return val
 }
@@ -444,7 +444,7 @@ type uint8SliceParser []uint8
 func (i uint8SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uint8SliceOrDefault(key, defaltVal.([]uint8), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint8), sep)
 
 	return val
 }
@@ -454,7 +454,7 @@ type uint32SliceParser []uint32
 func (i uint32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uint32SliceOrDefault(key, defaltVal.([]uint32), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint32), sep)
 
 	return val
 }
@@ -464,7 +464,7 @@ type uint16SliceParser []uint16
 func (i uint16SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uint16SliceOrDefault(key, defaltVal.([]uint16), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint16), sep)
 
 	return val
 }
