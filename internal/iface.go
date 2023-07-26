@@ -553,7 +553,7 @@ type uintptrSliceParser []uintptr
 func (i uintptrSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uintptrSliceOrDefault(key, defaltVal.([]uintptr), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uintptr), sep)
 
 	return val
 }

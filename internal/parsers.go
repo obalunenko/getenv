@@ -164,10 +164,10 @@ func intOrDefaultGen[T Int](key string, defaultVal T) T {
 	return val
 }
 
-func parseIntSliceGen[T Int](raw []string) ([]T, error) {
-	var tt []T
+func parseIntSliceGen[S []T, T Int](raw []string) (S, error) {
+	var tt S
 
-	val := make([]T, 0, len(raw))
+	val := make(S, 0, len(raw))
 
 	for _, s := range raw {
 		v, err := parseIntGen[T](s)
@@ -181,10 +181,10 @@ func parseIntSliceGen[T Int](raw []string) ([]T, error) {
 	return val, nil
 }
 
-func parseFloatSliceGen[T Float](raw []string) ([]T, error) {
-	var tt []T
+func parseFloatSliceGen[S []T, T Float](raw []string) (S, error) {
+	var tt S
 
-	val := make([]T, 0, len(raw))
+	val := make(S, 0, len(raw))
 
 	for _, s := range raw {
 		v, err := parseFloatGen[T](s)
@@ -198,13 +198,13 @@ func parseFloatSliceGen[T Float](raw []string) ([]T, error) {
 	return val, nil
 }
 
-func floatSliceOrDefaultGen[T Float](key string, defaultVal []T, sep string) []T {
+func floatSliceOrDefaultGen[S []T, T Float](key string, defaultVal S, sep string) S {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
 	}
 
-	val, err := parseFloatSliceGen[T](valraw)
+	val, err := parseFloatSliceGen[S](valraw)
 	if err != nil {
 		return defaultVal
 	}
@@ -212,13 +212,13 @@ func floatSliceOrDefaultGen[T Float](key string, defaultVal []T, sep string) []T
 	return val
 }
 
-func intSliceOrDefaultGen[T Int](key string, defaultVal []T, sep string) []T {
+func intSliceOrDefaultGen[S []T, T Int](key string, defaultVal S, sep string) S {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
 	}
 
-	val, err := parseIntSliceGen[T](valraw)
+	val, err := parseIntSliceGen[S](valraw)
 	if err != nil {
 		return defaultVal
 	}
@@ -360,13 +360,13 @@ func uintOrDefaultGen[T Uint](key string, defaultVal T) T {
 	return val
 }
 
-func uintSliceOrDefaultGen[T Uint](key string, defaultVal []T, sep string) []T {
+func uintSliceOrDefaultGen[S []T, T Uint](key string, defaultVal S, sep string) S {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
 	}
 
-	val := make([]T, 0, len(valraw))
+	val := make(S, 0, len(valraw))
 
 	for _, s := range valraw {
 		v, err := parseUintGen[T](s)
@@ -460,35 +460,7 @@ func ipSliceOrDefault(key string, defaultVal []net.IP, sep string) []net.IP {
 	return val
 }
 
-// uintptrSliceOrDefault retrieves the uintptr slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func uintptrSliceOrDefault(key string, defaultVal []uintptr, sep string) []uintptr {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]uintptr, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 0
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseUint(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, uintptr(v))
-	}
-
-	return val
-}
-
-func parseComplexGen[T complex64 | complex128](raw string) (T, error) {
+func parseComplexGen[T Complex](raw string) (T, error) {
 	var tt T
 
 	var (
@@ -543,13 +515,13 @@ func complexOrDefaultGen[T complex64 | complex128](key string, defaultVal T) T {
 	return val
 }
 
-func complexSliceOrDefaultGen[T complex64 | complex128](key string, defaultVal []T, sep string) []T {
+func complexSliceOrDefaultGen[S []T, T Complex](key string, defaultVal S, sep string) S {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
 	}
 
-	val := make([]T, 0, len(valraw))
+	val := make(S, 0, len(valraw))
 
 	for _, s := range valraw {
 		v, err := parseComplexGen[T](s)

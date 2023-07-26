@@ -3865,7 +3865,7 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintptrSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
