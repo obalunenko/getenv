@@ -79,7 +79,7 @@ func stringSliceOrDefault(key string, defaultVal []string, sep string) []string 
 	return val
 }
 
-func floatOrDefaultGen[T float32 | float64](key string, defaultVal T) T {
+func floatOrDefaultGen[T Float](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
@@ -93,38 +93,19 @@ func floatOrDefaultGen[T float32 | float64](key string, defaultVal T) T {
 	return val
 }
 
-func parseFloatGen[T float32 | float64](raw string) (T, error) {
+func parseFloatGen[T Float](raw string) (T, error) {
 	var tt T
 
 	const (
 		bitsize = 64
 	)
 
-	var (
-		castFn func(val float64) (T, bool)
-	)
-
-	switch any(tt).(type) {
-	case float32:
-		castFn = func(val float64) (T, bool) {
-			t, ok := any(float32(val)).(T)
-
-			return t, ok
-		}
-	case float64:
-		castFn = func(val float64) (T, bool) {
-			t, ok := any(val).(T)
-
-			return t, ok
-		}
-	}
-
 	val, err := strconv.ParseFloat(raw, bitsize)
 	if err != nil {
 		return tt, ErrInvalidValue
 	}
 
-	tVal, ok := castFn(val)
+	tVal, ok := any(T(val)).(T)
 	if !ok {
 		return tt, ErrInvalidValue
 	}
@@ -132,7 +113,7 @@ func parseFloatGen[T float32 | float64](raw string) (T, error) {
 	return tVal, nil
 }
 
-func parseIntGen[T int | int8 | int16 | int32 | int64](raw string) (T, error) {
+func parseIntGen[T Int](raw string) (T, error) {
 	var tt T
 
 	const (
@@ -141,45 +122,19 @@ func parseIntGen[T int | int8 | int16 | int32 | int64](raw string) (T, error) {
 
 	var (
 		bitsize int
-		castFn  func(val int64) (T, bool)
 	)
 
 	switch any(tt).(type) {
 	case int:
 		bitsize = 0
-		castFn = func(val int64) (T, bool) {
-			t, ok := any(int(val)).(T)
-
-			return t, ok
-		}
 	case int8:
 		bitsize = 8
-		castFn = func(val int64) (T, bool) {
-			t, ok := any(int8(val)).(T)
-
-			return t, ok
-		}
 	case int16:
 		bitsize = 16
-		castFn = func(val int64) (T, bool) {
-			t, ok := any(int16(val)).(T)
-
-			return t, ok
-		}
 	case int32:
 		bitsize = 32
-		castFn = func(val int64) (T, bool) {
-			t, ok := any(int32(val)).(T)
-
-			return t, ok
-		}
 	case int64:
 		bitsize = 64
-		castFn = func(val int64) (T, bool) {
-			t, ok := any(val).(T)
-
-			return t, ok
-		}
 	}
 
 	val, err := strconv.ParseInt(raw, base, bitsize)
@@ -187,7 +142,7 @@ func parseIntGen[T int | int8 | int16 | int32 | int64](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	tVal, ok := castFn(val)
+	tVal, ok := any(T(val)).(T)
 	if !ok {
 		return tt, ErrInvalidValue
 	}
@@ -195,7 +150,7 @@ func parseIntGen[T int | int8 | int16 | int32 | int64](raw string) (T, error) {
 	return tVal, nil
 }
 
-func intOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVal T) T {
+func intOrDefaultGen[T Int](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
@@ -209,7 +164,7 @@ func intOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVa
 	return val
 }
 
-func parseIntSliceGen[T int | int8 | int16 | int32 | int64](raw []string) ([]T, error) {
+func parseIntSliceGen[T Int](raw []string) ([]T, error) {
 	var tt []T
 
 	val := make([]T, 0, len(raw))
@@ -226,7 +181,7 @@ func parseIntSliceGen[T int | int8 | int16 | int32 | int64](raw []string) ([]T, 
 	return val, nil
 }
 
-func parseFloatSliceGen[T float32 | float64](raw []string) ([]T, error) {
+func parseFloatSliceGen[T Float](raw []string) ([]T, error) {
 	var tt []T
 
 	val := make([]T, 0, len(raw))
@@ -243,7 +198,7 @@ func parseFloatSliceGen[T float32 | float64](raw []string) ([]T, error) {
 	return val, nil
 }
 
-func floatSliceOrDefaultGen[T float32 | float64](key string, defaultVal []T, sep string) []T {
+func floatSliceOrDefaultGen[T Float](key string, defaultVal []T, sep string) []T {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
@@ -257,7 +212,7 @@ func floatSliceOrDefaultGen[T float32 | float64](key string, defaultVal []T, sep
 	return val
 }
 
-func intSliceOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVal []T, sep string) []T {
+func intSliceOrDefaultGen[T Int](key string, defaultVal []T, sep string) []T {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
@@ -351,35 +306,7 @@ func durationSliceOrDefault(key string, defaultVal []time.Duration, separator st
 	return val
 }
 
-// uint64SliceOrDefault retrieves the uint64 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint64SliceOrDefault(key string, defaultVal []uint64, sep string) []uint64 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]uint64, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 64
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseUint(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, v)
-	}
-
-	return val
-}
-
-func parseUintGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](raw string) (T, error) {
+func parseUintGen[T Uint](raw string) (T, error) {
 	var tt T
 
 	const (
@@ -388,52 +315,22 @@ func parseUintGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](raw strin
 
 	var (
 		bitsize int
-		castFn  func(val uint64) (T, bool)
 	)
 
 	switch any(tt).(type) {
 	case uint:
 		bitsize = 0
-		castFn = func(val uint64) (T, bool) {
-			t, ok := any(uint(val)).(T)
-
-			return t, ok
-		}
 	case uint8:
 		bitsize = 8
-		castFn = func(val uint64) (T, bool) {
-			t, ok := any(uint8(val)).(T)
-
-			return t, ok
-		}
 	case uint16:
 		bitsize = 16
-		castFn = func(val uint64) (T, bool) {
-			t, ok := any(uint16(val)).(T)
-
-			return t, ok
-		}
 	case uint32:
 		bitsize = 32
-		castFn = func(val uint64) (T, bool) {
-			t, ok := any(uint32(val)).(T)
-
-			return t, ok
-		}
 	case uint64:
 		bitsize = 64
-		castFn = func(val uint64) (T, bool) {
-			t, ok := any(val).(T)
 
-			return t, ok
-		}
 	case uintptr:
 		bitsize = 0
-		castFn = func(val uint64) (T, bool) {
-			t, ok := any(uintptr(val)).(T)
-
-			return t, ok
-		}
 	}
 
 	val, err := strconv.ParseUint(raw, base, bitsize)
@@ -441,7 +338,7 @@ func parseUintGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](raw strin
 		return tt, ErrInvalidValue
 	}
 
-	tVal, ok := castFn(val)
+	tVal, ok := any(T(val)).(T)
 	if !ok {
 		return tt, ErrInvalidValue
 	}
@@ -449,7 +346,7 @@ func parseUintGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](raw strin
 	return tVal, nil
 }
 
-func uintOrDefaultGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](key string, defaultVal T) T {
+func uintOrDefaultGen[T Uint](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
@@ -463,7 +360,7 @@ func uintOrDefaultGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](key s
 	return val
 }
 
-func uintSliceOrDefaultGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](key string, defaultVal []T, sep string) []T {
+func uintSliceOrDefaultGen[T Uint](key string, defaultVal []T, sep string) []T {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal

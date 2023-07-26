@@ -408,7 +408,7 @@ type uint64SliceParser []uint64
 func (i uint64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uint64SliceOrDefault(key, defaltVal.([]uint64), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint64), sep)
 
 	return val
 }

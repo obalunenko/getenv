@@ -2911,7 +2911,7 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uint64SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
