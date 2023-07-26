@@ -229,6 +229,59 @@ func int8SliceOrDefault(key string, defaultVal []int8, sep string) []int8 {
 	return val
 }
 
+func intOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVal T) T {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	const (
+		base = 10
+	)
+
+	var (
+		bitsize int
+		castFn  func(val int64) T
+	)
+
+	switch any(defaultVal).(type) {
+	case int:
+		bitsize = 0
+		castFn = func(val int64) T {
+			return any(int(val)).(T)
+		}
+	case int8:
+		bitsize = 8
+		castFn = func(val int64) T {
+			return any(int8(val)).(T)
+		}
+	case int16:
+		bitsize = 16
+		castFn = func(val int64) T {
+			return any(int16(val)).(T)
+		}
+	case int32:
+		bitsize = 32
+		castFn = func(val int64) T {
+			return any(int32(val)).(T)
+		}
+	case int64:
+		bitsize = 64
+		castFn = func(val int64) T {
+			return any(val).(T)
+		}
+	default:
+		panic("invalid type")
+	}
+
+	val, err := strconv.ParseInt(env, base, bitsize)
+	if err != nil {
+		return defaultVal
+	}
+
+	return castFn(val)
+}
+
 // int32SliceOrDefault retrieves the int32 slice value of the environment variable named
 // by the key and separated by sep.
 // If variable not set or value is empty - defaultVal will be returned.
@@ -363,94 +416,6 @@ func durationSliceOrDefault(key string, defaultVal []time.Duration, separator st
 	}
 
 	return val
-}
-
-// int64OrDefault retrieves the int64 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func int64OrDefault(key string, defaultVal int64) int64 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
-		bitsize = 64
-	)
-
-	val, err := strconv.ParseInt(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-// int8OrDefault retrieves the int8 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func int8OrDefault(key string, defaultVal int8) int8 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
-		bitsize = 8
-	)
-
-	val, err := strconv.ParseInt(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return int8(val)
-}
-
-// int16OrDefault retrieves the int16 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func int16OrDefault(key string, defaultVal int16) int16 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
-		bitsize = 16
-	)
-
-	val, err := strconv.ParseInt(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return int16(val)
-}
-
-// int32OrDefault retrieves the int32 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func int32OrDefault(key string, defaultVal int32) int32 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
-		bitsize = 32
-	)
-
-	val, err := strconv.ParseInt(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return int32(val)
 }
 
 // float32OrDefault retrieves the float32 value of the environment variable named
@@ -946,7 +911,7 @@ func complex128OrDefault(key string, defaultVal complex128) complex128 {
 
 // complex128SliceOrDefault retrieves the complex128 slice value of the environment variable named
 // by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func complex128SliceOrDefault(key string, defaultVal []complex128, sep string) []complex128 {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {

@@ -225,7 +225,7 @@ func (s stringSliceParser) ParseEnv(key string, defaltVal any, options Parameter
 type intParser int
 
 func (i intParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := intOrDefault(key, defaltVal.(int))
+	val := intOrDefaultGen(key, defaltVal.(int))
 
 	return val
 }
@@ -263,7 +263,7 @@ func (i float64SliceParser) ParseEnv(key string, defaltVal any, options Paramete
 type int64Parser int64
 
 func (i int64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := int64OrDefault(key, defaltVal.(int64))
+	val := intOrDefaultGen(key, defaltVal.(int64))
 
 	return val
 }
@@ -271,7 +271,7 @@ func (i int64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type int8Parser int8
 
 func (i int8Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := int8OrDefault(key, defaltVal.(int8))
+	val := intOrDefaultGen(key, defaltVal.(int8))
 
 	return val
 }
@@ -279,7 +279,7 @@ func (i int8Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type int16Parser int16
 
 func (i int16Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := int16OrDefault(key, defaltVal.(int16))
+	val := intOrDefaultGen(key, defaltVal.(int16))
 
 	return val
 }
@@ -287,7 +287,7 @@ func (i int16Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type int32Parser int32
 
 func (i int32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := int32OrDefault(key, defaltVal.(int32))
+	val := intOrDefaultGen(key, defaltVal.(int32))
 
 	return val
 }
