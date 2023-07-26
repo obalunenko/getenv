@@ -449,28 +449,6 @@ func durationSliceOrDefault(key string, defaultVal []time.Duration, separator st
 	return val
 }
 
-// uint64OrDefault retrieves the unt64 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint64OrDefault(key string, defaultVal uint64) uint64 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
-		bitsize = 64
-	)
-
-	val, err := strconv.ParseUint(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
 // uint64SliceOrDefault retrieves the uint64 slice value of the environment variable named
 // by the key and separated by sep.
 // If variable not set or value is empty - defaultVal will be returned.
@@ -499,48 +477,60 @@ func uint64SliceOrDefault(key string, defaultVal []uint64, sep string) []uint64 
 	return val
 }
 
-// uint8OrDefault retrieves the unt8 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint8OrDefault(key string, defaultVal uint8) uint8 {
+func uintOrDefaultGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
 	}
 
 	const (
-		base    = 10
+		base = 10
+	)
+
+	var (
+		bitsize int
+		castFn  func(val uint64) T
+	)
+
+	switch any(defaultVal).(type) {
+	case uint:
+		bitsize = 0
+		castFn = func(val uint64) T {
+			return any(uint(val)).(T)
+		}
+	case uint8:
 		bitsize = 8
-	)
-
-	val, err := strconv.ParseUint(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return uint8(val)
-}
-
-// uintOrDefault retrieves the unt value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func uintOrDefault(key string, defaultVal uint) uint {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
+		castFn = func(val uint64) T {
+			return any(uint8(val)).(T)
+		}
+	case uint16:
+		bitsize = 16
+		castFn = func(val uint64) T {
+			return any(uint16(val)).(T)
+		}
+	case uint32:
 		bitsize = 32
-	)
+		castFn = func(val uint64) T {
+			return any(uint32(val)).(T)
+		}
+	case uint64:
+		bitsize = 64
+		castFn = func(val uint64) T {
+			return any(val).(T)
+		}
+	case uintptr:
+		bitsize = 0
+		castFn = func(val uint64) T {
+			return any(uintptr(val)).(T)
+		}
+	}
 
 	val, err := strconv.ParseUint(env, base, bitsize)
 	if err != nil {
 		return defaultVal
 	}
 
-	return uint(val)
+	return castFn(val)
 }
 
 // uintSliceOrDefault retrieves the uint slice value of the environment variable named
@@ -655,50 +645,6 @@ func uint32SliceOrDefault(key string, defaultVal []uint32, sep string) []uint32 
 	return val
 }
 
-// uint16OrDefault retrieves the unt16 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint16OrDefault(key string, defaultVal uint16) uint16 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
-		bitsize = 16
-	)
-
-	val, err := strconv.ParseUint(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return uint16(val)
-}
-
-// uint32OrDefault retrieves the unt32 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint32OrDefault(key string, defaultVal uint32) uint32 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
-		bitsize = 32
-	)
-
-	val, err := strconv.ParseUint(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return uint32(val)
-}
-
 // urlOrDefault retrieves the url.URL value of the environment variable named
 // by the key represented by layout.
 // If variable not set or value is empty - defaultVal will be returned.
@@ -777,28 +723,6 @@ func ipSliceOrDefault(key string, defaultVal []net.IP, sep string) []net.IP {
 	}
 
 	return val
-}
-
-// uintptrOrDefault retrieves the uintptr value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func uintptrOrDefault(key string, defaultVal uintptr) uintptr {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		base    = 10
-		bitsize = 0
-	)
-
-	val, err := strconv.ParseUint(env, base, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return uintptr(val)
 }
 
 // uintptrSliceOrDefault retrieves the uintptr slice value of the environment variable named

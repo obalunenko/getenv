@@ -398,7 +398,7 @@ func (d durationParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type uint64Parser uint64
 
 func (d uint64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := uint64OrDefault(key, defaltVal.(uint64))
+	val := uintOrDefaultGen(key, defaltVal.(uint64))
 
 	return val
 }
@@ -416,7 +416,7 @@ func (i uint64SliceParser) ParseEnv(key string, defaltVal any, options Parameter
 type uint8Parser uint
 
 func (d uint8Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := uint8OrDefault(key, defaltVal.(uint8))
+	val := uintOrDefaultGen(key, defaltVal.(uint8))
 
 	return val
 }
@@ -424,7 +424,7 @@ func (d uint8Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type uintParser uint
 
 func (d uintParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := uintOrDefault(key, defaltVal.(uint))
+	val := uintOrDefaultGen(key, defaltVal.(uint))
 
 	return val
 }
@@ -473,7 +473,7 @@ func (i uint16SliceParser) ParseEnv(key string, defaltVal any, options Parameter
 type uint16Parser uint
 
 func (d uint16Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := uint16OrDefault(key, defaltVal.(uint16))
+	val := uintOrDefaultGen(key, defaltVal.(uint16))
 
 	return val
 }
@@ -482,7 +482,7 @@ func (d uint16Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type uint32Parser uint
 
 func (d uint32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := uint32OrDefault(key, defaltVal.(uint32))
+	val := uintOrDefaultGen(key, defaltVal.(uint32))
 
 	return val
 }
@@ -542,7 +542,7 @@ func (b boolSliceParser) ParseEnv(key string, defaltVal any, options Parameters)
 type uintptrParser uintptr
 
 func (d uintptrParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := uintptrOrDefault(key, defaltVal.(uintptr))
+	val := uintOrDefaultGen(key, defaltVal.(uintptr))
 
 	return val
 }
