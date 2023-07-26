@@ -235,7 +235,7 @@ type intSliceParser []int
 func (i intSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := intSliceOrDefault(key, defaltVal.([]int), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int), sep)
 
 	return val
 }
@@ -245,7 +245,7 @@ type float32SliceParser []float32
 func (i float32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := float32SliceOrDefault(key, defaltVal.([]float32), sep)
+	val := floatSliceOrDefaultGen(key, defaltVal.([]float32), sep)
 
 	return val
 }
@@ -255,7 +255,7 @@ type float64SliceParser []float64
 func (i float64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := float64SliceOrDefault(key, defaltVal.([]float64), sep)
+	val := floatSliceOrDefaultGen(key, defaltVal.([]float64), sep)
 
 	return val
 }
@@ -297,7 +297,7 @@ type int8SliceParser []int8
 func (i int8SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := int8SliceOrDefault(key, defaltVal.([]int8), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int8), sep)
 
 	return val
 }
@@ -307,7 +307,7 @@ type int16SliceParser []int16
 func (i int16SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := int16SliceOrDefault(key, defaltVal.([]int16), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int16), sep)
 
 	return val
 }
@@ -317,7 +317,7 @@ type int32SliceParser []int32
 func (i int32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := int32SliceOrDefault(key, defaltVal.([]int32), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int32), sep)
 
 	return val
 }
@@ -327,7 +327,7 @@ type int64SliceParser []int64
 func (i int64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := int64SliceOrDefault(key, defaltVal.([]int64), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int64), sep)
 
 	return val
 }
