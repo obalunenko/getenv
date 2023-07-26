@@ -101,27 +101,21 @@ func parseFloatGen[T float32 | float64](raw string) (T, error) {
 	)
 
 	var (
-		castFn func(val float64) (T, error)
+		castFn func(val float64) (T, bool)
 	)
 
 	switch any(tt).(type) {
 	case float32:
-		castFn = func(val float64) (T, error) {
+		castFn = func(val float64) (T, bool) {
 			t, ok := any(float32(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case float64:
-		castFn = func(val float64) (T, error) {
+		castFn = func(val float64) (T, bool) {
 			t, ok := any(val).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	}
 
@@ -130,7 +124,12 @@ func parseFloatGen[T float32 | float64](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	return castFn(val)
+	tVal, ok := castFn(val)
+	if !ok {
+		return tt, ErrInvalidValue
+	}
+
+	return tVal, nil
 }
 
 func parseIntGen[T int | int8 | int16 | int32 | int64](raw string) (T, error) {
@@ -142,59 +141,44 @@ func parseIntGen[T int | int8 | int16 | int32 | int64](raw string) (T, error) {
 
 	var (
 		bitsize int
-		castFn  func(val int64) (T, error)
+		castFn  func(val int64) (T, bool)
 	)
 
 	switch any(tt).(type) {
 	case int:
 		bitsize = 0
-		castFn = func(val int64) (T, error) {
+		castFn = func(val int64) (T, bool) {
 			t, ok := any(int(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case int8:
 		bitsize = 8
-		castFn = func(val int64) (T, error) {
+		castFn = func(val int64) (T, bool) {
 			t, ok := any(int8(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case int16:
 		bitsize = 16
-		castFn = func(val int64) (T, error) {
+		castFn = func(val int64) (T, bool) {
 			t, ok := any(int16(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case int32:
 		bitsize = 32
-		castFn = func(val int64) (T, error) {
+		castFn = func(val int64) (T, bool) {
 			t, ok := any(int32(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case int64:
 		bitsize = 64
-		castFn = func(val int64) (T, error) {
+		castFn = func(val int64) (T, bool) {
 			t, ok := any(val).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	}
 
@@ -203,7 +187,12 @@ func parseIntGen[T int | int8 | int16 | int32 | int64](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	return castFn(val)
+	tVal, ok := castFn(val)
+	if !ok {
+		return tt, ErrInvalidValue
+	}
+
+	return tVal, nil
 }
 
 func intOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVal T) T {
@@ -399,69 +388,51 @@ func parseUintGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](raw strin
 
 	var (
 		bitsize int
-		castFn  func(val uint64) (T, error)
+		castFn  func(val uint64) (T, bool)
 	)
 
 	switch any(tt).(type) {
 	case uint:
 		bitsize = 0
-		castFn = func(val uint64) (T, error) {
+		castFn = func(val uint64) (T, bool) {
 			t, ok := any(uint(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case uint8:
 		bitsize = 8
-		castFn = func(val uint64) (T, error) {
+		castFn = func(val uint64) (T, bool) {
 			t, ok := any(uint8(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case uint16:
 		bitsize = 16
-		castFn = func(val uint64) (T, error) {
+		castFn = func(val uint64) (T, bool) {
 			t, ok := any(uint16(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case uint32:
 		bitsize = 32
-		castFn = func(val uint64) (T, error) {
+		castFn = func(val uint64) (T, bool) {
 			t, ok := any(uint32(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case uint64:
 		bitsize = 64
-		castFn = func(val uint64) (T, error) {
+		castFn = func(val uint64) (T, bool) {
 			t, ok := any(val).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	case uintptr:
 		bitsize = 0
-		castFn = func(val uint64) (T, error) {
+		castFn = func(val uint64) (T, bool) {
 			t, ok := any(uintptr(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
 
-			return t, nil
+			return t, ok
 		}
 	}
 
@@ -470,7 +441,12 @@ func parseUintGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](raw strin
 		return tt, ErrInvalidValue
 	}
 
-	return castFn(val)
+	tVal, ok := castFn(val)
+	if !ok {
+		return tt, ErrInvalidValue
+	}
+
+	return tVal, nil
 }
 
 func uintOrDefaultGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](key string, defaultVal T) T {
