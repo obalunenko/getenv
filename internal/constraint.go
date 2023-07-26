@@ -4,12 +4,14 @@ import (
 	"net"
 	"net/url"
 	"time"
+
+	"golang.org/x/exp/constraints"
 )
 
 type (
 	// EnvParsable is a constraint for types that can be parsed from environment variable.
 	EnvParsable interface {
-		String | Int | Uint | Float | Time | Bool | URL | IP | Complex
+		String | Int | IntSlice | Uint | UintSlice | Float | FloatSlice | Time | Bool | URL | IP | Complex | ComplexSlice
 	}
 
 	// String is a constraint for string and slice of strings.
@@ -18,19 +20,28 @@ type (
 	}
 
 	// Int is a constraint for integer and slice of integers.
-	Int interface {
-		int | []int | int8 | []int8 | int16 | []int16 | int32 | []int32 | int64 | []int64
+	Int = constraints.Signed
+
+	// IntSlice is a constraint for slice of integers.
+	IntSlice interface {
+		[]int | []int8 | []int16 | []int32 | []int64
+	}
+
+	// UintSlice is a constraint for slice of unsigned integers.
+	UintSlice interface {
+		[]uint | []uint8 | []uint16 | []uint32 | []uint64 | []uintptr
 	}
 
 	// Uint is a constraint for unsigned integer and slice of unsigned integers.
-	Uint interface {
-		uint | []uint | uint8 | []uint8 | uint16 | []uint16 | uint32 | []uint32 | uint64 | []uint64 | uintptr | []uintptr
+	Uint = constraints.Unsigned
+
+	// FloatSlice is a constraint for slice of floats.
+	FloatSlice interface {
+		[]float32 | []float64
 	}
 
 	// Float is a constraint for float and slice of floats.
-	Float interface {
-		float32 | []float32 | float64 | []float64
-	}
+	Float = constraints.Float
 
 	// Time is a constraint for time.Time and slice of time.Time.
 	Time interface {
@@ -52,8 +63,11 @@ type (
 		net.IP | []net.IP
 	}
 
-	// Complex is a constraint for complex and slice of complex.
-	Complex interface {
-		complex64 | []complex64 | complex128 | []complex128
+	// ComplexSlice is a constraint for slice of complex.
+	ComplexSlice interface {
+		[]complex64 | []complex128
 	}
+
+	// Complex is a constraint for complex and slice of complex.
+	Complex = constraints.Complex
 )

@@ -8,6 +8,9 @@ github.com/pmezard/go-difflib/difflib
 ## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
+# golang.org/x/exp v0.0.0-20230725093048-515e97ebf090
+## explicit; go 1.20
+golang.org/x/exp/constraints
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3

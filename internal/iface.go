@@ -235,7 +235,7 @@ type intSliceParser []int
 func (i intSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := intSliceOrDefault(key, defaltVal.([]int), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int), sep)
 
 	return val
 }
@@ -245,7 +245,7 @@ type float32SliceParser []float32
 func (i float32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := float32SliceOrDefault(key, defaltVal.([]float32), sep)
+	val := floatSliceOrDefaultGen(key, defaltVal.([]float32), sep)
 
 	return val
 }
@@ -255,7 +255,7 @@ type float64SliceParser []float64
 func (i float64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := float64SliceOrDefault(key, defaltVal.([]float64), sep)
+	val := floatSliceOrDefaultGen(key, defaltVal.([]float64), sep)
 
 	return val
 }
@@ -297,7 +297,7 @@ type int8SliceParser []int8
 func (i int8SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := int8SliceOrDefault(key, defaltVal.([]int8), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int8), sep)
 
 	return val
 }
@@ -307,7 +307,7 @@ type int16SliceParser []int16
 func (i int16SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := int16SliceOrDefault(key, defaltVal.([]int16), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int16), sep)
 
 	return val
 }
@@ -317,7 +317,7 @@ type int32SliceParser []int32
 func (i int32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := int32SliceOrDefault(key, defaltVal.([]int32), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int32), sep)
 
 	return val
 }
@@ -327,7 +327,7 @@ type int64SliceParser []int64
 func (i int64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := int64SliceOrDefault(key, defaltVal.([]int64), sep)
+	val := intSliceOrDefaultGen(key, defaltVal.([]int64), sep)
 
 	return val
 }
@@ -408,7 +408,7 @@ type uint64SliceParser []uint64
 func (i uint64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uint64SliceOrDefault(key, defaltVal.([]uint64), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint64), sep)
 
 	return val
 }
@@ -434,7 +434,7 @@ type uintSliceParser []uint
 func (i uintSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uintSliceOrDefault(key, defaltVal.([]uint), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint), sep)
 
 	return val
 }
@@ -444,7 +444,7 @@ type uint8SliceParser []uint8
 func (i uint8SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uint8SliceOrDefault(key, defaltVal.([]uint8), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint8), sep)
 
 	return val
 }
@@ -454,7 +454,7 @@ type uint32SliceParser []uint32
 func (i uint32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uint32SliceOrDefault(key, defaltVal.([]uint32), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint32), sep)
 
 	return val
 }
@@ -464,7 +464,7 @@ type uint16SliceParser []uint16
 func (i uint16SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uint16SliceOrDefault(key, defaltVal.([]uint16), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uint16), sep)
 
 	return val
 }
@@ -553,7 +553,7 @@ type uintptrSliceParser []uintptr
 func (i uintptrSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := uintptrSliceOrDefault(key, defaltVal.([]uintptr), sep)
+	val := uintSliceOrDefaultGen(key, defaltVal.([]uintptr), sep)
 
 	return val
 }
@@ -573,7 +573,7 @@ type complex64SliceParser []complex64
 func (i complex64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := complex64SliceOrDefault(key, defaltVal.([]complex64), sep)
+	val := complexSliceOrDefaultGen(key, defaltVal.([]complex64), sep)
 
 	return val
 }
@@ -593,7 +593,7 @@ type complex128SliceParser []complex128
 func (i complex128SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := complex128SliceOrDefault(key, defaltVal.([]complex128), sep)
+	val := complexSliceOrDefaultGen(key, defaltVal.([]complex128), sep)
 
 	return val
 }

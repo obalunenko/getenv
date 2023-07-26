@@ -9,23 +9,6 @@ import (
 	"time"
 )
 
-// intOrDefault retrieves the int value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func intOrDefault(key string, defaultVal int) int {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	val, err := strconv.Atoi(env)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
 // stringOrDefault retrieves the string value of the environment variable named
 // by the key.
 // If variable not set or value is empty - defaultVal will be returned.
@@ -96,177 +79,37 @@ func stringSliceOrDefault(key string, defaultVal []string, sep string) []string 
 	return val
 }
 
-// intSliceOrDefault retrieves the int slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func intSliceOrDefault(key string, defaultVal []int, sep string) []int {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]int, 0, len(valraw))
-
-	for _, s := range valraw {
-		v, err := strconv.Atoi(s)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, v)
-	}
-
-	return val
-}
-
-// float32SliceOrDefault retrieves the float32 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func float32SliceOrDefault(key string, defaultVal []float32, sep string) []float32 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]float32, 0, len(valraw))
-
-	const (
-		bitsize = 32
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseFloat(s, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, float32(v))
-	}
-
-	return val
-}
-
-// float64SliceOrDefault retrieves the float64 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func float64SliceOrDefault(key string, defaultVal []float64, sep string) []float64 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]float64, 0, len(valraw))
-
-	const (
-		bitsize = 64
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseFloat(s, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, v)
-	}
-
-	return val
-}
-
-// int64SliceOrDefault retrieves the int64 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func int64SliceOrDefault(key string, defaultVal []int64, sep string) []int64 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]int64, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 64
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseInt(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, v)
-	}
-
-	return val
-}
-
-// int8SliceOrDefault retrieves the int8 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func int8SliceOrDefault(key string, defaultVal []int8, sep string) []int8 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]int8, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 8
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseInt(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, int8(v))
-	}
-
-	return val
-}
-
-func floatOrDefaultGen[T float32 | float64](key string, defaultVal T) T {
+func floatOrDefaultGen[T Float](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
 	}
 
-	const (
-		bitsize = 64
-	)
-
-	var (
-		castFn func(val float64) T
-	)
-
-	switch any(defaultVal).(type) {
-	case float32:
-		castFn = func(val float64) T {
-			return any(float32(val)).(T)
-		}
-	case float64:
-		castFn = func(val float64) T {
-			return any(val).(T)
-		}
-	}
-
-	val, err := strconv.ParseFloat(env, bitsize)
+	val, err := parseFloatGen[T](env)
 	if err != nil {
 		return defaultVal
 	}
 
-	return castFn(val)
+	return val
 }
 
-func intOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVal T) T {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
+func parseFloatGen[T Float](raw string) (T, error) {
+	var tt T
+
+	const (
+		bitsize = 64
+	)
+
+	val, err := strconv.ParseFloat(raw, bitsize)
+	if err != nil {
+		return tt, ErrInvalidValue
 	}
+
+	return any(T(val)).(T), nil
+}
+
+func parseIntGen[T Int](raw string) (T, error) {
+	var tt T
 
 	const (
 		base = 10
@@ -274,96 +117,100 @@ func intOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVa
 
 	var (
 		bitsize int
-		castFn  func(val int64) T
 	)
 
-	switch any(defaultVal).(type) {
+	switch any(tt).(type) {
 	case int:
 		bitsize = 0
-		castFn = func(val int64) T {
-			return any(int(val)).(T)
-		}
 	case int8:
 		bitsize = 8
-		castFn = func(val int64) T {
-			return any(int8(val)).(T)
-		}
 	case int16:
 		bitsize = 16
-		castFn = func(val int64) T {
-			return any(int16(val)).(T)
-		}
 	case int32:
 		bitsize = 32
-		castFn = func(val int64) T {
-			return any(int32(val)).(T)
-		}
 	case int64:
 		bitsize = 64
-		castFn = func(val int64) T {
-			return any(val).(T)
-		}
 	}
 
-	val, err := strconv.ParseInt(env, base, bitsize)
+	val, err := strconv.ParseInt(raw, base, bitsize)
 	if err != nil {
-		return defaultVal
+		return tt, ErrInvalidValue
 	}
 
-	return castFn(val)
+	return any(T(val)).(T), nil
 }
 
-// int32SliceOrDefault retrieves the int32 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func int32SliceOrDefault(key string, defaultVal []int32, sep string) []int32 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
+func intOrDefaultGen[T Int](key string, defaultVal T) T {
+	env := stringOrDefault(key, "")
+	if env == "" {
 		return defaultVal
 	}
 
-	val := make([]int32, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 32
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseInt(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, int32(v))
+	val, err := parseIntGen[T](env)
+	if err != nil {
+		return defaultVal
 	}
 
 	return val
 }
 
-// int16SliceOrDefault retrieves the int16 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func int16SliceOrDefault(key string, defaultVal []int16, sep string) []int16 {
+func parseIntSliceGen[S []T, T Int](raw []string) (S, error) {
+	var tt S
+
+	val := make(S, 0, len(raw))
+
+	for _, s := range raw {
+		v, err := parseIntGen[T](s)
+		if err != nil {
+			return tt, err
+		}
+
+		val = append(val, v)
+	}
+
+	return val, nil
+}
+
+func parseFloatSliceGen[S []T, T Float](raw []string) (S, error) {
+	var tt S
+
+	val := make(S, 0, len(raw))
+
+	for _, s := range raw {
+		v, err := parseFloatGen[T](s)
+		if err != nil {
+			return tt, err
+		}
+
+		val = append(val, v)
+	}
+
+	return val, nil
+}
+
+func floatSliceOrDefaultGen[S []T, T Float](key string, defaultVal S, sep string) S {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
 	}
 
-	val := make([]int16, 0, len(valraw))
+	val, err := parseFloatSliceGen[S](valraw)
+	if err != nil {
+		return defaultVal
+	}
 
-	const (
-		base    = 10
-		bitsize = 16
-	)
+	return val
+}
 
-	for _, s := range valraw {
-		v, err := strconv.ParseInt(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
+func intSliceOrDefaultGen[S []T, T Int](key string, defaultVal S, sep string) S {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
 
-		val = append(val, int16(v))
+	val, err := parseIntSliceGen[S](valraw)
+	if err != nil {
+		return defaultVal
 	}
 
 	return val
@@ -449,39 +296,8 @@ func durationSliceOrDefault(key string, defaultVal []time.Duration, separator st
 	return val
 }
 
-// uint64SliceOrDefault retrieves the uint64 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint64SliceOrDefault(key string, defaultVal []uint64, sep string) []uint64 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]uint64, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 64
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseUint(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, v)
-	}
-
-	return val
-}
-
-func uintOrDefaultGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](key string, defaultVal T) T {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
+func parseUintGen[T Uint](raw string) (T, error) {
+	var tt T
 
 	const (
 		base = 10
@@ -489,157 +305,61 @@ func uintOrDefaultGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](key s
 
 	var (
 		bitsize int
-		castFn  func(val uint64) T
 	)
 
-	switch any(defaultVal).(type) {
+	switch any(tt).(type) {
 	case uint:
 		bitsize = 0
-		castFn = func(val uint64) T {
-			return any(uint(val)).(T)
-		}
 	case uint8:
 		bitsize = 8
-		castFn = func(val uint64) T {
-			return any(uint8(val)).(T)
-		}
 	case uint16:
 		bitsize = 16
-		castFn = func(val uint64) T {
-			return any(uint16(val)).(T)
-		}
 	case uint32:
 		bitsize = 32
-		castFn = func(val uint64) T {
-			return any(uint32(val)).(T)
-		}
 	case uint64:
 		bitsize = 64
-		castFn = func(val uint64) T {
-			return any(val).(T)
-		}
+
 	case uintptr:
 		bitsize = 0
-		castFn = func(val uint64) T {
-			return any(uintptr(val)).(T)
-		}
 	}
 
-	val, err := strconv.ParseUint(env, base, bitsize)
+	val, err := strconv.ParseUint(raw, base, bitsize)
+	if err != nil {
+		return tt, ErrInvalidValue
+	}
+
+	return any(T(val)).(T), nil
+}
+
+func uintOrDefaultGen[T Uint](key string, defaultVal T) T {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	val, err := parseUintGen[T](env)
 	if err != nil {
 		return defaultVal
 	}
 
-	return castFn(val)
-}
-
-// uintSliceOrDefault retrieves the uint slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func uintSliceOrDefault(key string, defaultVal []uint, sep string) []uint {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]uint, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 32
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseUint(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, uint(v))
-	}
-
 	return val
 }
 
-// uint8SliceOrDefault retrieves the uint8 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint8SliceOrDefault(key string, defaultVal []uint8, sep string) []uint8 {
+func uintSliceOrDefaultGen[S []T, T Uint](key string, defaultVal S, sep string) S {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
 	}
 
-	val := make([]uint8, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 8
-	)
+	val := make(S, 0, len(valraw))
 
 	for _, s := range valraw {
-		v, err := strconv.ParseUint(s, base, bitsize)
+		v, err := parseUintGen[T](s)
 		if err != nil {
 			return defaultVal
 		}
 
-		val = append(val, uint8(v))
-	}
-
-	return val
-}
-
-// uint16SliceOrDefault retrieves the uint16 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint16SliceOrDefault(key string, defaultVal []uint16, sep string) []uint16 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]uint16, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 16
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseUint(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, uint16(v))
-	}
-
-	return val
-}
-
-// uint32SliceOrDefault retrieves the uint32 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func uint32SliceOrDefault(key string, defaultVal []uint32, sep string) []uint32 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make([]uint32, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 32
-	)
-
-	for _, s := range valraw {
-		v, err := strconv.ParseUint(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, uint32(v))
+		val = append(val, v)
 	}
 
 	return val
@@ -725,32 +445,26 @@ func ipSliceOrDefault(key string, defaultVal []net.IP, sep string) []net.IP {
 	return val
 }
 
-// uintptrSliceOrDefault retrieves the uintptr slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func uintptrSliceOrDefault(key string, defaultVal []uintptr, sep string) []uintptr {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
+func parseComplexGen[T Complex](raw string) (T, error) {
+	var tt T
 
-	val := make([]uintptr, 0, len(valraw))
-
-	const (
-		base    = 10
-		bitsize = 0
+	var (
+		bitsize int
 	)
 
-	for _, s := range valraw {
-		v, err := strconv.ParseUint(s, base, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, uintptr(v))
+	switch any(tt).(type) {
+	case complex64:
+		bitsize = 64
+	case complex128:
+		bitsize = 128
 	}
 
-	return val
+	val, err := strconv.ParseComplex(raw, bitsize)
+	if err != nil {
+		return tt, ErrInvalidValue
+	}
+
+	return any(T(val)).(T), nil
 }
 
 func complexOrDefaultGen[T complex64 | complex128](key string, defaultVal T) T {
@@ -759,78 +473,24 @@ func complexOrDefaultGen[T complex64 | complex128](key string, defaultVal T) T {
 		return defaultVal
 	}
 
-	var (
-		bitsize int
-		castFn  func(val complex128) T
-	)
-
-	switch any(defaultVal).(type) {
-	case complex64:
-		bitsize = 64
-
-		castFn = func(val complex128) T {
-			return any(complex64(val)).(T)
-		}
-	case complex128:
-		bitsize = 128
-
-		castFn = func(val complex128) T {
-			return any(val).(T)
-		}
-	}
-
-	val, err := strconv.ParseComplex(env, bitsize)
+	val, err := parseComplexGen[T](env)
 	if err != nil {
 		return defaultVal
-	}
-
-	return castFn(val)
-}
-
-// complex64SliceOrDefault retrieves the complex64 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func complex64SliceOrDefault(key string, defaultVal []complex64, sep string) []complex64 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	const (
-		bitsize = 64
-	)
-
-	val := make([]complex64, 0, len(valraw))
-
-	for _, s := range valraw {
-		v, err := strconv.ParseComplex(s, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, complex64(v))
 	}
 
 	return val
 }
 
-// complex128SliceOrDefault retrieves the complex128 slice value of the environment variable named
-// by the key and separated by sep.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func complex128SliceOrDefault(key string, defaultVal []complex128, sep string) []complex128 {
+func complexSliceOrDefaultGen[S []T, T Complex](key string, defaultVal S, sep string) S {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
 	}
 
-	const (
-		bitsize = 128
-	)
-
-	val := make([]complex128, 0, len(valraw))
+	val := make(S, 0, len(valraw))
 
 	for _, s := range valraw {
-		v, err := strconv.ParseComplex(s, bitsize)
+		v, err := parseComplexGen[T](s)
 		if err != nil {
 			return defaultVal
 		}
