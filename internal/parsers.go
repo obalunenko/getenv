@@ -105,10 +105,7 @@ func parseFloatGen[T Float](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	tVal, ok := any(T(val)).(T)
-	if !ok {
-		return tt, ErrInvalidValue
-	}
+	tVal := any(T(val)).(T)
 
 	return tVal, nil
 }
@@ -142,10 +139,7 @@ func parseIntGen[T Int](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	tVal, ok := any(T(val)).(T)
-	if !ok {
-		return tt, ErrInvalidValue
-	}
+	tVal := any(T(val)).(T)
 
 	return tVal, nil
 }
@@ -338,10 +332,7 @@ func parseUintGen[T Uint](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	tVal, ok := any(T(val)).(T)
-	if !ok {
-		return tt, ErrInvalidValue
-	}
+	tVal := any(T(val)).(T)
 
 	return tVal, nil
 }
@@ -465,32 +456,13 @@ func parseComplexGen[T Complex](raw string) (T, error) {
 
 	var (
 		bitsize int
-		castFn  func(val complex128) (T, error)
 	)
 
 	switch any(tt).(type) {
 	case complex64:
 		bitsize = 64
-
-		castFn = func(val complex128) (T, error) {
-			t, ok := any(complex64(val)).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
-
-			return t, nil
-		}
 	case complex128:
 		bitsize = 128
-
-		castFn = func(val complex128) (T, error) {
-			t, ok := any(val).(T)
-			if !ok {
-				return tt, ErrInvalidValue
-			}
-
-			return t, nil
-		}
 	}
 
 	val, err := strconv.ParseComplex(raw, bitsize)
@@ -498,7 +470,9 @@ func parseComplexGen[T Complex](raw string) (T, error) {
 		return tt, ErrInvalidValue
 	}
 
-	return castFn(val)
+	tVal := any(T(val)).(T)
+
+	return tVal, nil
 }
 
 func complexOrDefaultGen[T complex64 | complex128](key string, defaultVal T) T {
