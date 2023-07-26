@@ -573,7 +573,7 @@ type complex64SliceParser []complex64
 func (i complex64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := complex64SliceOrDefault(key, defaltVal.([]complex64), sep)
+	val := complexSliceOrDefaultGen(key, defaltVal.([]complex64), sep)
 
 	return val
 }
@@ -593,7 +593,7 @@ type complex128SliceParser []complex128
 func (i complex128SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := complex128SliceOrDefault(key, defaltVal.([]complex128), sep)
+	val := complexSliceOrDefaultGen(key, defaltVal.([]complex128), sep)
 
 	return val
 }

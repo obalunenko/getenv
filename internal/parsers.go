@@ -666,84 +666,71 @@ func uintptrSliceOrDefault(key string, defaultVal []uintptr, sep string) []uintp
 	return val
 }
 
+func parseComplexGen[T complex64 | complex128](raw string) (T, error) {
+	var tt T
+
+	var (
+		bitsize int
+		castFn  func(val complex128) (T, error)
+	)
+
+	switch any(tt).(type) {
+	case complex64:
+		bitsize = 64
+
+		castFn = func(val complex128) (T, error) {
+			t, ok := any(complex64(val)).(T)
+			if !ok {
+				return tt, ErrInvalidValue
+			}
+
+			return t, nil
+		}
+	case complex128:
+		bitsize = 128
+
+		castFn = func(val complex128) (T, error) {
+			t, ok := any(val).(T)
+			if !ok {
+				return tt, ErrInvalidValue
+			}
+
+			return t, nil
+		}
+	}
+
+	val, err := strconv.ParseComplex(raw, bitsize)
+	if err != nil {
+		return tt, ErrInvalidValue
+	}
+
+	return castFn(val)
+}
+
 func complexOrDefaultGen[T complex64 | complex128](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
 	}
 
-	var (
-		bitsize int
-		castFn  func(val complex128) T
-	)
-
-	switch any(defaultVal).(type) {
-	case complex64:
-		bitsize = 64
-
-		castFn = func(val complex128) T {
-			return any(complex64(val)).(T)
-		}
-	case complex128:
-		bitsize = 128
-
-		castFn = func(val complex128) T {
-			return any(val).(T)
-		}
-	}
-
-	val, err := strconv.ParseComplex(env, bitsize)
+	val, err := parseComplexGen[T](env)
 	if err != nil {
 		return defaultVal
-	}
-
-	return castFn(val)
-}
-
-// complex64SliceOrDefault retrieves the complex64 slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func complex64SliceOrDefault(key string, defaultVal []complex64, sep string) []complex64 {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	const (
-		bitsize = 64
-	)
-
-	val := make([]complex64, 0, len(valraw))
-
-	for _, s := range valraw {
-		v, err := strconv.ParseComplex(s, bitsize)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, complex64(v))
 	}
 
 	return val
 }
 
-// complex128SliceOrDefault retrieves the complex128 slice value of the environment variable named
-// by the key and separated by sep.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func complex128SliceOrDefault(key string, defaultVal []complex128, sep string) []complex128 {
+func complexSliceOrDefaultGen[T complex64 | complex128](key string, defaultVal []T, sep string) []T {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
 		return defaultVal
 	}
 
-	const (
-		bitsize = 128
-	)
-
-	val := make([]complex128, 0, len(valraw))
+	val := make([]T, 0, len(valraw))
 
 	for _, s := range valraw {
-		v, err := strconv.ParseComplex(s, bitsize)
+		v, err := parseComplexGen[T](s)
 		if err != nil {
 			return defaultVal
 		}

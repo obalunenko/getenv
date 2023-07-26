@@ -4057,7 +4057,7 @@ func Test_complex64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := complex64SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got := complexSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -4249,7 +4249,7 @@ func Test_complex128SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := complex128SliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got := complexSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
