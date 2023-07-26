@@ -537,7 +537,7 @@ func Test_float32OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := float32OrDefault(tt.args.key, tt.args.defaultVal)
+			got := floatOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -613,7 +613,7 @@ func Test_float64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := float64OrDefault(tt.args.key, tt.args.defaultVal)
+			got := floatOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
