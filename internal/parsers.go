@@ -229,6 +229,39 @@ func int8SliceOrDefault(key string, defaultVal []int8, sep string) []int8 {
 	return val
 }
 
+func floatOrDefaultGen[T float32 | float64](key string, defaultVal T) T {
+	env := stringOrDefault(key, "")
+	if env == "" {
+		return defaultVal
+	}
+
+	const (
+		bitsize = 64
+	)
+
+	var (
+		castFn func(val float64) T
+	)
+
+	switch any(defaultVal).(type) {
+	case float32:
+		castFn = func(val float64) T {
+			return any(float32(val)).(T)
+		}
+	case float64:
+		castFn = func(val float64) T {
+			return any(val).(T)
+		}
+	}
+
+	val, err := strconv.ParseFloat(env, bitsize)
+	if err != nil {
+		return defaultVal
+	}
+
+	return castFn(val)
+}
+
 func intOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
@@ -411,48 +444,6 @@ func durationSliceOrDefault(key string, defaultVal []time.Duration, separator st
 		}
 
 		val = append(val, v)
-	}
-
-	return val
-}
-
-// float32OrDefault retrieves the float32 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func float32OrDefault(key string, defaultVal float32) float32 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		bitsize = 32
-	)
-
-	val, err := strconv.ParseFloat(env, bitsize)
-	if err != nil {
-		return defaultVal
-	}
-
-	return float32(val)
-}
-
-// float64OrDefault retrieves the float64 value of the environment variable named
-// by the key.
-// If variable not set or value is empty - defaultVal will be returned.
-func float64OrDefault(key string, defaultVal float64) float64 {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	const (
-		bitsize = 64
-	)
-
-	val, err := strconv.ParseFloat(env, bitsize)
-	if err != nil {
-		return defaultVal
 	}
 
 	return val

@@ -335,7 +335,7 @@ func (i int64SliceParser) ParseEnv(key string, defaltVal any, options Parameters
 type float32Parser float32
 
 func (f float32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := float32OrDefault(key, defaltVal.(float32))
+	val := floatOrDefaultGen(key, defaltVal.(float32))
 
 	return val
 }
@@ -343,7 +343,7 @@ func (f float32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type float64Parser float64
 
 func (f float64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := float64OrDefault(key, defaltVal.(float64))
+	val := floatOrDefaultGen(key, defaltVal.(float64))
 
 	return val
 }
