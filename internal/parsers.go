@@ -270,8 +270,6 @@ func intOrDefaultGen[T int | int8 | int16 | int32 | int64](key string, defaultVa
 		castFn = func(val int64) T {
 			return any(val).(T)
 		}
-	default:
-		panic("invalid type")
 	}
 
 	val, err := strconv.ParseInt(env, base, bitsize)
