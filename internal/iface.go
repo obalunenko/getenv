@@ -207,7 +207,7 @@ type EnvParser interface {
 type stringParser string
 
 func (s stringParser) ParseEnv(key string, _ Parameters) (any, error) {
-	return getRawVal(key)
+	return getString(key)
 }
 
 type stringSliceParser []string
@@ -265,14 +265,14 @@ func (t durationSliceParser) ParseEnv(key string, options Parameters) (any, erro
 
 type durationParser time.Duration
 
-func (d durationParser) ParseEnv(key string, options Parameters) (any, error) {
+func (d durationParser) ParseEnv(key string, _ Parameters) (any, error) {
 	return getDuration(key)
 }
 
 // stringSliceParser is a parser for []string
 type urlParser url.URL
 
-func (t urlParser) ParseEnv(key string, options Parameters) (any, error) {
+func (t urlParser) ParseEnv(key string, _ Parameters) (any, error) {
 	return getURL(key)
 }
 
@@ -288,7 +288,7 @@ func (t urlSliceParser) ParseEnv(key string, opts Parameters) (any, error) {
 // ipParser is a parser for net.IP
 type ipParser net.IP
 
-func (t ipParser) ParseEnv(key string, options Parameters) (any, error) {
+func (t ipParser) ParseEnv(key string, _ Parameters) (any, error) {
 	return getIP(key)
 }
 
@@ -312,7 +312,7 @@ func (b boolSliceParser) ParseEnv(key string, options Parameters) (any, error) {
 
 type complexParser[T Complex] struct{}
 
-func (n complexParser[T]) ParseEnv(key string, options Parameters) (any, error) {
+func (n complexParser[T]) ParseEnv(key string, _ Parameters) (any, error) {
 	return getComplexGen[T](key)
 }
 

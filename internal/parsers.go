@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func getRawVal(key string) (string, error) {
+func getString(key string) (string, error) {
 	env, ok := os.LookupEnv(key)
 	if !ok || env == "" {
 		return "", ErrNotSet
@@ -20,20 +20,8 @@ func getRawVal(key string) (string, error) {
 	return env, nil
 }
 
-// getStringOrDefault retrieves the string value of the environment variable named
-// by the key.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func getStringOrDefault(key, defaultVal string) string {
-	val, err := getRawVal(key)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
 func getBool(key string) (bool, error) {
-	env, err := getRawVal(key)
+	env, err := getString(key)
 	if err != nil {
 		return false, err
 	}
@@ -46,24 +34,12 @@ func getBool(key string) (bool, error) {
 	return val, nil
 }
 
-// getBoolOrDefault retrieves the bool value of the environment variable named
-// by the key.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func getBoolOrDefault(key string, defaultVal bool) bool {
-	b, err := getBool(key)
-	if err != nil {
-		return defaultVal
-	}
-
-	return b
-}
-
-func getBoolSlice(key string, sep string) ([]bool, error) {
+func getBoolSlice(key, sep string) ([]bool, error) {
 	if sep == "" {
 		return nil, ErrInvalidValue
 	}
 
-	env, err := getRawVal(key)
+	env, err := getString(key)
 	if err != nil {
 		return nil, err
 	}
@@ -84,24 +60,12 @@ func getBoolSlice(key string, sep string) ([]bool, error) {
 	return b, nil
 }
 
-// getBoolSliceOrDefault retrieves the bool slice value of the environment variable named
-// by the key and separated by sep.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func getBoolSliceOrDefault(key string, defaultVal []bool, sep string) []bool {
-	val, err := getBoolSlice(key, sep)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func getStringSlice(key string, sep string) ([]string, error) {
+func getStringSlice(key, sep string) ([]string, error) {
 	if sep == "" {
 		return nil, ErrInvalidValue
 	}
 
-	env, err := getRawVal(key)
+	env, err := getString(key)
 	if err != nil {
 		return nil, err
 	}
@@ -109,18 +73,6 @@ func getStringSlice(key string, sep string) ([]string, error) {
 	val := strings.Split(env, sep)
 
 	return val, nil
-}
-
-// getStringSliceOrDefault retrieves the string slice value of the environment variable named
-// by the key and separated by sep.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func getStringSliceOrDefault(key string, defaultVal []string, sep string) []string {
-	val, err := getStringSlice(key, sep)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
 }
 
 func parseNumberGen[T Number](raw string) (T, error) {
@@ -176,7 +128,7 @@ func parseNumberSliceGen[S []T, T Number](raw []string) (S, error) {
 	return val, nil
 }
 
-func getNumberSliceGen[S []T, T Number](key string, sep string) (S, error) {
+func getNumberSliceGen[S []T, T Number](key, sep string) (S, error) {
 	env, err := getStringSlice(key, sep)
 	if err != nil {
 		return nil, err
@@ -185,17 +137,8 @@ func getNumberSliceGen[S []T, T Number](key string, sep string) (S, error) {
 	return parseNumberSliceGen[S, T](env)
 }
 
-func getSliceOrDefaultGen[S []T, T Number](key string, defaultVal S, sep string) S {
-	val, err := getNumberSliceGen[S, T](key, sep)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
 func getNumberGen[T Number](key string) (T, error) {
-	env, err := getRawVal(key)
+	env, err := getString(key)
 	if err != nil {
 		return 0, err
 	}
@@ -203,17 +146,8 @@ func getNumberGen[T Number](key string) (T, error) {
 	return parseNumberGen[T](env)
 }
 
-func numberOrDefaultGen[T Number](key string, defaultVal T) T {
-	val, err := getNumberGen[T](key)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
 func getDuration(key string) (time.Duration, error) {
-	env, err := getRawVal(key)
+	env, err := getString(key)
 	if err != nil {
 		return 0, err
 	}
@@ -226,20 +160,8 @@ func getDuration(key string) (time.Duration, error) {
 	return val, nil
 }
 
-// getDurationOrDefault retrieves the time.Duration value of the environment variable named
-// by the key.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func getDurationOrDefault(key string, defaultVal time.Duration) time.Duration {
-	val, err := getDuration(key)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func getTime(key string, layout string) (time.Time, error) {
-	env, err := getRawVal(key)
+func getTime(key, layout string) (time.Time, error) {
+	env, err := getString(key)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -252,19 +174,7 @@ func getTime(key string, layout string) (time.Time, error) {
 	return val, nil
 }
 
-// timeOrDefault retrieves the time.Time value of the environment variable named
-// by the key represented by layout.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func timeOrDefault(key string, defaultVal time.Time, layout string) time.Time {
-	val, err := getTime(key, layout)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func getTimeSlice(key string, layout string, sep string) ([]time.Time, error) {
+func getTimeSlice(key, layout, sep string) ([]time.Time, error) {
 	env, err := getStringSlice(key, sep)
 	if err != nil {
 		return nil, err
@@ -284,19 +194,7 @@ func getTimeSlice(key string, layout string, sep string) ([]time.Time, error) {
 	return val, nil
 }
 
-// timeSliceOrDefault retrieves the []time.Time value of the environment variable named
-// by the key represented by layout.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func timeSliceOrDefault(key string, defaultVal []time.Time, layout, separator string) []time.Time {
-	val, err := getTimeSlice(key, layout, separator)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func getDurationSlice(key string, sep string) ([]time.Duration, error) {
+func getDurationSlice(key, sep string) ([]time.Duration, error) {
 	env, err := getStringSlice(key, sep)
 	if err != nil {
 		return nil, err
@@ -316,20 +214,8 @@ func getDurationSlice(key string, sep string) ([]time.Duration, error) {
 	return val, nil
 }
 
-// durationSliceOrDefault retrieves the []time.Duration value of the environment variable named
-// by the key represented by layout.
-// If the variable is not set or the value is empty - defaultVal will be returned.
-func durationSliceOrDefault(key string, defaultVal []time.Duration, separator string) []time.Duration {
-	val, err := getDurationSlice(key, separator)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
 func getURL(key string) (url.URL, error) {
-	env, err := getRawVal(key)
+	env, err := getString(key)
 	if err != nil {
 		return url.URL{}, err
 	}
@@ -342,19 +228,7 @@ func getURL(key string) (url.URL, error) {
 	return *val, nil
 }
 
-// urlOrDefault retrieves the url.URL value of the environment variable named
-// by the key represented by layout.
-// If variable not set or value is empty - defaultVal will be returned.
-func urlOrDefault(key string, defaultVal url.URL) url.URL {
-	val, err := getURL(key)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func getURLSlice(key string, sep string) ([]url.URL, error) {
+func getURLSlice(key, sep string) ([]url.URL, error) {
 	env, err := getStringSlice(key, sep)
 	if err != nil {
 		return nil, err
@@ -374,20 +248,8 @@ func getURLSlice(key string, sep string) ([]url.URL, error) {
 	return val, nil
 }
 
-// urlSliceOrDefault retrieves the url.URL slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func urlSliceOrDefault(key string, defaultVal []url.URL, sep string) []url.URL {
-	val, err := getURLSlice(key, sep)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
 func getIP(key string) (net.IP, error) {
-	env, err := getRawVal(key)
+	env, err := getString(key)
 	if err != nil {
 		return nil, err
 	}
@@ -400,19 +262,7 @@ func getIP(key string) (net.IP, error) {
 	return val, nil
 }
 
-// ipOrDefault retrieves the net.IP value of the environment variable named
-// by the key represented by layout.
-// If variable not set or value is empty - defaultVal will be returned.
-func ipOrDefault(key string, defaultVal net.IP) net.IP {
-	val, err := getIP(key)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func getIPSlice(key string, sep string) ([]net.IP, error) {
+func getIPSlice(key, sep string) ([]net.IP, error) {
 	env, err := getStringSlice(key, sep)
 	if err != nil {
 		return nil, err
@@ -430,18 +280,6 @@ func getIPSlice(key string, sep string) ([]net.IP, error) {
 	}
 
 	return val, nil
-}
-
-// ipSliceOrDefault retrieves the net.IP slice value of the environment variable named
-// by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
-func ipSliceOrDefault(key string, defaultVal []net.IP, sep string) []net.IP {
-	val, err := getIPSlice(key, sep)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
 }
 
 func parseComplexGen[T Complex](raw string) (T, error) {
@@ -481,7 +319,7 @@ func parseComplexSliceGen[S []T, T Complex](raw []string) (S, error) {
 	return val, nil
 }
 
-func getComplexSliceGen[S []T, T Complex](key string, sep string) (S, error) {
+func getComplexSliceGen[S []T, T Complex](key, sep string) (S, error) {
 	env, err := getStringSlice(key, sep)
 	if err != nil {
 		return nil, err
@@ -491,28 +329,10 @@ func getComplexSliceGen[S []T, T Complex](key string, sep string) (S, error) {
 }
 
 func getComplexGen[T Complex](key string) (T, error) {
-	env, err := getRawVal(key)
+	env, err := getString(key)
 	if err != nil {
 		return 0, err
 	}
 
 	return parseComplexGen[T](env)
-}
-
-func complexOrDefaultGen[T Complex](key string, defaultVal T) T {
-	val, err := getComplexGen[T](key)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func complexSliceOrDefaultGen[S []T, T Complex](key string, defaultVal S, sep string) S {
-	val, err := getComplexSliceGen[S, T](key, sep)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
 }
