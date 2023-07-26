@@ -97,23 +97,23 @@ func newStringParser(v any) EnvParser {
 func newIntParser(v any) EnvParser {
 	switch t := v.(type) {
 	case int:
-		return intParser(t)
+		return numberParser[int]{}
 	case []int:
 		return intSliceParser(t)
 	case int8:
-		return int8Parser(t)
+		return numberParser[int8]{}
 	case []int8:
 		return int8SliceParser(t)
 	case int16:
-		return int16Parser(t)
+		return numberParser[int16]{}
 	case []int16:
 		return int16SliceParser(t)
 	case int32:
-		return int32Parser(t)
+		return numberParser[int32]{}
 	case []int32:
 		return int32SliceParser(t)
 	case int64:
-		return int64Parser(t)
+		return numberParser[int64]{}
 	case []int64:
 		return int64SliceParser(t)
 	default:
@@ -125,27 +125,27 @@ func newIntParser(v any) EnvParser {
 func newUintParser(v any) EnvParser {
 	switch t := v.(type) {
 	case uint8:
-		return uint8Parser(t)
+		return numberParser[uint8]{}
 	case []uint8:
 		return uint8SliceParser(t)
 	case uint:
-		return uintParser(t)
+		return numberParser[uint]{}
 	case []uint:
 		return uintSliceParser(t)
 	case uint16:
-		return uint16Parser(t)
+		return numberParser[uint16]{}
 	case []uint16:
 		return uint16SliceParser(t)
 	case uint32:
-		return uint32Parser(t)
+		return numberParser[uint32]{}
 	case []uint32:
 		return uint32SliceParser(t)
 	case uint64:
-		return uint64Parser(t)
+		return numberParser[uint64]{}
 	case []uint64:
 		return uint64SliceParser(t)
 	case uintptr:
-		return uintptrParser(t)
+		return numberParser[uintptr]{}
 	case []uintptr:
 		return uintptrSliceParser(t)
 	default:
@@ -157,11 +157,11 @@ func newUintParser(v any) EnvParser {
 func newFloatParser(v any) EnvParser {
 	switch t := v.(type) {
 	case float32:
-		return float32Parser(t)
+		return numberParser[float32]{}
 	case []float32:
 		return float32SliceParser(t)
 	case float64:
-		return float64Parser(t)
+		return numberParser[float64]{}
 	case []float64:
 		return float64SliceParser(t)
 	default:
@@ -222,10 +222,18 @@ func (s stringSliceParser) ParseEnv(key string, defaltVal any, options Parameter
 	return val
 }
 
+type numberParser[T Number] struct{}
+
+func (n numberParser[T]) ParseEnv(key string, defaltVal any, _ Parameters) any {
+	val := numberOrDefaultGen[T](key, defaltVal.(T))
+
+	return val
+}
+
 type intParser int
 
 func (i intParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := intOrDefaultGen(key, defaltVal.(int))
+	val := numberOrDefaultGen(key, defaltVal.(int))
 
 	return val
 }
@@ -235,7 +243,7 @@ type intSliceParser []int
 func (i intSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := intSliceOrDefaultGen(key, defaltVal.([]int), sep)
+	val := numberSliceOrDefaultGen(key, defaltVal.([]int), sep)
 
 	return val
 }
@@ -245,7 +253,7 @@ type float32SliceParser []float32
 func (i float32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := floatSliceOrDefaultGen(key, defaltVal.([]float32), sep)
+	val := numberSliceOrDefaultGen(key, defaltVal.([]float32), sep)
 
 	return val
 }
@@ -255,7 +263,7 @@ type float64SliceParser []float64
 func (i float64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := floatSliceOrDefaultGen(key, defaltVal.([]float64), sep)
+	val := numberSliceOrDefaultGen(key, defaltVal.([]float64), sep)
 
 	return val
 }
@@ -263,7 +271,7 @@ func (i float64SliceParser) ParseEnv(key string, defaltVal any, options Paramete
 type int64Parser int64
 
 func (i int64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := intOrDefaultGen(key, defaltVal.(int64))
+	val := numberOrDefaultGen(key, defaltVal.(int64))
 
 	return val
 }
@@ -271,7 +279,7 @@ func (i int64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type int8Parser int8
 
 func (i int8Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := intOrDefaultGen(key, defaltVal.(int8))
+	val := numberOrDefaultGen(key, defaltVal.(int8))
 
 	return val
 }
@@ -279,7 +287,7 @@ func (i int8Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type int16Parser int16
 
 func (i int16Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := intOrDefaultGen(key, defaltVal.(int16))
+	val := numberOrDefaultGen(key, defaltVal.(int16))
 
 	return val
 }
@@ -287,7 +295,7 @@ func (i int16Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type int32Parser int32
 
 func (i int32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := intOrDefaultGen(key, defaltVal.(int32))
+	val := numberOrDefaultGen(key, defaltVal.(int32))
 
 	return val
 }
@@ -297,7 +305,7 @@ type int8SliceParser []int8
 func (i int8SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := intSliceOrDefaultGen(key, defaltVal.([]int8), sep)
+	val := numberSliceOrDefaultGen(key, defaltVal.([]int8), sep)
 
 	return val
 }
@@ -307,7 +315,7 @@ type int16SliceParser []int16
 func (i int16SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := intSliceOrDefaultGen(key, defaltVal.([]int16), sep)
+	val := numberSliceOrDefaultGen(key, defaltVal.([]int16), sep)
 
 	return val
 }
@@ -317,7 +325,7 @@ type int32SliceParser []int32
 func (i int32SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := intSliceOrDefaultGen(key, defaltVal.([]int32), sep)
+	val := numberSliceOrDefaultGen(key, defaltVal.([]int32), sep)
 
 	return val
 }
@@ -327,7 +335,7 @@ type int64SliceParser []int64
 func (i int64SliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
 	sep := options.Separator
 
-	val := intSliceOrDefaultGen(key, defaltVal.([]int64), sep)
+	val := numberSliceOrDefaultGen(key, defaltVal.([]int64), sep)
 
 	return val
 }
@@ -335,7 +343,7 @@ func (i int64SliceParser) ParseEnv(key string, defaltVal any, options Parameters
 type float32Parser float32
 
 func (f float32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := floatOrDefaultGen(key, defaltVal.(float32))
+	val := numberOrDefaultGen(key, defaltVal.(float32))
 
 	return val
 }
@@ -343,7 +351,7 @@ func (f float32Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
 type float64Parser float64
 
 func (f float64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := floatOrDefaultGen(key, defaltVal.(float64))
+	val := numberOrDefaultGen(key, defaltVal.(float64))
 
 	return val
 }

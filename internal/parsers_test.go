@@ -23,7 +23,7 @@ func Benchmark_float64SliceOrDefault(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_ = floatSliceOrDefaultGen(testEnvKey, []float64{}, ",")
+		_ = numberSliceOrDefaultGen(testEnvKey, []float64{}, ",")
 	}
 }
 
@@ -37,7 +37,7 @@ func Test_intOrDefault(t *testing.T) {
 		val int
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -97,7 +97,7 @@ func Test_intOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -113,7 +113,7 @@ func Test_stringOrDefault(t *testing.T) {
 		val string
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -173,7 +173,7 @@ func Test_int64OrDefault(t *testing.T) {
 		val int64
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -233,7 +233,7 @@ func Test_int64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -249,7 +249,7 @@ func Test_int8OrDefault(t *testing.T) {
 		val int8
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -309,7 +309,7 @@ func Test_int8OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -325,7 +325,7 @@ func Test_int16OrDefault(t *testing.T) {
 		val int16
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -385,7 +385,7 @@ func Test_int16OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -401,7 +401,7 @@ func Test_int32OrDefault(t *testing.T) {
 		val int32
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -461,7 +461,7 @@ func Test_int32OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -477,7 +477,7 @@ func Test_float32OrDefault(t *testing.T) {
 		val float32
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -537,7 +537,7 @@ func Test_float32OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := floatOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -553,7 +553,7 @@ func Test_float64OrDefault(t *testing.T) {
 		val float64
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -613,7 +613,7 @@ func Test_float64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := floatOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -629,7 +629,7 @@ func Test_boolOrDefault(t *testing.T) {
 		val bool
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -706,7 +706,7 @@ func Test_stringSliceOrDefault(t *testing.T) {
 		val []string
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -802,7 +802,7 @@ func Test_intSliceOrDefault(t *testing.T) {
 		val []int
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -898,7 +898,7 @@ func Test_intSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -915,7 +915,7 @@ func Test_float32SliceOrDefault(t *testing.T) {
 		val []float32
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -1029,7 +1029,7 @@ func Test_float32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := floatSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1046,7 +1046,7 @@ func Test_float64SliceOrDefault(t *testing.T) {
 		val []float64
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -1160,7 +1160,7 @@ func Test_float64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := floatSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1177,7 +1177,7 @@ func Test_int16SliceOrDefault(t *testing.T) {
 		val []int16
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -1290,7 +1290,7 @@ func Test_int16SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1307,7 +1307,7 @@ func Test_int32SliceOrDefault(t *testing.T) {
 		val []int32
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -1420,7 +1420,7 @@ func Test_int32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1437,7 +1437,7 @@ func Test_uintSliceOrDefault(t *testing.T) {
 		val []uint
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -1567,7 +1567,7 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 		val []uint8
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -1697,7 +1697,7 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 		val []uint16
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -1827,7 +1827,7 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 		val []uint32
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -1957,7 +1957,7 @@ func Test_int8SliceOrDefault(t *testing.T) {
 		val []int8
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2070,7 +2070,7 @@ func Test_int8SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -2087,7 +2087,7 @@ func Test_int64SliceOrDefault(t *testing.T) {
 		val []int64
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2200,7 +2200,7 @@ func Test_int64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := intSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -2219,7 +2219,7 @@ func Test_timeOrDefault(t *testing.T) {
 		val time.Time
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2235,11 +2235,11 @@ func Test_timeOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				defaultVal: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				layout:     layout,
 			},
 			expected: expected{
-				val: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				val: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 			},
 		},
 		{
@@ -2252,11 +2252,11 @@ func Test_timeOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				defaultVal: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				layout:     layout,
 			},
 			expected: expected{
-				val: time.Date(2018, 04, 21, 22, 30, 0, 0, time.UTC),
+				val: time.Date(2018, 4, 21, 22, 30, 0, 0, time.UTC),
 			},
 		},
 		{
@@ -2269,11 +2269,11 @@ func Test_timeOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				defaultVal: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				layout:     layout,
 			},
 			expected: expected{
-				val: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				val: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 			},
 		},
 		{
@@ -2286,11 +2286,11 @@ func Test_timeOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				defaultVal: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				layout:     layout,
 			},
 			expected: expected{
-				val: time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+				val: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 			},
 		},
 	}
@@ -2317,7 +2317,7 @@ func Test_urlOrDefault(t *testing.T) {
 		val url.URL
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2413,7 +2413,7 @@ func Test_timeSliceOrDefault(t *testing.T) {
 		val []time.Time
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2430,14 +2430,14 @@ func Test_timeSliceOrDefault(t *testing.T) {
 			args: args{
 				key: testEnvKey,
 				defaultVal: []time.Time{
-					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
 				layout:    layout,
 				separator: ",",
 			},
 			expected: expected{
 				val: []time.Time{
-					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
 			},
 		},
@@ -2452,15 +2452,15 @@ func Test_timeSliceOrDefault(t *testing.T) {
 			args: args{
 				key: testEnvKey,
 				defaultVal: []time.Time{
-					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
 				layout:    layout,
 				separator: ",",
 			},
 			expected: expected{
 				val: []time.Time{
-					time.Date(2018, 04, 21, 22, 30, 0, 0, time.UTC),
-					time.Date(2023, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2018, 4, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2023, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
 			},
 		},
@@ -2475,14 +2475,14 @@ func Test_timeSliceOrDefault(t *testing.T) {
 			args: args{
 				key: testEnvKey,
 				defaultVal: []time.Time{
-					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
 				layout:    layout,
 				separator: ",",
 			},
 			expected: expected{
 				val: []time.Time{
-					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
 			},
 		},
@@ -2497,14 +2497,14 @@ func Test_timeSliceOrDefault(t *testing.T) {
 			args: args{
 				key: testEnvKey,
 				defaultVal: []time.Time{
-					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
 				layout:    layout,
 				separator: ",",
 			},
 			expected: expected{
 				val: []time.Time{
-					time.Date(2021, 04, 21, 22, 30, 0, 0, time.UTC),
+					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
 			},
 		},
@@ -2531,7 +2531,7 @@ func Test_durationSliceOrDefault(t *testing.T) {
 		val []time.Duration
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2630,7 +2630,7 @@ func Test_durationOrDefault(t *testing.T) {
 		val time.Duration
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2722,7 +2722,7 @@ func Test_uint64OrDefault(t *testing.T) {
 		val uint64
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2815,7 +2815,7 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 		val []uint64
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -2927,7 +2927,7 @@ func Test_uint8OrDefault(t *testing.T) {
 		val uint8
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3019,7 +3019,7 @@ func Test_uintOrDefault(t *testing.T) {
 		val uint
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3111,7 +3111,7 @@ func Test_uint16OrDefault(t *testing.T) {
 		val uint16
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3203,7 +3203,7 @@ func Test_uint32OrDefault(t *testing.T) {
 		val uint32
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3297,7 +3297,7 @@ func Test_ipOrDefault(t *testing.T) {
 		val net.IP
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3390,7 +3390,7 @@ func Test_urlSliceOrDefault(t *testing.T) {
 		val []url.URL
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3492,7 +3492,7 @@ func Test_ipSliceOrDefault(t *testing.T) {
 		val []net.IP
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3593,7 +3593,7 @@ func Test_boolSliceOrDefault(t *testing.T) {
 		val []bool
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3690,7 +3690,7 @@ func Test_uintptrOrDefault(t *testing.T) {
 		val uintptr
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3784,7 +3784,7 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 		val []uintptr
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3882,7 +3882,7 @@ func Test_complex64OrDefault(t *testing.T) {
 		val complex64
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -3976,7 +3976,7 @@ func Test_complex64SliceOrDefault(t *testing.T) {
 		val []complex64
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -4074,7 +4074,7 @@ func Test_complex128OrDefault(t *testing.T) {
 		val complex128
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args
@@ -4168,7 +4168,7 @@ func Test_complex128SliceOrDefault(t *testing.T) {
 		val []complex128
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		precond  precondition
 		args     args

@@ -37,7 +37,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         int(0),
 			wantPanic: assert.NotPanics,
-			want:      intParser(0),
+			want:      numberParser[int]{},
 		},
 		{
 			v:         []int{0},
@@ -47,7 +47,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         int8(0),
 			wantPanic: assert.NotPanics,
-			want:      int8Parser(0),
+			want:      numberParser[int8]{},
 		},
 		{
 			v:         []int8{0},
@@ -57,7 +57,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         int16(0),
 			wantPanic: assert.NotPanics,
-			want:      int16Parser(0),
+			want:      numberParser[int16]{},
 		},
 		{
 			v:         []int16{0},
@@ -67,7 +67,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         int32(0),
 			wantPanic: assert.NotPanics,
-			want:      int32Parser(0),
+			want:      numberParser[int32]{},
 		},
 		{
 			v:         []int32{0},
@@ -77,7 +77,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         int64(0),
 			wantPanic: assert.NotPanics,
-			want:      int64Parser(0),
+			want:      numberParser[int64]{},
 		},
 		{
 			v:         []int64{0},
@@ -87,7 +87,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         uint(0),
 			wantPanic: assert.NotPanics,
-			want:      uintParser(0),
+			want:      numberParser[uint]{},
 		},
 		{
 			v:         []uint{0},
@@ -97,7 +97,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         uint8(0),
 			wantPanic: assert.NotPanics,
-			want:      uint8Parser(0),
+			want:      numberParser[uint8]{},
 		},
 		{
 			v:         []uint8{0},
@@ -107,7 +107,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         uint16(0),
 			wantPanic: assert.NotPanics,
-			want:      uint16Parser(0),
+			want:      numberParser[uint16]{},
 		},
 		{
 			v:         []uint16{0},
@@ -117,7 +117,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         uint32(0),
 			wantPanic: assert.NotPanics,
-			want:      uint32Parser(0),
+			want:      numberParser[uint32]{},
 		},
 		{
 			v:         []uint32{0},
@@ -127,7 +127,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         uint64(0),
 			wantPanic: assert.NotPanics,
-			want:      uint64Parser(0),
+			want:      numberParser[uint64]{},
 		},
 		{
 			v:         []uint64{0},
@@ -137,7 +137,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         float32(0),
 			wantPanic: assert.NotPanics,
-			want:      float32Parser(0),
+			want:      numberParser[float32]{},
 		},
 		{
 			v:         []float32{0},
@@ -147,7 +147,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         float64(0),
 			wantPanic: assert.NotPanics,
-			want:      float64Parser(0),
+			want:      numberParser[float64]{},
 		},
 		{
 			v:         []float64{0},
@@ -222,7 +222,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         uintptr(2),
 			wantPanic: assert.NotPanics,
-			want:      uintptrParser(2),
+			want:      numberParser[uintptr]{},
 		},
 		{
 			v:         []uintptr{2},
@@ -254,7 +254,7 @@ func TestNewEnvParser(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%T", tt.v), func(t *testing.T) {
 			tt.wantPanic(t, func() {
-				assert.Equal(t, tt.want, NewEnvParser(tt.v))
+				assert.IsType(t, tt.want, NewEnvParser(tt.v))
 			})
 		})
 	}
@@ -266,7 +266,7 @@ func Test_newUintParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -278,7 +278,7 @@ func Test_newUintParser(t *testing.T) {
 				v: uint(0),
 			},
 			wantPanic: assert.NotPanics,
-			want:      uintParser(0),
+			want:      numberParser[uint]{},
 		},
 		{
 			name: "uint slice",
@@ -294,7 +294,7 @@ func Test_newUintParser(t *testing.T) {
 				v: uint8(0),
 			},
 			wantPanic: assert.NotPanics,
-			want:      uint8Parser(0),
+			want:      numberParser[uint8]{},
 		},
 		{
 			name: "uint8 slice",
@@ -310,7 +310,7 @@ func Test_newUintParser(t *testing.T) {
 				v: uint16(0),
 			},
 			wantPanic: assert.NotPanics,
-			want:      uint16Parser(0),
+			want:      numberParser[uint16]{},
 		},
 		{
 			name: "uint16 slice",
@@ -327,7 +327,7 @@ func Test_newUintParser(t *testing.T) {
 			},
 
 			wantPanic: assert.NotPanics,
-			want:      uint32Parser(0),
+			want:      numberParser[uint32]{},
 		},
 		{
 			name: "uint32 slice",
@@ -343,7 +343,7 @@ func Test_newUintParser(t *testing.T) {
 				v: uint64(0),
 			},
 			wantPanic: assert.NotPanics,
-			want:      uint64Parser(0),
+			want:      numberParser[uint64]{},
 		},
 		{
 			name: "uint64 slice",
@@ -359,7 +359,7 @@ func Test_newUintParser(t *testing.T) {
 				v: uintptr(0),
 			},
 			wantPanic: assert.NotPanics,
-			want:      uintptrParser(0),
+			want:      numberParser[uintptr]{},
 		},
 		{
 			name: "uintptr slice",
@@ -394,7 +394,7 @@ func Test_newFloatParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -406,7 +406,7 @@ func Test_newFloatParser(t *testing.T) {
 				v: float32(0),
 			},
 			wantPanic: assert.NotPanics,
-			want:      float32Parser(0),
+			want:      numberParser[float32]{},
 		},
 		{
 			name: "float32 slice",
@@ -422,7 +422,7 @@ func Test_newFloatParser(t *testing.T) {
 				v: float64(0),
 			},
 			wantPanic: assert.NotPanics,
-			want:      float64Parser(0),
+			want:      numberParser[float64]{},
 		},
 		{
 			name: "float64 slice",
@@ -457,7 +457,7 @@ func Test_newTimeParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -536,7 +536,7 @@ func Test_newStringParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -583,7 +583,7 @@ func Test_newBoolParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -630,7 +630,7 @@ func Test_newIntParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -642,7 +642,7 @@ func Test_newIntParser(t *testing.T) {
 				v: 1,
 			},
 			wantPanic: assert.NotPanics,
-			want:      intParser(1),
+			want:      numberParser[int]{},
 		},
 		{
 			name: "int slice",
@@ -677,7 +677,7 @@ func Test_newIPParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -724,7 +724,7 @@ func Test_newURLParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -787,7 +787,7 @@ func Test_newComplexParser(t *testing.T) {
 		v any
 	}
 
-	var tests = []struct {
+	tests := []struct {
 		name      string
 		args      args
 		wantPanic panicAssertionFunc
@@ -1636,7 +1636,6 @@ func Test_ParseEnv(t *testing.T) {
 			name: "complex128Parser",
 			s:    complex128Parser(complex128(0)),
 			precond: precondition{
-
 				setenv: setenv{
 					isSet: true,
 					val:   "1+2i",

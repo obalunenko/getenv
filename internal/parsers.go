@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -11,7 +12,7 @@ import (
 
 // stringOrDefault retrieves the string value of the environment variable named
 // by the key.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func stringOrDefault(key, defaultVal string) string {
 	env, ok := os.LookupEnv(key)
 	if !ok || env == "" {
@@ -23,7 +24,7 @@ func stringOrDefault(key, defaultVal string) string {
 
 // boolOrDefault retrieves the bool value of the environment variable named
 // by the key.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func boolOrDefault(key string, defaultVal bool) bool {
 	env := stringOrDefault(key, "")
 	if env == "" {
@@ -40,7 +41,7 @@ func boolOrDefault(key string, defaultVal bool) bool {
 
 // boolSliceOrDefault retrieves the bool slice value of the environment variable named
 // by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func boolSliceOrDefault(key string, defaultVal []bool, sep string) []bool {
 	valraw := stringSliceOrDefault(key, nil, sep)
 	if valraw == nil {
@@ -63,7 +64,7 @@ func boolSliceOrDefault(key string, defaultVal []bool, sep string) []bool {
 
 // stringSliceOrDefault retrieves the string slice value of the environment variable named
 // by the key and separated by sep.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func stringSliceOrDefault(key string, defaultVal []string, sep string) []string {
 	if sep == "" {
 		return defaultVal
@@ -79,136 +80,80 @@ func stringSliceOrDefault(key string, defaultVal []string, sep string) []string 
 	return val
 }
 
-func floatOrDefaultGen[T Float](key string, defaultVal T) T {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	val, err := parseFloatGen[T](env)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func parseFloatGen[T Float](raw string) (T, error) {
-	var tt T
-
-	const (
-		bitsize = 64
-	)
-
-	val, err := strconv.ParseFloat(raw, bitsize)
-	if err != nil {
-		return tt, ErrInvalidValue
-	}
-
-	return any(T(val)).(T), nil
-}
-
-func parseIntGen[T Int](raw string) (T, error) {
+func parseNumberGen[T Number](raw string) (T, error) {
 	var tt T
 
 	const (
 		base = 10
 	)
 
-	var (
-		bitsize int
-	)
+	rt := reflect.TypeOf(tt)
 
-	switch any(tt).(type) {
-	case int:
-		bitsize = 0
-	case int8:
-		bitsize = 8
-	case int16:
-		bitsize = 16
-	case int32:
-		bitsize = 32
-	case int64:
-		bitsize = 64
-	}
+	switch rt.Kind() { //nolint:exhaustive // All supported types are covered.
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		val, err := strconv.ParseInt(raw, base, rt.Bits())
+		if err != nil {
+			return tt, ErrInvalidValue
+		}
 
-	val, err := strconv.ParseInt(raw, base, bitsize)
-	if err != nil {
+		return any(T(val)).(T), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		val, err := strconv.ParseUint(raw, base, rt.Bits())
+		if err != nil {
+			return tt, ErrInvalidValue
+		}
+
+		return any(T(val)).(T), nil
+	case reflect.Float32, reflect.Float64:
+		val, err := strconv.ParseFloat(raw, rt.Bits())
+		if err != nil {
+			return tt, ErrInvalidValue
+		}
+
+		return any(T(val)).(T), nil
+	default:
 		return tt, ErrInvalidValue
 	}
-
-	return any(T(val)).(T), nil
 }
 
-func intOrDefaultGen[T Int](key string, defaultVal T) T {
+func parseNumberSliceGen[S []T, T Number](raw []string) (S, error) {
+	var tt S
+
+	val := make(S, 0, len(raw))
+
+	for _, s := range raw {
+		v, err := parseNumberGen[T](s)
+		if err != nil {
+			return tt, err
+		}
+
+		val = append(val, v)
+	}
+
+	return val, nil
+}
+
+func numberSliceOrDefaultGen[S []T, T Number](key string, defaultVal S, sep string) S {
+	valraw := stringSliceOrDefault(key, nil, sep)
+	if valraw == nil {
+		return defaultVal
+	}
+
+	val, err := parseNumberSliceGen[S, T](valraw)
+	if err != nil {
+		return defaultVal
+	}
+
+	return val
+}
+
+func numberOrDefaultGen[T Number](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
 	}
 
-	val, err := parseIntGen[T](env)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func parseIntSliceGen[S []T, T Int](raw []string) (S, error) {
-	var tt S
-
-	val := make(S, 0, len(raw))
-
-	for _, s := range raw {
-		v, err := parseIntGen[T](s)
-		if err != nil {
-			return tt, err
-		}
-
-		val = append(val, v)
-	}
-
-	return val, nil
-}
-
-func parseFloatSliceGen[S []T, T Float](raw []string) (S, error) {
-	var tt S
-
-	val := make(S, 0, len(raw))
-
-	for _, s := range raw {
-		v, err := parseFloatGen[T](s)
-		if err != nil {
-			return tt, err
-		}
-
-		val = append(val, v)
-	}
-
-	return val, nil
-}
-
-func floatSliceOrDefaultGen[S []T, T Float](key string, defaultVal S, sep string) S {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val, err := parseFloatSliceGen[S](valraw)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func intSliceOrDefaultGen[S []T, T Int](key string, defaultVal S, sep string) S {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val, err := parseIntSliceGen[S](valraw)
+	val, err := parseNumberGen[T](env)
 	if err != nil {
 		return defaultVal
 	}
@@ -218,7 +163,7 @@ func intSliceOrDefaultGen[S []T, T Int](key string, defaultVal S, sep string) S 
 
 // durationOrDefault retrieves the time.Duration value of the environment variable named
 // by the key.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func durationOrDefault(key string, defaultVal time.Duration) time.Duration {
 	env := stringOrDefault(key, "")
 	if env == "" {
@@ -235,7 +180,7 @@ func durationOrDefault(key string, defaultVal time.Duration) time.Duration {
 
 // timeOrDefault retrieves the time.Time value of the environment variable named
 // by the key represented by layout.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func timeOrDefault(key string, defaultVal time.Time, layout string) time.Time {
 	env := stringOrDefault(key, "")
 	if env == "" {
@@ -252,7 +197,7 @@ func timeOrDefault(key string, defaultVal time.Time, layout string) time.Time {
 
 // timeSliceOrDefault retrieves the []time.Time value of the environment variable named
 // by the key represented by layout.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func timeSliceOrDefault(key string, defaultVal []time.Time, layout, separator string) []time.Time {
 	valraw := stringSliceOrDefault(key, nil, separator)
 	if valraw == nil {
@@ -275,7 +220,7 @@ func timeSliceOrDefault(key string, defaultVal []time.Time, layout, separator st
 
 // durationSliceOrDefault retrieves the []time.Duration value of the environment variable named
 // by the key represented by layout.
-// If variable not set or value is empty - defaultVal will be returned.
+// If the variable is not set or the value is empty - defaultVal will be returned.
 func durationSliceOrDefault(key string, defaultVal []time.Duration, separator string) []time.Duration {
 	valraw := stringSliceOrDefault(key, nil, separator)
 	if valraw == nil {
@@ -303,9 +248,7 @@ func parseUintGen[T Uint](raw string) (T, error) {
 		base = 10
 	)
 
-	var (
-		bitsize int
-	)
+	var bitsize int
 
 	switch any(tt).(type) {
 	case uint:
@@ -318,7 +261,6 @@ func parseUintGen[T Uint](raw string) (T, error) {
 		bitsize = 32
 	case uint64:
 		bitsize = 64
-
 	case uintptr:
 		bitsize = 0
 	}
@@ -448,9 +390,7 @@ func ipSliceOrDefault(key string, defaultVal []net.IP, sep string) []net.IP {
 func parseComplexGen[T Complex](raw string) (T, error) {
 	var tt T
 
-	var (
-		bitsize int
-	)
+	var bitsize int
 
 	switch any(tt).(type) {
 	case complex64:
