@@ -36,7 +36,7 @@ function fmt() {
 
   checkInstalled 'gofmt'
 
-  declare -a fmts=$(gofmt -s -l $(find . -type f -name '*.go' | grep -v 'vendor' | grep -v '.git'))
+  declare -a fmts=$(gofumpt -l -d $(find . -type f -name '*.go' | grep -v 'vendor' | grep -v '.git'))
 
   if [[ ${fmts} ]]; then
     echo "fix it:"
