@@ -1550,7 +1550,7 @@ func Test_uintSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1680,7 +1680,7 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1810,7 +1810,7 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1940,7 +1940,7 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -2798,7 +2798,7 @@ func Test_uint64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -2911,7 +2911,7 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3003,7 +3003,7 @@ func Test_uint8OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3095,7 +3095,7 @@ func Test_uintOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3187,7 +3187,7 @@ func Test_uint16OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3279,7 +3279,7 @@ func Test_uint32OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3766,7 +3766,7 @@ func Test_uintptrOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3865,7 +3865,7 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}

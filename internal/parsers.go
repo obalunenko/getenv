@@ -241,72 +241,6 @@ func durationSliceOrDefault(key string, defaultVal []time.Duration, separator st
 	return val
 }
 
-func parseUintGen[T Uint](raw string) (T, error) {
-	var tt T
-
-	const (
-		base = 10
-	)
-
-	var bitsize int
-
-	switch any(tt).(type) {
-	case uint:
-		bitsize = 0
-	case uint8:
-		bitsize = 8
-	case uint16:
-		bitsize = 16
-	case uint32:
-		bitsize = 32
-	case uint64:
-		bitsize = 64
-	case uintptr:
-		bitsize = 0
-	}
-
-	val, err := strconv.ParseUint(raw, base, bitsize)
-	if err != nil {
-		return tt, ErrInvalidValue
-	}
-
-	return any(T(val)).(T), nil
-}
-
-func uintOrDefaultGen[T Uint](key string, defaultVal T) T {
-	env := stringOrDefault(key, "")
-	if env == "" {
-		return defaultVal
-	}
-
-	val, err := parseUintGen[T](env)
-	if err != nil {
-		return defaultVal
-	}
-
-	return val
-}
-
-func uintSliceOrDefaultGen[S []T, T Uint](key string, defaultVal S, sep string) S {
-	valraw := stringSliceOrDefault(key, nil, sep)
-	if valraw == nil {
-		return defaultVal
-	}
-
-	val := make(S, 0, len(valraw))
-
-	for _, s := range valraw {
-		v, err := parseUintGen[T](s)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, v)
-	}
-
-	return val
-}
-
 // urlOrDefault retrieves the url.URL value of the environment variable named
 // by the key represented by layout.
 // If variable not set or value is empty - defaultVal will be returned.
@@ -407,7 +341,24 @@ func parseComplexGen[T Complex](raw string) (T, error) {
 	return any(T(val)).(T), nil
 }
 
-func complexOrDefaultGen[T complex64 | complex128](key string, defaultVal T) T {
+func parseComplexSliceGen[S []T, T Complex](raw []string) (S, error) {
+	var tt S
+
+	val := make(S, 0, len(raw))
+
+	for _, s := range raw {
+		v, err := parseComplexGen[T](s)
+		if err != nil {
+			return tt, err
+		}
+
+		val = append(val, v)
+	}
+
+	return val, nil
+}
+
+func complexOrDefaultGen[T Complex](key string, defaultVal T) T {
 	env := stringOrDefault(key, "")
 	if env == "" {
 		return defaultVal
@@ -427,15 +378,9 @@ func complexSliceOrDefaultGen[S []T, T Complex](key string, defaultVal S, sep st
 		return defaultVal
 	}
 
-	val := make(S, 0, len(valraw))
-
-	for _, s := range valraw {
-		v, err := parseComplexGen[T](s)
-		if err != nil {
-			return defaultVal
-		}
-
-		val = append(val, v)
+	val, err := parseComplexSliceGen[S, T](valraw)
+	if err != nil {
+		return defaultVal
 	}
 
 	return val
