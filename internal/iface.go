@@ -562,7 +562,7 @@ func (i uintptrSliceParser) ParseEnv(key string, defaltVal any, options Paramete
 type complex64Parser complex64
 
 func (d complex64Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := complex64OrDefault(key, defaltVal.(complex64))
+	val := complexOrDefaultGen(key, defaltVal.(complex64))
 
 	return val
 }
@@ -582,7 +582,7 @@ func (i complex64SliceParser) ParseEnv(key string, defaltVal any, options Parame
 type complex128Parser complex128
 
 func (d complex128Parser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := complex128OrDefault(key, defaltVal.(complex128))
+	val := complexOrDefaultGen(key, defaltVal.(complex128))
 
 	return val
 }
