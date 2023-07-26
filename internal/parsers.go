@@ -420,6 +420,7 @@ func parseUintGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](raw strin
 			if !ok {
 				return tt, ErrInvalidValue
 			}
+
 			return t, nil
 		}
 	case uint16:
@@ -429,6 +430,7 @@ func parseUintGen[T uint | uint8 | uint16 | uint32 | uint64 | uintptr](raw strin
 			if !ok {
 				return tt, ErrInvalidValue
 			}
+			
 			return t, nil
 		}
 	case uint32:
