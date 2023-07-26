@@ -2798,7 +2798,7 @@ func Test_uint64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uint64OrDefault(tt.args.key, tt.args.defaultVal)
+			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3003,7 +3003,7 @@ func Test_uint8OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uint8OrDefault(tt.args.key, tt.args.defaultVal)
+			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3095,7 +3095,7 @@ func Test_uintOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintOrDefault(tt.args.key, tt.args.defaultVal)
+			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3187,7 +3187,7 @@ func Test_uint16OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uint16OrDefault(tt.args.key, tt.args.defaultVal)
+			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3279,7 +3279,7 @@ func Test_uint32OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uint32OrDefault(tt.args.key, tt.args.defaultVal)
+			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3766,7 +3766,7 @@ func Test_uintptrOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := uintptrOrDefault(tt.args.key, tt.args.defaultVal)
+			got := uintOrDefaultGen(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
