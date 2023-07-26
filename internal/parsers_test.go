@@ -23,7 +23,7 @@ func Benchmark_float64SliceOrDefault(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_ = numberSliceOrDefaultGen(testEnvKey, []float64{}, ",")
+		_ = getSliceOrDefaultGen(testEnvKey, []float64{}, ",")
 	}
 }
 
@@ -157,7 +157,7 @@ func Test_stringOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := stringOrDefault(tt.args.key, tt.args.defaultVal)
+			got := getStringOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -689,7 +689,7 @@ func Test_boolOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := boolOrDefault(tt.args.key, tt.args.defaultVal)
+			got := getBoolOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -785,7 +785,7 @@ func Test_stringSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := stringSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getStringSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -898,7 +898,7 @@ func Test_intSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1029,7 +1029,7 @@ func Test_float32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1160,7 +1160,7 @@ func Test_float64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1290,7 +1290,7 @@ func Test_int16SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1420,7 +1420,7 @@ func Test_int32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1550,7 +1550,7 @@ func Test_uintSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1680,7 +1680,7 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1810,7 +1810,7 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -1940,7 +1940,7 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -2070,7 +2070,7 @@ func Test_int8SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -2200,7 +2200,7 @@ func Test_int64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -2333,10 +2333,10 @@ func Test_urlOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: getURL(t, rawDefault),
+				defaultVal: getTestURL(t, rawDefault),
 			},
 			expected: expected{
-				val: getURL(t, rawDefault),
+				val: getTestURL(t, rawDefault),
 			},
 		},
 		{
@@ -2349,10 +2349,10 @@ func Test_urlOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: getURL(t, rawDefault),
+				defaultVal: getTestURL(t, rawDefault),
 			},
 			expected: expected{
-				val: getURL(t, "postgres://user:pass@host.com:5432/path?k=v#f"),
+				val: getTestURL(t, "postgres://user:pass@host.com:5432/path?k=v#f"),
 			},
 		},
 		{
@@ -2365,10 +2365,10 @@ func Test_urlOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: getURL(t, rawDefault),
+				defaultVal: getTestURL(t, rawDefault),
 			},
 			expected: expected{
-				val: getURL(t, rawDefault),
+				val: getTestURL(t, rawDefault),
 			},
 		},
 		{
@@ -2381,10 +2381,10 @@ func Test_urlOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: getURL(t, rawDefault),
+				defaultVal: getTestURL(t, rawDefault),
 			},
 			expected: expected{
-				val: getURL(t, rawDefault),
+				val: getTestURL(t, rawDefault),
 			},
 		},
 	}
@@ -2706,7 +2706,7 @@ func Test_durationOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := durationOrDefault(tt.args.key, tt.args.defaultVal)
+			got := getDurationOrDefault(tt.args.key, tt.args.defaultVal)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -2911,7 +2911,7 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3313,10 +3313,10 @@ func Test_ipOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: getIP(t, rawDefault),
+				defaultVal: getTestIP(t, rawDefault),
 			},
 			expected: expected{
-				val: getIP(t, rawDefault),
+				val: getTestIP(t, rawDefault),
 			},
 		},
 		{
@@ -3329,10 +3329,10 @@ func Test_ipOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: getIP(t, rawDefault),
+				defaultVal: getTestIP(t, rawDefault),
 			},
 			expected: expected{
-				val: getIP(t, "192.168.8.0"),
+				val: getTestIP(t, "192.168.8.0"),
 			},
 		},
 		{
@@ -3345,10 +3345,10 @@ func Test_ipOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: getIP(t, rawDefault),
+				defaultVal: getTestIP(t, rawDefault),
 			},
 			expected: expected{
-				val: getIP(t, rawDefault),
+				val: getTestIP(t, rawDefault),
 			},
 		},
 		{
@@ -3361,10 +3361,10 @@ func Test_ipOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: getIP(t, rawDefault),
+				defaultVal: getTestIP(t, rawDefault),
 			},
 			expected: expected{
-				val: getIP(t, rawDefault),
+				val: getTestIP(t, rawDefault),
 			},
 		},
 	}
@@ -3406,11 +3406,11 @@ func Test_urlSliceOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: []url.URL{getURL(t, "https://bing.com")},
+				defaultVal: []url.URL{getTestURL(t, "https://bing.com")},
 				separator:  ",",
 			},
 			expected: expected{
-				val: []url.URL{getURL(t, "https://bing.com")},
+				val: []url.URL{getTestURL(t, "https://bing.com")},
 			},
 		},
 		{
@@ -3423,13 +3423,13 @@ func Test_urlSliceOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: []url.URL{getURL(t, "https://bing.com")},
+				defaultVal: []url.URL{getTestURL(t, "https://bing.com")},
 				separator:  ",",
 			},
 			expected: expected{
 				val: []url.URL{
-					getURL(t, "https://google.com"),
-					getURL(t, "https://github.com"),
+					getTestURL(t, "https://google.com"),
+					getTestURL(t, "https://github.com"),
 				},
 			},
 		},
@@ -3443,11 +3443,11 @@ func Test_urlSliceOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: []url.URL{getURL(t, "https://bing.com")},
+				defaultVal: []url.URL{getTestURL(t, "https://bing.com")},
 				separator:  ",",
 			},
 			expected: expected{
-				val: []url.URL{getURL(t, "https://bing.com")},
+				val: []url.URL{getTestURL(t, "https://bing.com")},
 			},
 		},
 		{
@@ -3460,11 +3460,11 @@ func Test_urlSliceOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: []url.URL{getURL(t, "https://bing.com")},
+				defaultVal: []url.URL{getTestURL(t, "https://bing.com")},
 				separator:  ",",
 			},
 			expected: expected{
-				val: []url.URL{getURL(t, "https://bing.com")},
+				val: []url.URL{getTestURL(t, "https://bing.com")},
 			},
 		},
 	}
@@ -3508,11 +3508,11 @@ func Test_ipSliceOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: []net.IP{getIP(t, rawDefault)},
+				defaultVal: []net.IP{getTestIP(t, rawDefault)},
 				separator:  ",",
 			},
 			expected: expected{
-				val: []net.IP{getIP(t, rawDefault)},
+				val: []net.IP{getTestIP(t, rawDefault)},
 			},
 		},
 		{
@@ -3525,13 +3525,13 @@ func Test_ipSliceOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: []net.IP{getIP(t, rawDefault)},
+				defaultVal: []net.IP{getTestIP(t, rawDefault)},
 				separator:  ",",
 			},
 			expected: expected{
 				val: []net.IP{
-					getIP(t, "192.168.8.0"),
-					getIP(t, "2001:cb8::17"),
+					getTestIP(t, "192.168.8.0"),
+					getTestIP(t, "2001:cb8::17"),
 				},
 			},
 		},
@@ -3545,11 +3545,11 @@ func Test_ipSliceOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: []net.IP{getIP(t, rawDefault)},
+				defaultVal: []net.IP{getTestIP(t, rawDefault)},
 				separator:  ",",
 			},
 			expected: expected{
-				val: []net.IP{getIP(t, rawDefault)},
+				val: []net.IP{getTestIP(t, rawDefault)},
 			},
 		},
 		{
@@ -3562,11 +3562,11 @@ func Test_ipSliceOrDefault(t *testing.T) {
 			},
 			args: args{
 				key:        testEnvKey,
-				defaultVal: []net.IP{getIP(t, rawDefault)},
+				defaultVal: []net.IP{getTestIP(t, rawDefault)},
 				separator:  ",",
 			},
 			expected: expected{
-				val: []net.IP{getIP(t, rawDefault)},
+				val: []net.IP{getTestIP(t, rawDefault)},
 			},
 		},
 	}
@@ -3581,7 +3581,7 @@ func Test_ipSliceOrDefault(t *testing.T) {
 	}
 }
 
-// Test_boolSliceOrDefault tests the boolSliceOrDefault function.
+// Test_boolSliceOrDefault tests the getBoolSliceOrDefault function.
 func Test_boolSliceOrDefault(t *testing.T) {
 	type args struct {
 		key        string
@@ -3673,7 +3673,7 @@ func Test_boolSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := boolSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got := getBoolSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -3865,7 +3865,7 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got := getSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
