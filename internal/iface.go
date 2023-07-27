@@ -200,158 +200,126 @@ func newBoolParser(v any) EnvParser {
 // EnvParser interface for parsing environment variables.
 type EnvParser interface {
 	// ParseEnv parses environment variable by key and returns value.
-	ParseEnv(key string, defaltVal any, options Parameters) any
+	ParseEnv(key string, options Parameters) (any, error)
 }
 
 // stringParser is a parser for string type.
 type stringParser string
 
-func (s stringParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := stringOrDefault(key, defaltVal.(string))
-
-	return val
+func (s stringParser) ParseEnv(key string, _ Parameters) (any, error) {
+	return getString(key)
 }
 
 type stringSliceParser []string
 
-func (s stringSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+func (s stringSliceParser) ParseEnv(key string, options Parameters) (any, error) {
 	sep := options.Separator
 
-	val := stringSliceOrDefault(key, defaltVal.([]string), sep)
-
-	return val
+	return getStringSlice(key, sep)
 }
 
 type numberParser[T Number] struct{}
 
-func (n numberParser[T]) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := numberOrDefaultGen[T](key, defaltVal.(T))
-
-	return val
+func (n numberParser[T]) ParseEnv(key string, _ Parameters) (any, error) {
+	return getNumberGen[T](key)
 }
 
 type numberSliceParser[S []T, T Number] struct{}
 
-func (i numberSliceParser[S, T]) ParseEnv(key string, defaltVal any, options Parameters) any {
+func (i numberSliceParser[S, T]) ParseEnv(key string, options Parameters) (any, error) {
 	sep := options.Separator
 
-	val := numberSliceOrDefaultGen(key, defaltVal.(S), sep)
-
-	return val
+	return getNumberSliceGen[S, T](key, sep)
 }
 
 type boolParser bool
 
-func (b boolParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := boolOrDefault(key, defaltVal.(bool))
-
-	return val
+func (b boolParser) ParseEnv(key string, _ Parameters) (any, error) {
+	return getBool(key)
 }
 
 type timeParser time.Time
 
-func (t timeParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+func (t timeParser) ParseEnv(key string, options Parameters) (any, error) {
 	layout := options.Layout
 
-	val := timeOrDefault(key, defaltVal.(time.Time), layout)
-
-	return val
+	return getTime(key, layout)
 }
 
 type timeSliceParser []time.Time
 
-func (t timeSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+func (t timeSliceParser) ParseEnv(key string, options Parameters) (any, error) {
 	layout := options.Layout
 	sep := options.Separator
 
-	val := timeSliceOrDefault(key, defaltVal.([]time.Time), layout, sep)
-
-	return val
+	return getTimeSlice(key, layout, sep)
 }
 
 type durationSliceParser []time.Duration
 
-func (t durationSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+func (t durationSliceParser) ParseEnv(key string, options Parameters) (any, error) {
 	sep := options.Separator
 
-	val := durationSliceOrDefault(key, defaltVal.([]time.Duration), sep)
-
-	return val
+	return getDurationSlice(key, sep)
 }
 
 type durationParser time.Duration
 
-func (d durationParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := durationOrDefault(key, defaltVal.(time.Duration))
-
-	return val
+func (d durationParser) ParseEnv(key string, _ Parameters) (any, error) {
+	return getDuration(key)
 }
 
 // stringSliceParser is a parser for []string
 type urlParser url.URL
 
-func (t urlParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := urlOrDefault(key, defaltVal.(url.URL))
-
-	return val
+func (t urlParser) ParseEnv(key string, _ Parameters) (any, error) {
+	return getURL(key)
 }
 
 // urlSliceParser is a parser for []url.URL
 type urlSliceParser []url.URL
 
-func (t urlSliceParser) ParseEnv(key string, defaltVal any, opts Parameters) any {
+func (t urlSliceParser) ParseEnv(key string, opts Parameters) (any, error) {
 	separator := opts.Separator
 
-	val := urlSliceOrDefault(key, defaltVal.([]url.URL), separator)
-
-	return val
+	return getURLSlice(key, separator)
 }
 
 // ipParser is a parser for net.IP
 type ipParser net.IP
 
-func (t ipParser) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := ipOrDefault(key, defaltVal.(net.IP))
-
-	return val
+func (t ipParser) ParseEnv(key string, _ Parameters) (any, error) {
+	return getIP(key)
 }
 
 // ipSliceParser is a parser for []net.IP
 type ipSliceParser []net.IP
 
-func (t ipSliceParser) ParseEnv(key string, defaltVal any, opts Parameters) any {
+func (t ipSliceParser) ParseEnv(key string, opts Parameters) (any, error) {
 	separator := opts.Separator
 
-	val := ipSliceOrDefault(key, defaltVal.([]net.IP), separator)
-
-	return val
+	return getIPSlice(key, separator)
 }
 
 // boolSliceParser is a parser for []bool
 type boolSliceParser []bool
 
-func (b boolSliceParser) ParseEnv(key string, defaltVal any, options Parameters) any {
+func (b boolSliceParser) ParseEnv(key string, options Parameters) (any, error) {
 	sep := options.Separator
 
-	val := boolSliceOrDefault(key, defaltVal.([]bool), sep)
-
-	return val
+	return getBoolSlice(key, sep)
 }
 
 type complexParser[T Complex] struct{}
 
-func (n complexParser[T]) ParseEnv(key string, defaltVal any, _ Parameters) any {
-	val := complexOrDefaultGen[T](key, defaltVal.(T))
-
-	return val
+func (n complexParser[T]) ParseEnv(key string, _ Parameters) (any, error) {
+	return getComplexGen[T](key)
 }
 
 type complexSliceParser[S []T, T Complex] struct{}
 
-func (i complexSliceParser[S, T]) ParseEnv(key string, defaltVal any, options Parameters) any {
+func (i complexSliceParser[S, T]) ParseEnv(key string, options Parameters) (any, error) {
 	sep := options.Separator
 
-	val := complexSliceOrDefaultGen(key, defaltVal.(S), sep)
-
-	return val
+	return getComplexSliceGen[S, T](key, sep)
 }

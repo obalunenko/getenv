@@ -200,24 +200,24 @@ func TestNewEnvParser(t *testing.T) {
 			want:      durationSliceParser([]time.Duration{time.Minute}),
 		},
 		{
-			v:         getURL(t, "http://example.com"),
+			v:         getTestURL(t, "http://example.com"),
 			wantPanic: assert.NotPanics,
-			want:      urlParser(getURL(t, "http://example.com")),
+			want:      urlParser(getTestURL(t, "http://example.com")),
 		},
 		{
-			v:         []url.URL{getURL(t, "http://example.com")},
+			v:         []url.URL{getTestURL(t, "http://example.com")},
 			wantPanic: assert.NotPanics,
-			want:      urlSliceParser([]url.URL{getURL(t, "http://example.com")}),
+			want:      urlSliceParser([]url.URL{getTestURL(t, "http://example.com")}),
 		},
 		{
-			v:         getIP(t, "0.0.0.0"),
+			v:         getTestIP(t, "0.0.0.0"),
 			wantPanic: assert.NotPanics,
-			want:      ipParser(getIP(t, "0.0.0.0")),
+			want:      ipParser(getTestIP(t, "0.0.0.0")),
 		},
 		{
-			v:         []net.IP{getIP(t, "0.0.0.0")},
+			v:         []net.IP{getTestIP(t, "0.0.0.0")},
 			wantPanic: assert.NotPanics,
-			want:      ipSliceParser([]net.IP{getIP(t, "0.0.0.0")}),
+			want:      ipSliceParser([]net.IP{getTestIP(t, "0.0.0.0")}),
 		},
 		{
 			v:         uintptr(2),

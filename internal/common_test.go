@@ -33,8 +33,8 @@ func (p precondition) maybeSetEnv(tb testing.TB, key string) {
 	}
 }
 
-// getURL is a helper function for getting url.URL from string.
-func getURL(tb testing.TB, rawURL string) url.URL {
+// getTestURL is a helper function for getting url.URL from string.
+func getTestURL(tb testing.TB, rawURL string) url.URL {
 	tb.Helper()
 
 	val, err := url.Parse(rawURL)
@@ -43,8 +43,8 @@ func getURL(tb testing.TB, rawURL string) url.URL {
 	return *val
 }
 
-// getIP is a helper function for getting net.IP from string.
-func getIP(tb testing.TB, raw string) net.IP {
+// getTestIP is a helper function for getting net.IP from string.
+func getTestIP(tb testing.TB, raw string) net.IP {
 	tb.Helper()
 
 	return net.ParseIP(raw)

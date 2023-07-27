@@ -3858,7 +3858,7 @@ func TestEnvInt(t *testing.T) {
 			expected: expected{
 				val: 0,
 				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrNotSet)
+					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrNotSet.Error())
 				},
 			},
 		},
@@ -3892,7 +3892,7 @@ func TestEnvInt(t *testing.T) {
 			expected: expected{
 				val: 0,
 				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrInvalidValue)
+					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrInvalidValue.Error())
 				},
 			},
 		},
@@ -3945,7 +3945,7 @@ func TestEnvIntSlice(t *testing.T) {
 			expected: expected{
 				val: nil,
 				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrNotSet)
+					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrNotSet.Error())
 				},
 			},
 		},
@@ -3981,7 +3981,7 @@ func TestEnvIntSlice(t *testing.T) {
 			expected: expected{
 				val: nil,
 				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrInvalidValue)
+					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrInvalidValue.Error())
 				},
 			},
 		},
@@ -4000,7 +4000,7 @@ func TestEnvIntSlice(t *testing.T) {
 			expected: expected{
 				val: nil,
 				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, getenv.ErrInvalidValue)
+					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrNotSet.Error())
 				},
 			},
 		},

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Benchmark_float64SliceOrDefault(b *testing.B) {
@@ -23,18 +24,19 @@ func Benchmark_float64SliceOrDefault(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_ = numberSliceOrDefaultGen(testEnvKey, []float64{}, ",")
+		_, err := getNumberSliceGen[[]float32](testEnvKey, ",")
+		require.NoError(b, err)
 	}
 }
 
-func Test_intOrDefault(t *testing.T) {
+func Test_getNumberGenInt(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal int
+		key string
 	}
 
 	type expected struct {
-		val int
+		val     int
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -44,7 +46,7 @@ func Test_intOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -52,11 +54,13 @@ func Test_intOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 42,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -68,15 +72,15 @@ func Test_intOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 44,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 128,
+				val:     128,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "invalid env value set - default returned",
+			name: "invalid env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -84,11 +88,13 @@ func Test_intOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 44,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 44,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -97,7 +103,11 @@ func Test_intOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[int](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -110,7 +120,8 @@ func Test_stringOrDefault(t *testing.T) {
 	}
 
 	type expected struct {
-		val string
+		val     string
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -132,7 +143,10 @@ func Test_stringOrDefault(t *testing.T) {
 				defaultVal: "default",
 			},
 			expected: expected{
-				val: "default",
+				val: "",
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -148,7 +162,8 @@ func Test_stringOrDefault(t *testing.T) {
 				defaultVal: "default",
 			},
 			expected: expected{
-				val: "newval",
+				val:     "newval",
+				wantErr: assert.NoError,
 			},
 		},
 	}
@@ -157,20 +172,24 @@ func Test_stringOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := stringOrDefault(tt.args.key, tt.args.defaultVal)
+			got, err := getString(tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_int64OrDefault(t *testing.T) {
+func Test_getNumberGenInt64(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal int64
+		key string
 	}
 
 	type expected struct {
-		val int64
+		val     int64
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -180,7 +199,7 @@ func Test_int64OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -188,11 +207,13 @@ func Test_int64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 956,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 956,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -204,15 +225,15 @@ func Test_int64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 1024,
+				val:     1024,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "invalid env value set - default returned",
+			name: "invalid env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -220,11 +241,13 @@ func Test_int64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 44,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 44,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -233,20 +256,24 @@ func Test_int64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[int64](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_int8OrDefault(t *testing.T) {
+func Test_getNumberGenInt8(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal int8
+		key string
 	}
 
 	type expected struct {
-		val int8
+		val     int8
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -256,7 +283,7 @@ func Test_int8OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -264,11 +291,13 @@ func Test_int8OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 95,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 95,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -280,15 +309,15 @@ func Test_int8OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 10,
+				val:     10,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "invalid env value set - default returned",
+			name: "invalid env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -296,11 +325,13 @@ func Test_int8OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 44,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 44,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -309,20 +340,24 @@ func Test_int8OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[int8](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_int16OrDefault(t *testing.T) {
+func Test_getNumberGenInt16(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal int16
+		key string
 	}
 
 	type expected struct {
-		val int16
+		val     int16
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -332,7 +367,7 @@ func Test_int16OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -340,11 +375,13 @@ func Test_int16OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 956,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 956,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -356,15 +393,15 @@ func Test_int16OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 1024,
+				val:     1024,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "invalid env value set - default returned",
+			name: "invalid env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -372,11 +409,13 @@ func Test_int16OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 44,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 44,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -385,20 +424,24 @@ func Test_int16OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[int16](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_int32OrDefault(t *testing.T) {
+func Test_getNumberGenInt32(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal int32
+		key string
 	}
 
 	type expected struct {
-		val int32
+		val     int32
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -408,7 +451,7 @@ func Test_int32OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -416,11 +459,13 @@ func Test_int32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 956,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 956,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -432,15 +477,15 @@ func Test_int32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 1024,
+				val:     1024,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "invalid env value set - default returned",
+			name: "invalid env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -448,11 +493,13 @@ func Test_int32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 44,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 44,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -461,20 +508,23 @@ func Test_int32OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[int32](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_float32OrDefault(t *testing.T) {
+func Test_getNumberGenFloat32(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal float32
+		key string
 	}
 
 	type expected struct {
-		val float32
+		val     float32
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -484,7 +534,7 @@ func Test_float32OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -492,11 +542,13 @@ func Test_float32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: float32(956.02),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: float32(956.02),
+				val: float32(0),
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -508,15 +560,15 @@ func Test_float32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: float32(42),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: float32(1024.123),
+				val:     float32(1024.123),
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "invalid env value set - default returned",
+			name: "invalid env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -524,11 +576,13 @@ func Test_float32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: float32(44),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: float32(44),
+				val: float32(0),
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -537,20 +591,24 @@ func Test_float32OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[float32](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_float64OrDefault(t *testing.T) {
+func Test_getNumberGenFloat64(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal float64
+		key string
 	}
 
 	type expected struct {
-		val float64
+		val     float64
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -560,7 +618,7 @@ func Test_float64OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -568,11 +626,13 @@ func Test_float64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 956.02,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 956.02,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -584,15 +644,15 @@ func Test_float64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 1024.123,
+				val:     1024.123,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "invalid env value set - default returned",
+			name: "invalid env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -600,11 +660,13 @@ func Test_float64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 44,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 44,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -613,7 +675,11 @@ func Test_float64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[float64](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -626,7 +692,8 @@ func Test_boolOrDefault(t *testing.T) {
 	}
 
 	type expected struct {
-		val bool
+		val     bool
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -649,6 +716,9 @@ func Test_boolOrDefault(t *testing.T) {
 			},
 			expected: expected{
 				val: false,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -664,7 +734,8 @@ func Test_boolOrDefault(t *testing.T) {
 				defaultVal: false,
 			},
 			expected: expected{
-				val: true,
+				val:     true,
+				wantErr: assert.NoError,
 			},
 		},
 		{
@@ -680,7 +751,10 @@ func Test_boolOrDefault(t *testing.T) {
 				defaultVal: true,
 			},
 			expected: expected{
-				val: true,
+				val: false,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -689,21 +763,25 @@ func Test_boolOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := boolOrDefault(tt.args.key, tt.args.defaultVal)
+			got, err := getBool(tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_stringSliceOrDefault(t *testing.T) {
+func Test_getStringSlice(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []string
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []string
+		val     []string
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -713,7 +791,7 @@ func Test_stringSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -721,12 +799,14 @@ func Test_stringSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []string{"no values"},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []string{"no values"},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -738,16 +818,16 @@ func Test_stringSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []string{"no values"},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []string{"true", "newval"},
+				val:     []string{"true", "newval"},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -755,16 +835,18 @@ func Test_stringSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []string{"no values"},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []string{"no values"},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -772,11 +854,13 @@ func Test_stringSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []string{"no values"},
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: []string{"no values"},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -785,21 +869,25 @@ func Test_stringSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := stringSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getStringSlice(tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_intSliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenInt(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []int
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []int
+		val     []int
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -809,7 +897,7 @@ func Test_intSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -817,12 +905,14 @@ func Test_intSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -834,16 +924,16 @@ func Test_intSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int{1, 2},
+				val:     []int{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -851,16 +941,18 @@ func Test_intSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int{-99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []int{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -868,16 +960,18 @@ func Test_intSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int{-99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []int{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -885,11 +979,13 @@ func Test_intSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int{-99},
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: []int{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -898,21 +994,25 @@ func Test_intSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]int](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_float32SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenFloat32(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []float32
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []float32
+		val     []float32
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -922,7 +1022,7 @@ func Test_float32SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -930,12 +1030,14 @@ func Test_float32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float32{-99.99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []float32{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -947,16 +1049,16 @@ func Test_float32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float32{-99.99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []float32{1.05, 2.07},
+				val:     []float32{1.05, 2.07},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -964,16 +1066,18 @@ func Test_float32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float32{-99.99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []float32{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -981,16 +1085,18 @@ func Test_float32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float32{-99.99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []float32{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -998,16 +1104,18 @@ func Test_float32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float32{-99.99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []float32{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed data value set - default returned",
+			name: "malformed data value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1015,12 +1123,14 @@ func Test_float32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float32{-99.99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []float32{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -1029,21 +1139,25 @@ func Test_float32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]float32](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_float64SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenFloat64(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []float64
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []float64
+		val     []float64
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -1053,7 +1167,7 @@ func Test_float64SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -1061,12 +1175,14 @@ func Test_float64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float64{-99.99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []float64{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -1078,16 +1194,16 @@ func Test_float64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float64{-99.99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []float64{1.05, 2.07},
+				val:     []float64{1.05, 2.07},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1095,16 +1211,19 @@ func Test_float64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float64{-99.99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []float64{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1112,16 +1231,19 @@ func Test_float64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float64{-99.99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []float64{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1129,16 +1251,19 @@ func Test_float64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float64{-99.99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []float64{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed data value set - default returned",
+			name: "malformed data value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1146,12 +1271,15 @@ func Test_float64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []float64{-99.99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []float64{-99.99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -1160,21 +1288,25 @@ func Test_float64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]float64](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_int16SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenInt16(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []int16
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []int16
+		val     []int16
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -1184,7 +1316,7 @@ func Test_int16SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -1192,12 +1324,15 @@ func Test_int16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int16{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int16{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -1209,16 +1344,16 @@ func Test_int16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int16{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int16{1, 2},
+				val:     []int16{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1226,16 +1361,19 @@ func Test_int16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int16{-99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []int16{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1243,16 +1381,19 @@ func Test_int16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int16{-99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []int16{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1260,15 +1401,19 @@ func Test_int16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int16{-99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int16{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1276,12 +1421,15 @@ func Test_int16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int16{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int16{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -1290,21 +1438,25 @@ func Test_int16SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]int16](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_int32SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenInt32(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []int32
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []int32
+		val     []int32
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -1314,7 +1466,7 @@ func Test_int32SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -1322,12 +1474,15 @@ func Test_int32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int32{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int32{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -1339,16 +1494,16 @@ func Test_int32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int32{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int32{1, 2},
+				val:     []int32{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1356,16 +1511,19 @@ func Test_int32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int32{-99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []int32{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1373,16 +1531,19 @@ func Test_int32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int32{-99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []int32{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1390,15 +1551,19 @@ func Test_int32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int32{-99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int32{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1406,12 +1571,15 @@ func Test_int32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int32{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int32{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -1420,21 +1588,25 @@ func Test_int32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]int32](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uintSliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenUint(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []uint
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []uint
+		val     []uint
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -1444,7 +1616,7 @@ func Test_uintSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -1452,12 +1624,15 @@ func Test_uintSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -1469,16 +1644,16 @@ func Test_uintSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint{1, 2},
+				val:     []uint{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1486,16 +1661,19 @@ func Test_uintSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint{99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []uint{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1503,16 +1681,19 @@ func Test_uintSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint{99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []uint{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1520,15 +1701,19 @@ func Test_uintSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint{99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1536,12 +1721,15 @@ func Test_uintSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -1550,21 +1738,25 @@ func Test_uintSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]uint](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uint8SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenUint8(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []uint8
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []uint8
+		val     []uint8
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -1574,7 +1766,7 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -1582,12 +1774,14 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint8{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint8{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -1599,16 +1793,16 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint8{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint8{1, 2},
+				val:     []uint8{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1616,16 +1810,18 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint8{99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []uint8{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1633,16 +1829,18 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint8{99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []uint8{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1650,15 +1848,18 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint8{99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint8{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1666,12 +1867,14 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint8{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint8{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -1680,21 +1883,25 @@ func Test_uint8SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]uint8](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uint16SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenUint16(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []uint16
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []uint16
+		val     []uint16
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -1704,7 +1911,7 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -1712,12 +1919,14 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint16{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint16{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -1729,16 +1938,16 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint16{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint16{1, 2},
+				val:     []uint16{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1746,16 +1955,18 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint16{99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []uint16{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1763,16 +1974,18 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint16{99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []uint16{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1780,15 +1993,18 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint16{99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint16{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1796,12 +2012,14 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint16{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint16{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -1810,21 +2028,25 @@ func Test_uint16SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]uint16](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uint32SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenUint32(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []uint32
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []uint32
+		val     []uint32
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -1834,7 +2056,7 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -1842,12 +2064,14 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint32{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint32{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -1859,16 +2083,16 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint32{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint32{1, 2},
+				val:     []uint32{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1876,16 +2100,18 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint32{99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []uint32{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1893,16 +2119,18 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint32{99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []uint32{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1910,15 +2138,18 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint32{99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint32{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -1926,12 +2157,14 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint32{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint32{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -1940,21 +2173,25 @@ func Test_uint32SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]uint32](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_int8SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenInt8(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []int8
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []int8
+		val     []int8
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -1964,7 +2201,7 @@ func Test_int8SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -1972,12 +2209,15 @@ func Test_int8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int8{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int8{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -1989,16 +2229,16 @@ func Test_int8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int8{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int8{1, 2},
+				val:     []int8{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2006,16 +2246,19 @@ func Test_int8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int8{-99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []int8{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2023,16 +2266,19 @@ func Test_int8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int8{-99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []int8{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2040,15 +2286,19 @@ func Test_int8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int8{-99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int8{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2056,12 +2306,15 @@ func Test_int8SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int8{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int8{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -2070,21 +2323,25 @@ func Test_int8SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]int8](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_int64SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenInt64(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []int64
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []int64
+		val     []int64
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2094,7 +2351,7 @@ func Test_int64SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2102,12 +2359,15 @@ func Test_int64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int64{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int64{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -2119,16 +2379,16 @@ func Test_int64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int64{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int64{1, 2},
+				val:     []int64{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2136,16 +2396,19 @@ func Test_int64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int64{-99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []int64{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2153,16 +2416,19 @@ func Test_int64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int64{-99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []int64{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2170,15 +2436,18 @@ func Test_int64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int64{-99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int64{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2186,12 +2455,14 @@ func Test_int64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []int64{-99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []int64{-99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -2200,23 +2471,27 @@ func Test_int64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]int64](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_timeOrDefault(t *testing.T) {
+func Test_getTime(t *testing.T) {
 	const layout = "2006/02/01 15:04"
 
 	type args struct {
-		key        string
-		defaultVal time.Time
-		layout     string
+		key    string
+		layout string
 	}
 
 	type expected struct {
-		val time.Time
+		val     time.Time
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2226,7 +2501,7 @@ func Test_timeOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2234,12 +2509,15 @@ func Test_timeOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
-				layout:     layout,
+				key:    testEnvKey,
+				layout: layout,
 			},
 			expected: expected{
-				val: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
+				val: time.Time{},
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -2251,16 +2529,16 @@ func Test_timeOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
-				layout:     layout,
+				key:    testEnvKey,
+				layout: layout,
 			},
 			expected: expected{
-				val: time.Date(2018, 4, 21, 22, 30, 0, 0, time.UTC),
+				val:     time.Date(2018, 4, 21, 22, 30, 0, 0, time.UTC),
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2268,16 +2546,19 @@ func Test_timeOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
-				layout:     layout,
+				key:    testEnvKey,
+				layout: layout,
 			},
 			expected: expected{
-				val: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
+				val: time.Time{},
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2285,12 +2566,15 @@ func Test_timeOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
-				layout:     layout,
+				key:    testEnvKey,
+				layout: layout,
 			},
 			expected: expected{
-				val: time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
+				val: time.Time{},
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -2299,22 +2583,24 @@ func Test_timeOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := timeOrDefault(tt.args.key, tt.args.defaultVal, tt.args.layout)
+			got, err := getTime(tt.args.key, tt.args.layout)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_urlOrDefault(t *testing.T) {
-	const rawDefault = "https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history"
-
+func Test_getURL(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal url.URL
+		key string
 	}
 
 	type expected struct {
-		val url.URL
+		val     url.URL
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2324,7 +2610,7 @@ func Test_urlOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2332,11 +2618,14 @@ func Test_urlOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: getURL(t, rawDefault),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: getURL(t, rawDefault),
+				val: url.URL{},
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -2348,15 +2637,15 @@ func Test_urlOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: getURL(t, rawDefault),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: getURL(t, "postgres://user:pass@host.com:5432/path?k=v#f"),
+				val:     getTestURL(t, "postgres://user:pass@host.com:5432/path?k=v#f"),
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2364,15 +2653,18 @@ func Test_urlOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: getURL(t, rawDefault),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: getURL(t, rawDefault),
+				val: url.URL{},
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2380,11 +2672,14 @@ func Test_urlOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: getURL(t, rawDefault),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: getURL(t, rawDefault),
+				val: url.URL{},
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -2393,24 +2688,28 @@ func Test_urlOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := urlOrDefault(tt.args.key, tt.args.defaultVal)
+			got, err := getURL(tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_timeSliceOrDefault(t *testing.T) {
+func Test_getTimeSlice(t *testing.T) {
 	const layout = "2006/02/01 15:04"
 
 	type args struct {
-		key        string
-		defaultVal []time.Time
-		layout     string
-		separator  string
+		key       string
+		layout    string
+		separator string
 	}
 
 	type expected struct {
-		val []time.Time
+		val     []time.Time
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2420,7 +2719,7 @@ func Test_timeSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2428,16 +2727,14 @@ func Test_timeSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key: testEnvKey,
-				defaultVal: []time.Time{
-					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
-				},
+				key:       testEnvKey,
 				layout:    layout,
 				separator: ",",
 			},
 			expected: expected{
-				val: []time.Time{
-					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
 				},
 			},
 		},
@@ -2450,10 +2747,7 @@ func Test_timeSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key: testEnvKey,
-				defaultVal: []time.Time{
-					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
-				},
+				key:       testEnvKey,
 				layout:    layout,
 				separator: ",",
 			},
@@ -2462,10 +2756,11 @@ func Test_timeSliceOrDefault(t *testing.T) {
 					time.Date(2018, 4, 21, 22, 30, 0, 0, time.UTC),
 					time.Date(2023, 4, 21, 22, 30, 0, 0, time.UTC),
 				},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2473,21 +2768,19 @@ func Test_timeSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key: testEnvKey,
-				defaultVal: []time.Time{
-					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
-				},
+				key:       testEnvKey,
 				layout:    layout,
 				separator: ",",
 			},
 			expected: expected{
-				val: []time.Time{
-					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
 				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2495,16 +2788,14 @@ func Test_timeSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key: testEnvKey,
-				defaultVal: []time.Time{
-					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
-				},
+				key:       testEnvKey,
 				layout:    layout,
 				separator: ",",
 			},
 			expected: expected{
-				val: []time.Time{
-					time.Date(2021, 4, 21, 22, 30, 0, 0, time.UTC),
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
 				},
 			},
 		},
@@ -2514,21 +2805,25 @@ func Test_timeSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := timeSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.layout, tt.args.separator)
+			got, err := getTimeSlice(tt.args.key, tt.args.layout, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_durationSliceOrDefault(t *testing.T) {
+func Test_getDurationSlice(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []time.Duration
-		separator  string
+		key       string
+		separator string
 	}
 
 	type expected struct {
-		val []time.Duration
+		val     []time.Duration
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2538,7 +2833,7 @@ func Test_durationSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2546,12 +2841,14 @@ func Test_durationSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []time.Duration{time.Second},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []time.Duration{time.Second},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -2563,18 +2860,18 @@ func Test_durationSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []time.Duration{time.Second},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
 				val: []time.Duration{
 					2 * time.Minute, 3 * time.Hour,
 				},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2582,16 +2879,18 @@ func Test_durationSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []time.Duration{time.Second},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []time.Duration{time.Second},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2599,12 +2898,14 @@ func Test_durationSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []time.Duration{time.Second},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []time.Duration{time.Second},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -2613,21 +2914,24 @@ func Test_durationSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := durationSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got, err := getDurationSlice(tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
 
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_durationOrDefault(t *testing.T) {
+func Test_duration(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal time.Duration
+		key string
 	}
 
 	type expected struct {
-		val time.Duration
+		val     time.Duration
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2637,7 +2941,7 @@ func Test_durationOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2645,11 +2949,13 @@ func Test_durationOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: time.Second * 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: time.Second * 42,
+				val: time.Duration(0),
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -2661,15 +2967,15 @@ func Test_durationOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: time.Second * 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: time.Second * 12,
+				val:     time.Second * 12,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2677,15 +2983,17 @@ func Test_durationOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: time.Second * 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: time.Second * 42,
+				val: time.Duration(0),
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2693,11 +3001,13 @@ func Test_durationOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: time.Second * 42,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: time.Second * 42,
+				val: time.Duration(0),
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -2706,20 +3016,24 @@ func Test_durationOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := durationOrDefault(tt.args.key, tt.args.defaultVal)
+			got, err := getDuration(tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uint64OrDefault(t *testing.T) {
+func Test_getNumberGenUint64(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal uint64
+		key string
 	}
 
 	type expected struct {
-		val uint64
+		val     uint64
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2729,7 +3043,7 @@ func Test_uint64OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2737,11 +3051,13 @@ func Test_uint64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -2753,15 +3069,15 @@ func Test_uint64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 12,
+				val:     12,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2769,15 +3085,17 @@ func Test_uint64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2785,11 +3103,13 @@ func Test_uint64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -2798,21 +3118,25 @@ func Test_uint64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[uint64](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uint64SliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenUint64(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []uint64
-		sep        string
+		key string
+		sep string
 	}
 
 	type expected struct {
-		val []uint64
+		val     []uint64
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2822,7 +3146,7 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2830,12 +3154,15 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint64{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint64{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -2847,16 +3174,16 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint64{99},
-				sep:        ",",
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint64{1, 2},
+				val:     []uint64{1, 2},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, no separator - default value returned",
+			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2864,16 +3191,19 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint64{99},
-				sep:        "",
+				key: testEnvKey,
+				sep: "",
 			},
 			expected: expected{
-				val: []uint64{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "env set, wrong separator - default value returned",
+			name: "env set, wrong separator - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2881,16 +3211,19 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint64{99},
-				sep:        "|",
+				key: testEnvKey,
+				sep: "|",
 			},
 			expected: expected{
-				val: []uint64{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.Error(t, err) &&
+						assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2898,11 +3231,14 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uint64{99},
+				key: testEnvKey,
+				sep: ",",
 			},
 			expected: expected{
-				val: []uint64{99},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -2911,20 +3247,24 @@ func Test_uint64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.sep)
+			got, err := getNumberSliceGen[[]uint64](tt.args.key, tt.args.sep)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uint8OrDefault(t *testing.T) {
+func Test_getNumberGenUint8(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal uint8
+		key string
 	}
 
 	type expected struct {
-		val uint8
+		val     uint8
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -2934,7 +3274,7 @@ func Test_uint8OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -2942,11 +3282,13 @@ func Test_uint8OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 99,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 99,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -2958,15 +3300,15 @@ func Test_uint8OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 99,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 12,
+				val:     12,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2974,15 +3316,17 @@ func Test_uint8OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 99,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 99,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -2990,11 +3334,13 @@ func Test_uint8OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 99,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 99,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -3003,20 +3349,24 @@ func Test_uint8OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[uint8](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uintOrDefault(t *testing.T) {
+func Test_getNumberGenUint(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal uint
+		key string
 	}
 
 	type expected struct {
-		val uint
+		val     uint
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3026,7 +3376,7 @@ func Test_uintOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3034,11 +3384,13 @@ func Test_uintOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3050,15 +3402,15 @@ func Test_uintOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 12,
+				val:     12,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3066,15 +3418,17 @@ func Test_uintOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3082,11 +3436,13 @@ func Test_uintOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -3095,20 +3451,24 @@ func Test_uintOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[uint](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uint16OrDefault(t *testing.T) {
+func Test_getNumberGenUint16(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal uint16
+		key string
 	}
 
 	type expected struct {
-		val uint16
+		val     uint16
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3118,7 +3478,7 @@ func Test_uint16OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3126,11 +3486,13 @@ func Test_uint16OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3142,15 +3504,15 @@ func Test_uint16OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 12,
+				val:     12,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3158,15 +3520,17 @@ func Test_uint16OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3174,11 +3538,13 @@ func Test_uint16OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -3187,20 +3553,24 @@ func Test_uint16OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[uint16](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_uint32OrDefault(t *testing.T) {
+func Test_getNumberGenUint32(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal uint32
+		key string
 	}
 
 	type expected struct {
-		val uint32
+		val     uint32
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3210,7 +3580,7 @@ func Test_uint32OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3218,11 +3588,13 @@ func Test_uint32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3234,15 +3606,15 @@ func Test_uint32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 12,
+				val:     12,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3250,15 +3622,17 @@ func Test_uint32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
-			name: "malformed env value set - default returned",
+			name: "malformed env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3266,11 +3640,13 @@ func Test_uint32OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 999,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 999,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 	}
@@ -3279,22 +3655,24 @@ func Test_uint32OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[uint32](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_ipOrDefault(t *testing.T) {
-	const rawDefault = "0.0.0.0"
-
+func Test_getIP(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal net.IP
+		key string
 	}
 
 	type expected struct {
-		val net.IP
+		val     net.IP
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3304,7 +3682,7 @@ func Test_ipOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3312,11 +3690,13 @@ func Test_ipOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: getIP(t, rawDefault),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: getIP(t, rawDefault),
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3328,15 +3708,15 @@ func Test_ipOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: getIP(t, rawDefault),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: getIP(t, "192.168.8.0"),
+				val:     getTestIP(t, "192.168.8.0"),
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3344,15 +3724,17 @@ func Test_ipOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: getIP(t, rawDefault),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: getIP(t, rawDefault),
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3360,11 +3742,29 @@ func Test_ipOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: getIP(t, rawDefault),
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: getIP(t, rawDefault),
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
+			},
+		},
+		{
+			name: "env ipv6 set - value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "2001:db8::68",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     getTestIP(t, "2001:db8::68"),
+				wantErr: assert.NoError,
 			},
 		},
 	}
@@ -3373,21 +3773,25 @@ func Test_ipOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := ipOrDefault(tt.args.key, tt.args.defaultVal)
+			got, err := getIP(tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_urlSliceOrDefault(t *testing.T) {
+func Test_getURLSlice(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []url.URL
-		separator  string
+		key       string
+		separator string
 	}
 
 	type expected struct {
-		val []url.URL
+		val     []url.URL
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3397,7 +3801,7 @@ func Test_urlSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3405,12 +3809,14 @@ func Test_urlSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []url.URL{getURL(t, "https://bing.com")},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []url.URL{getURL(t, "https://bing.com")},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3422,19 +3828,19 @@ func Test_urlSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []url.URL{getURL(t, "https://bing.com")},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
 				val: []url.URL{
-					getURL(t, "https://google.com"),
-					getURL(t, "https://github.com"),
+					getTestURL(t, "https://google.com"),
+					getTestURL(t, "https://github.com"),
 				},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3442,16 +3848,18 @@ func Test_urlSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []url.URL{getURL(t, "https://bing.com")},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []url.URL{getURL(t, "https://bing.com")},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3459,12 +3867,14 @@ func Test_urlSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []url.URL{getURL(t, "https://bing.com")},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []url.URL{getURL(t, "https://bing.com")},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -3473,23 +3883,25 @@ func Test_urlSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := urlSliceOrDefault(tt.args.key, tt.args.defaultVal, ",")
+			got, err := getURLSlice(tt.args.key, ",")
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-func Test_ipSliceOrDefault(t *testing.T) {
-	const rawDefault = "0.0.0.0"
-
+func Test_getIPSlice(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []net.IP
-		separator  string
+		key       string
+		separator string
 	}
 
 	type expected struct {
-		val []net.IP
+		val     []net.IP
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3499,7 +3911,7 @@ func Test_ipSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3507,12 +3919,14 @@ func Test_ipSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []net.IP{getIP(t, rawDefault)},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []net.IP{getIP(t, rawDefault)},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3524,19 +3938,19 @@ func Test_ipSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []net.IP{getIP(t, rawDefault)},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
 				val: []net.IP{
-					getIP(t, "192.168.8.0"),
-					getIP(t, "2001:cb8::17"),
+					getTestIP(t, "192.168.8.0"),
+					getTestIP(t, "2001:cb8::17"),
 				},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3544,16 +3958,18 @@ func Test_ipSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []net.IP{getIP(t, rawDefault)},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []net.IP{getIP(t, rawDefault)},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3561,12 +3977,14 @@ func Test_ipSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []net.IP{getIP(t, rawDefault)},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []net.IP{getIP(t, rawDefault)},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -3575,22 +3993,26 @@ func Test_ipSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := ipSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got, err := getIPSlice(tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-// Test_boolSliceOrDefault tests the boolSliceOrDefault function.
-func Test_boolSliceOrDefault(t *testing.T) {
+// Test_getBoolSlice tests the getBoolSlice function.
+func Test_getBoolSlice(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []bool
-		separator  string
+		key       string
+		separator string
 	}
 
 	type expected struct {
-		val []bool
+		val     []bool
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3600,7 +4022,7 @@ func Test_boolSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3608,12 +4030,14 @@ func Test_boolSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []bool{true},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []bool{true},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3625,16 +4049,16 @@ func Test_boolSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []bool{false},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []bool{true, false},
+				val:     []bool{true, false},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3642,16 +4066,18 @@ func Test_boolSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []bool{false},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []bool{false},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3659,12 +4085,14 @@ func Test_boolSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []bool{false},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []bool{false},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -3673,21 +4101,24 @@ func Test_boolSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := boolSliceOrDefault(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got, err := getBoolSlice(tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-// Test_uintptrOrDefault tests the uintptrOrDefault function.
-func Test_uintptrOrDefault(t *testing.T) {
+func Test_getNumberGenUintptr(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal uintptr
+		key string
 	}
 
 	type expected struct {
-		val uintptr
+		val     uintptr
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3697,7 +4128,7 @@ func Test_uintptrOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3705,11 +4136,13 @@ func Test_uintptrOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 123,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 123,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3721,15 +4154,15 @@ func Test_uintptrOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 123,
+				val:     123,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err value returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3737,15 +4170,17 @@ func Test_uintptrOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 456,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3753,11 +4188,13 @@ func Test_uintptrOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 456,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -3766,22 +4203,25 @@ func Test_uintptrOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getNumberGen[uintptr](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-// Test_uintptrSliceOrDefault tests the uintptrSliceOrDefault function.
-func Test_uintptrSliceOrDefault(t *testing.T) {
+func Test_getNumberSliceGenuintptr(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []uintptr
-		separator  string
+		key       string
+		separator string
 	}
 
 	type expected struct {
-		val []uintptr
+		val     []uintptr
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3791,7 +4231,7 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3799,12 +4239,14 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uintptr{123},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []uintptr{123},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3816,16 +4258,16 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uintptr{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []uintptr{123, 456},
+				val:     []uintptr{123, 456},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3833,16 +4275,18 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uintptr{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []uintptr{456},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3851,12 +4295,14 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 			},
 
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []uintptr{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []uintptr{456},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -3865,21 +4311,24 @@ func Test_uintptrSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := numberSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got, err := getNumberSliceGen[[]uintptr](tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-// Test_complex64OrDefault tests the complex64OrDefault function.
-func Test_complex64OrDefault(t *testing.T) {
+func Test_getComplexGenComplex64(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal complex64
+		key string
 	}
 
 	type expected struct {
-		val complex64
+		val     complex64
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3889,7 +4338,7 @@ func Test_complex64OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3897,11 +4346,13 @@ func Test_complex64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 123,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 123,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -3913,15 +4364,15 @@ func Test_complex64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 1 + 2i,
+				val:     1 + 2i,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3929,15 +4380,17 @@ func Test_complex64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 456,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -3945,11 +4398,13 @@ func Test_complex64OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 456,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -3958,22 +4413,25 @@ func Test_complex64OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := complexOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getComplexGen[complex64](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-// Test_complex64SliceOrDefault tests the complex64SliceOrDefault function.
-func Test_complex64SliceOrDefault(t *testing.T) {
+func Test_getComplexSliceGenComplex64(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []complex64
-		separator  string
+		key       string
+		separator string
 	}
 
 	type expected struct {
-		val []complex64
+		val     []complex64
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -3983,7 +4441,7 @@ func Test_complex64SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -3991,12 +4449,14 @@ func Test_complex64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []complex64{123},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []complex64{123},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -4008,16 +4468,16 @@ func Test_complex64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []complex64{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []complex64{1 + 2i, 3 + 4i},
+				val:     []complex64{1 + 2i, 3 + 4i},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -4025,16 +4485,18 @@ func Test_complex64SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []complex64{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []complex64{456},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -4043,12 +4505,14 @@ func Test_complex64SliceOrDefault(t *testing.T) {
 			},
 
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []complex64{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []complex64{456},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -4057,21 +4521,24 @@ func Test_complex64SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := complexSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got, err := getComplexSliceGen[[]complex64](tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-// Test_complex128OrDefault tests the complex128OrDefault function.
-func Test_complex128OrDefault(t *testing.T) {
+func Test_getComplexGenComplex128(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal complex128
+		key string
 	}
 
 	type expected struct {
-		val complex128
+		val     complex128
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -4081,7 +4548,7 @@ func Test_complex128OrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -4089,11 +4556,13 @@ func Test_complex128OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 123,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 123,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -4105,15 +4574,15 @@ func Test_complex128OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 1 + 2i,
+				val:     1 + 2i,
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -4121,15 +4590,17 @@ func Test_complex128OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 456,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -4137,11 +4608,13 @@ func Test_complex128OrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: 456,
+				key: testEnvKey,
 			},
 			expected: expected{
-				val: 456,
+				val: 0,
+				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -4150,22 +4623,25 @@ func Test_complex128OrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := complexOrDefaultGen(tt.args.key, tt.args.defaultVal)
+			got, err := getComplexGen[complex128](tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
 }
 
-// Test_complex128SliceOrDefault tests the complex128SliceOrDefault function.
-func Test_complex128SliceOrDefault(t *testing.T) {
+func Test_getComplexSliceGenComplex128(t *testing.T) {
 	type args struct {
-		key        string
-		defaultVal []complex128
-		separator  string
+		key       string
+		separator string
 	}
 
 	type expected struct {
-		val []complex128
+		val     []complex128
+		wantErr assert.ErrorAssertionFunc
 	}
 
 	tests := []struct {
@@ -4175,7 +4651,7 @@ func Test_complex128SliceOrDefault(t *testing.T) {
 		expected expected
 	}{
 		{
-			name: "env not set - default returned",
+			name: "env not set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: false,
@@ -4183,12 +4659,14 @@ func Test_complex128SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []complex128{123},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []complex128{123},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 		{
@@ -4200,16 +4678,16 @@ func Test_complex128SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []complex128{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []complex128{1 + 2i, 3 + 4i},
+				val:     []complex128{1 + 2i, 3 + 4i},
+				wantErr: assert.NoError,
 			},
 		},
 		{
-			name: "env set, corrupted - default value returned",
+			name: "env set, corrupted - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -4217,16 +4695,18 @@ func Test_complex128SliceOrDefault(t *testing.T) {
 				},
 			},
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []complex128{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []complex128{456},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrInvalidValue)
+				},
 			},
 		},
 		{
-			name: "empty env value set - default returned",
+			name: "empty env value set - err returned",
 			precond: precondition{
 				setenv: setenv{
 					isSet: true,
@@ -4235,12 +4715,14 @@ func Test_complex128SliceOrDefault(t *testing.T) {
 			},
 
 			args: args{
-				key:        testEnvKey,
-				defaultVal: []complex128{456},
-				separator:  ",",
+				key:       testEnvKey,
+				separator: ",",
 			},
 			expected: expected{
-				val: []complex128{456},
+				val: nil,
+				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
+					return assert.ErrorIs(t, err, ErrNotSet)
+				},
 			},
 		},
 	}
@@ -4249,7 +4731,11 @@ func Test_complex128SliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := complexSliceOrDefaultGen(tt.args.key, tt.args.defaultVal, tt.args.separator)
+			got, err := getComplexSliceGen[[]complex128](tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
