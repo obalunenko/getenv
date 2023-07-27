@@ -4091,7 +4091,7 @@ func Test_getBoolSlice(t *testing.T) {
 			expected: expected{
 				val: nil,
 				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Equal(t, err, ErrNotSet)
+					return assert.ErrorIs(t, err, ErrNotSet)
 				},
 			},
 		},
@@ -4301,7 +4301,7 @@ func Test_getNumberSliceGenuintptr(t *testing.T) {
 			expected: expected{
 				val: nil,
 				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Equal(t, err, ErrNotSet)
+					return assert.ErrorIs(t, err, ErrNotSet)
 				},
 			},
 		},
@@ -4455,7 +4455,7 @@ func Test_getComplexSliceGenComplex64(t *testing.T) {
 			expected: expected{
 				val: nil,
 				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Equal(t, err, ErrNotSet)
+					return assert.ErrorIs(t, err, ErrNotSet)
 				},
 			},
 		},
@@ -4511,7 +4511,7 @@ func Test_getComplexSliceGenComplex64(t *testing.T) {
 			expected: expected{
 				val: nil,
 				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Equal(t, err, ErrNotSet)
+					return assert.ErrorIs(t, err, ErrNotSet)
 				},
 			},
 		},
@@ -4561,7 +4561,7 @@ func Test_getComplexGenComplex128(t *testing.T) {
 			expected: expected{
 				val: 0,
 				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Equal(t, err, ErrNotSet)
+					return assert.ErrorIs(t, err, ErrNotSet)
 				},
 			},
 		},

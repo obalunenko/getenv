@@ -14,7 +14,7 @@ import (
 func getString(key string) (string, error) {
 	env, ok := os.LookupEnv(key)
 	if !ok || env == "" {
-		return "", ErrNotSet
+		return "", newErrNotSet(fmt.Sprintf("%q", key))
 	}
 
 	return env, nil
@@ -28,7 +28,7 @@ func getBool(key string) (bool, error) {
 
 	val, err := strconv.ParseBool(env)
 	if err != nil {
-		return false, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+		return false, newErrInvalidValue(err.Error())
 	}
 
 	return val, nil
@@ -51,7 +51,7 @@ func getBoolSlice(key, sep string) ([]bool, error) {
 	for _, s := range val {
 		v, err := strconv.ParseBool(s)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+			return nil, newErrInvalidValue(err.Error())
 		}
 
 		b = append(b, v)
@@ -154,7 +154,7 @@ func getDuration(key string) (time.Duration, error) {
 
 	val, err := time.ParseDuration(env)
 	if err != nil {
-		return 0, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+		return 0, newErrInvalidValue(err.Error())
 	}
 
 	return val, nil
@@ -168,7 +168,7 @@ func getTime(key, layout string) (time.Time, error) {
 
 	val, err := time.Parse(layout, env)
 	if err != nil {
-		return time.Time{}, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+		return time.Time{}, newErrInvalidValue(err.Error())
 	}
 
 	return val, nil
@@ -185,7 +185,7 @@ func getTimeSlice(key, layout, sep string) ([]time.Time, error) {
 	for _, s := range env {
 		v, err := time.Parse(layout, s)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+			return nil, newErrInvalidValue(err.Error())
 		}
 
 		val = append(val, v)
@@ -205,7 +205,7 @@ func getDurationSlice(key, sep string) ([]time.Duration, error) {
 	for _, s := range env {
 		v, err := time.ParseDuration(s)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+			return nil, newErrInvalidValue(err.Error())
 		}
 
 		val = append(val, v)
@@ -222,7 +222,7 @@ func getURL(key string) (url.URL, error) {
 
 	val, err := url.Parse(env)
 	if err != nil {
-		return url.URL{}, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+		return url.URL{}, newErrInvalidValue(err.Error())
 	}
 
 	return *val, nil
@@ -239,7 +239,7 @@ func getURLSlice(key, sep string) ([]url.URL, error) {
 	for _, s := range env {
 		v, err := url.Parse(s)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+			return nil, newErrInvalidValue(err.Error())
 		}
 
 		val = append(val, *v)
@@ -296,7 +296,7 @@ func parseComplexGen[T Complex](raw string) (T, error) {
 
 	val, err := strconv.ParseComplex(raw, bitsize)
 	if err != nil {
-		return tt, fmt.Errorf("%w: %s", ErrInvalidValue, err.Error())
+		return tt, newErrInvalidValue(err.Error())
 	}
 
 	return any(T(val)).(T), nil
