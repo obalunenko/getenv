@@ -1,12 +1,10 @@
 module github.com/obalunenko/getenv
 
-go 1.21
-
-toolchain go1.21.0
+go 1.22
 
 require (
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819
+	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a
 )
 
 require (
