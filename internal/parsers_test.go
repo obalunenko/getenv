@@ -57,10 +57,8 @@ func Test_getNumberGenInt(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -91,10 +89,8 @@ func Test_getNumberGenInt(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -143,10 +139,8 @@ func Test_stringOrDefault(t *testing.T) {
 				defaultVal: "default",
 			},
 			expected: expected{
-				val: "",
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     "",
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -210,10 +204,8 @@ func Test_getNumberGenInt64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -244,10 +236,8 @@ func Test_getNumberGenInt64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -294,10 +284,8 @@ func Test_getNumberGenInt8(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -328,10 +316,8 @@ func Test_getNumberGenInt8(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -378,10 +364,8 @@ func Test_getNumberGenInt16(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -412,10 +396,8 @@ func Test_getNumberGenInt16(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -462,10 +444,8 @@ func Test_getNumberGenInt32(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -496,10 +476,8 @@ func Test_getNumberGenInt32(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -512,6 +490,7 @@ func Test_getNumberGenInt32(t *testing.T) {
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
+
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
@@ -545,10 +524,8 @@ func Test_getNumberGenFloat32(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: float32(0),
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     float32(0),
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -579,10 +556,8 @@ func Test_getNumberGenFloat32(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: float32(0),
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     float32(0),
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -629,10 +604,8 @@ func Test_getNumberGenFloat64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -663,10 +636,8 @@ func Test_getNumberGenFloat64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -715,10 +686,8 @@ func Test_boolOrDefault(t *testing.T) {
 				defaultVal: false,
 			},
 			expected: expected{
-				val: false,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     false,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -751,10 +720,8 @@ func Test_boolOrDefault(t *testing.T) {
 				defaultVal: true,
 			},
 			expected: expected{
-				val: false,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     false,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -803,10 +770,8 @@ func Test_getStringSlice(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -839,10 +804,8 @@ func Test_getStringSlice(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -857,10 +820,8 @@ func Test_getStringSlice(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -909,10 +870,8 @@ func Test_getNumberSliceGenInt(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -945,10 +904,8 @@ func Test_getNumberSliceGenInt(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -964,10 +921,8 @@ func Test_getNumberSliceGenInt(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -982,10 +937,8 @@ func Test_getNumberSliceGenInt(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -1034,10 +987,8 @@ func Test_getNumberSliceGenFloat32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1070,10 +1021,8 @@ func Test_getNumberSliceGenFloat32(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1089,10 +1038,8 @@ func Test_getNumberSliceGenFloat32(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1108,10 +1055,8 @@ func Test_getNumberSliceGenFloat32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1127,10 +1072,8 @@ func Test_getNumberSliceGenFloat32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -1179,10 +1122,8 @@ func Test_getNumberSliceGenFloat64(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1215,11 +1156,8 @@ func Test_getNumberSliceGenFloat64(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1235,11 +1173,8 @@ func Test_getNumberSliceGenFloat64(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1255,11 +1190,8 @@ func Test_getNumberSliceGenFloat64(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1275,11 +1207,8 @@ func Test_getNumberSliceGenFloat64(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -1328,11 +1257,8 @@ func Test_getNumberSliceGenInt16(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1365,11 +1291,8 @@ func Test_getNumberSliceGenInt16(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1385,11 +1308,8 @@ func Test_getNumberSliceGenInt16(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1405,11 +1325,8 @@ func Test_getNumberSliceGenInt16(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1425,11 +1342,8 @@ func Test_getNumberSliceGenInt16(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -1478,11 +1392,8 @@ func Test_getNumberSliceGenInt32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1515,11 +1426,8 @@ func Test_getNumberSliceGenInt32(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1535,11 +1443,8 @@ func Test_getNumberSliceGenInt32(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1555,11 +1460,8 @@ func Test_getNumberSliceGenInt32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1575,11 +1477,8 @@ func Test_getNumberSliceGenInt32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -1628,11 +1527,8 @@ func Test_getNumberSliceGenUint(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1665,11 +1561,8 @@ func Test_getNumberSliceGenUint(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1685,11 +1578,8 @@ func Test_getNumberSliceGenUint(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1705,11 +1595,8 @@ func Test_getNumberSliceGenUint(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1725,11 +1612,8 @@ func Test_getNumberSliceGenUint(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -1778,10 +1662,8 @@ func Test_getNumberSliceGenUint8(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1814,10 +1696,8 @@ func Test_getNumberSliceGenUint8(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1833,10 +1713,8 @@ func Test_getNumberSliceGenUint8(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1852,10 +1730,8 @@ func Test_getNumberSliceGenUint8(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1871,10 +1747,8 @@ func Test_getNumberSliceGenUint8(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -1923,10 +1797,8 @@ func Test_getNumberSliceGenUint16(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -1959,10 +1831,8 @@ func Test_getNumberSliceGenUint16(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1978,10 +1848,8 @@ func Test_getNumberSliceGenUint16(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -1997,10 +1865,8 @@ func Test_getNumberSliceGenUint16(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2016,10 +1882,8 @@ func Test_getNumberSliceGenUint16(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -2068,10 +1932,8 @@ func Test_getNumberSliceGenUint32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2104,10 +1966,8 @@ func Test_getNumberSliceGenUint32(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -2123,10 +1983,8 @@ func Test_getNumberSliceGenUint32(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -2142,10 +2000,8 @@ func Test_getNumberSliceGenUint32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2161,10 +2017,8 @@ func Test_getNumberSliceGenUint32(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -2213,11 +2067,8 @@ func Test_getNumberSliceGenInt8(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2250,11 +2101,8 @@ func Test_getNumberSliceGenInt8(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -2270,11 +2118,8 @@ func Test_getNumberSliceGenInt8(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -2290,11 +2135,8 @@ func Test_getNumberSliceGenInt8(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2310,11 +2152,8 @@ func Test_getNumberSliceGenInt8(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -2363,11 +2202,8 @@ func Test_getNumberSliceGenInt64(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2400,11 +2236,8 @@ func Test_getNumberSliceGenInt64(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -2420,11 +2253,8 @@ func Test_getNumberSliceGenInt64(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -2440,10 +2270,8 @@ func Test_getNumberSliceGenInt64(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2459,10 +2287,8 @@ func Test_getNumberSliceGenInt64(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -2513,11 +2339,8 @@ func Test_getTime(t *testing.T) {
 				layout: layout,
 			},
 			expected: expected{
-				val: time.Time{},
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     time.Time{},
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2550,11 +2373,8 @@ func Test_getTime(t *testing.T) {
 				layout: layout,
 			},
 			expected: expected{
-				val: time.Time{},
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     time.Time{},
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2570,11 +2390,8 @@ func Test_getTime(t *testing.T) {
 				layout: layout,
 			},
 			expected: expected{
-				val: time.Time{},
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     time.Time{},
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -2621,11 +2438,8 @@ func Test_getURL(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: url.URL{},
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     url.URL{},
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2656,11 +2470,8 @@ func Test_getURL(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: url.URL{},
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     url.URL{},
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -2675,11 +2486,8 @@ func Test_getURL(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: url.URL{},
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     url.URL{},
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -2732,10 +2540,8 @@ func Test_getTimeSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2773,10 +2579,8 @@ func Test_getTimeSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2793,10 +2597,8 @@ func Test_getTimeSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -2845,10 +2647,8 @@ func Test_getDurationSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2883,10 +2683,8 @@ func Test_getDurationSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -2902,10 +2700,8 @@ func Test_getDurationSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -2952,10 +2748,8 @@ func Test_duration(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: time.Duration(0),
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     time.Duration(0),
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -2986,10 +2780,8 @@ func Test_duration(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: time.Duration(0),
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     time.Duration(0),
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3004,10 +2796,8 @@ func Test_duration(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: time.Duration(0),
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     time.Duration(0),
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -3054,10 +2844,8 @@ func Test_getNumberGenUint64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3088,10 +2876,8 @@ func Test_getNumberGenUint64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3106,10 +2892,8 @@ func Test_getNumberGenUint64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -3158,11 +2942,8 @@ func Test_getNumberSliceGenUint64(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3195,11 +2976,8 @@ func Test_getNumberSliceGenUint64(t *testing.T) {
 				sep: "",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -3215,11 +2993,8 @@ func Test_getNumberSliceGenUint64(t *testing.T) {
 				sep: "|",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) &&
-						assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -3235,10 +3010,8 @@ func Test_getNumberSliceGenUint64(t *testing.T) {
 				sep: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -3285,10 +3058,8 @@ func Test_getNumberGenUint8(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3319,10 +3090,8 @@ func Test_getNumberGenUint8(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3337,10 +3106,8 @@ func Test_getNumberGenUint8(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -3387,10 +3154,8 @@ func Test_getNumberGenUint(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3421,10 +3186,8 @@ func Test_getNumberGenUint(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3439,10 +3202,8 @@ func Test_getNumberGenUint(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -3489,10 +3250,8 @@ func Test_getNumberGenUint16(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3523,10 +3282,8 @@ func Test_getNumberGenUint16(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3541,10 +3298,8 @@ func Test_getNumberGenUint16(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -3591,10 +3346,8 @@ func Test_getNumberGenUint32(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3625,10 +3378,8 @@ func Test_getNumberGenUint32(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3643,10 +3394,8 @@ func Test_getNumberGenUint32(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 	}
@@ -3693,10 +3442,8 @@ func Test_getIP(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3727,10 +3474,8 @@ func Test_getIP(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -3745,10 +3490,8 @@ func Test_getIP(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3813,10 +3556,8 @@ func Test_getURLSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3852,10 +3593,8 @@ func Test_getURLSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -3871,10 +3610,8 @@ func Test_getURLSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -3923,10 +3660,8 @@ func Test_getIPSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -3962,10 +3697,8 @@ func Test_getIPSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -3981,10 +3714,8 @@ func Test_getIPSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -4034,10 +3765,8 @@ func Test_getBoolSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -4070,10 +3799,8 @@ func Test_getBoolSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -4089,10 +3816,8 @@ func Test_getBoolSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -4139,10 +3864,8 @@ func Test_getNumberGenUintptr(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -4173,10 +3896,8 @@ func Test_getNumberGenUintptr(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -4191,10 +3912,8 @@ func Test_getNumberGenUintptr(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -4243,10 +3962,8 @@ func Test_getNumberSliceGenuintptr(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -4279,10 +3996,8 @@ func Test_getNumberSliceGenuintptr(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -4299,10 +4014,8 @@ func Test_getNumberSliceGenuintptr(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -4349,10 +4062,8 @@ func Test_getComplexGenComplex64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -4383,10 +4094,8 @@ func Test_getComplexGenComplex64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -4401,10 +4110,8 @@ func Test_getComplexGenComplex64(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -4453,10 +4160,8 @@ func Test_getComplexSliceGenComplex64(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -4489,10 +4194,8 @@ func Test_getComplexSliceGenComplex64(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -4509,10 +4212,8 @@ func Test_getComplexSliceGenComplex64(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -4559,10 +4260,8 @@ func Test_getComplexGenComplex128(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -4593,10 +4292,8 @@ func Test_getComplexGenComplex128(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -4611,10 +4308,8 @@ func Test_getComplexGenComplex128(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     0,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -4663,10 +4358,8 @@ func Test_getComplexSliceGenComplex128(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
@@ -4699,10 +4392,8 @@ func Test_getComplexSliceGenComplex128(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrInvalidValue)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
 			},
 		},
 		{
@@ -4719,10 +4410,8 @@ func Test_getComplexSliceGenComplex128(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantErr: func(t assert.TestingT, err error, msgAndArgs ...interface{}) bool {
-					return assert.ErrorIs(t, err, ErrNotSet)
-				},
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
