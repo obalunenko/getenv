@@ -1,6 +1,7 @@
 linters:
   disable-all: true
   enable:
+    - govet
     - errcheck
     - gofmt
     - revive
@@ -30,6 +31,8 @@ linters-settings:
         arguments: [ [ "call-chain", "loop", "method-call", "recover", "return" ] ]
 
 issues:
+  # make issues output unique by line, default is true
+  uniq-by-line: true
   exclude-use-default: false
   exclude:
     # for "public interface + private struct implementation" cases only!
@@ -108,16 +111,17 @@ run:
 output:
   # colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
   # default is "colored-line-number"
-  formats: github-actions
+  formats:
+    - format: colored-line-number
+      path: stderr
+    - format: checkstyle
+      path: linters-report.xml
 
   # print lines of code with issue, default is true
   print-issued-lines: true
 
   # print linter name in the end of issue text, default is true
   print-linter-name: true
-
-  # make issues output unique by line, default is true
-  uniq-by-line: true
 
   # add a prefix to the output file references; default is no prefix
   path-prefix: ""
