@@ -49,3 +49,12 @@ func getTestIP(tb testing.TB, raw string) net.IP {
 
 	return net.ParseIP(raw)
 }
+
+func errorEqual(tb testing.TB, expected error) assert.ErrorAssertionFunc {
+	tb.Helper()
+
+	return func(at assert.TestingT, err error, i ...interface{}) bool {
+		return assert.Error(at, err, i...) &&
+			assert.ErrorContains(at, err, expected.Error(), i...)
+	}
+}
