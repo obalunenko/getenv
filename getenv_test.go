@@ -3856,10 +3856,8 @@ func TestEnvInt(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrNotSet.Error())
-				},
+				val:       0,
+				wantError: errorEqual(getenv.ErrNotSet),
 			},
 		},
 		{
@@ -3890,10 +3888,8 @@ func TestEnvInt(t *testing.T) {
 				key: testEnvKey,
 			},
 			expected: expected{
-				val: 0,
-				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrInvalidValue.Error())
-				},
+				val:       0,
+				wantError: errorEqual(getenv.ErrInvalidValue),
 			},
 		},
 	}
@@ -3943,10 +3939,8 @@ func TestEnvIntSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrNotSet.Error())
-				},
+				val:       nil,
+				wantError: errorEqual(getenv.ErrNotSet),
 			},
 		},
 		{
@@ -3979,10 +3973,8 @@ func TestEnvIntSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrInvalidValue.Error())
-				},
+				val:       nil,
+				wantError: errorEqual(getenv.ErrInvalidValue),
 			},
 		},
 		{
@@ -3998,10 +3990,8 @@ func TestEnvIntSlice(t *testing.T) {
 				separator: ",",
 			},
 			expected: expected{
-				val: nil,
-				wantError: func(t assert.TestingT, err error, i ...interface{}) bool {
-					return assert.Error(t, err) && assert.ErrorContains(t, err, getenv.ErrNotSet.Error())
-				},
+				val:       nil,
+				wantError: errorEqual(getenv.ErrNotSet),
 			},
 		},
 	}
@@ -4017,5 +4007,12 @@ func TestEnvIntSlice(t *testing.T) {
 
 			assert.Equal(t, tt.expected.val, got)
 		})
+	}
+}
+
+func errorEqual(expected error) assert.ErrorAssertionFunc {
+	return func(t assert.TestingT, err error, i ...interface{}) bool {
+		return assert.Error(t, err, i...) &&
+			assert.ErrorContains(t, err, expected.Error(), i...)
 	}
 }
