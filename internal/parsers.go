@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -76,65 +75,86 @@ func getStringSlice(key, sep string) ([]string, error) {
 }
 
 func parseNumberGen[T Number](raw string) (T, error) {
-	var tt T
+	var zero T
 
 	const (
 		base = 10
 	)
 
-	rt := reflect.TypeOf(tt)
-
-	switch rt.Kind() { //nolint:exhaustive // All supported types are covered.
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		val, err := strconv.ParseInt(raw, base, rt.Bits())
-		if err != nil {
-			return tt, ErrInvalidValue
-		}
-
-		res, ok := any(T(val)).(T)
-		if !ok {
-			return tt, ErrInvalidValue
-		}
-
-		return res, nil
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		val, err := strconv.ParseUint(raw, base, rt.Bits())
-		if err != nil {
-			return tt, ErrInvalidValue
-		}
-
-		res, ok := any(T(val)).(T)
-		if !ok {
-			return tt, ErrInvalidValue
-		}
-
-		return res, nil
-	case reflect.Float32, reflect.Float64:
-		val, err := strconv.ParseFloat(raw, rt.Bits())
-		if err != nil {
-			return tt, ErrInvalidValue
-		}
-
-		res, ok := any(T(val)).(T)
-		if !ok {
-			return tt, ErrInvalidValue
-		}
-
-		return res, nil
+	switch any(zero).(type) {
+	case int:
+		return parseSignedNumber[T](raw, base, strconv.IntSize)
+	case int8:
+		return parseSignedNumber[T](raw, base, 8)
+	case int16:
+		return parseSignedNumber[T](raw, base, 16)
+	case int32:
+		return parseSignedNumber[T](raw, base, 32)
+	case int64:
+		return parseSignedNumber[T](raw, base, 64)
+	case uint:
+		return parseUnsignedNumber[T](raw, base, strconv.IntSize)
+	case uint8:
+		return parseUnsignedNumber[T](raw, base, 8)
+	case uint16:
+		return parseUnsignedNumber[T](raw, base, 16)
+	case uint32:
+		return parseUnsignedNumber[T](raw, base, 32)
+	case uint64:
+		return parseUnsignedNumber[T](raw, base, 64)
+	case uintptr:
+		return parseUnsignedNumber[T](raw, base, strconv.IntSize)
+	case float32:
+		return parseFloatNumber[T](raw, 32)
+	case float64:
+		return parseFloatNumber[T](raw, 64)
 	default:
-		return tt, ErrInvalidValue
+		return zero, ErrInvalidValue
 	}
 }
 
-func parseNumberSliceGen[S []T, T Number](raw []string) (S, error) {
-	var tt S
+func parseSignedNumber[T Number](raw string, base, bits int) (T, error) {
+	var zero T
 
-	val := make(S, 0, len(raw))
+	val, err := strconv.ParseInt(raw, base, bits)
+	if err != nil {
+		return zero, ErrInvalidValue
+	}
+
+	return T(val), nil
+}
+
+func parseUnsignedNumber[T Number](raw string, base, bits int) (T, error) {
+	var zero T
+
+	val, err := strconv.ParseUint(raw, base, bits)
+	if err != nil {
+		return zero, ErrInvalidValue
+	}
+
+	return T(val), nil
+}
+
+func parseFloatNumber[T Number](raw string, bits int) (T, error) {
+	var zero T
+
+	val, err := strconv.ParseFloat(raw, bits)
+	if err != nil {
+		return zero, ErrInvalidValue
+	}
+
+	return T(val), nil
+}
+
+func parseNumberSliceGen[T Number](raw []string) ([]T, error) {
+	var zero []T
+
+	val := make([]T, 0, len(raw))
 
 	for _, s := range raw {
 		v, err := parseNumberGen[T](s)
 		if err != nil {
-			return tt, err
+			return zero, err
 		}
 
 		val = append(val, v)
@@ -143,13 +163,13 @@ func parseNumberSliceGen[S []T, T Number](raw []string) (S, error) {
 	return val, nil
 }
 
-func getNumberSliceGen[S []T, T Number](key, sep string) (S, error) {
+func getNumberSliceGen[T Number](key, sep string) ([]T, error) {
 	env, err := getStringSlice(key, sep)
 	if err != nil {
 		return nil, err
 	}
 
-	return parseNumberSliceGen[S, T](env)
+	return parseNumberSliceGen[T](env)
 }
 
 func getNumberGen[T Number](key string) (T, error) {
@@ -298,39 +318,38 @@ func getIPSlice(key, sep string) ([]net.IP, error) {
 }
 
 func parseComplexGen[T Complex](raw string) (T, error) {
-	var tt T
+	var zero T
 
-	var bitsize int
-
-	switch any(tt).(type) {
-	case complex64:
-		bitsize = 64
-	case complex128:
-		bitsize = 128
-	}
-
-	val, err := strconv.ParseComplex(raw, bitsize)
+	val, err := strconv.ParseComplex(raw, complexBits[T]())
 	if err != nil {
-		return tt, newErrInvalidValue(err.Error())
+		return zero, newErrInvalidValue(err.Error())
 	}
 
-	res, ok := any(T(val)).(T)
-	if !ok {
-		return tt, ErrInvalidValue
-	}
-
-	return res, nil
+	return T(val), nil
 }
 
-func parseComplexSliceGen[S []T, T Complex](raw []string) (S, error) {
-	var tt S
+func complexBits[T Complex]() int {
+	var zero T
 
-	val := make(S, 0, len(raw))
+	switch any(zero).(type) {
+	case complex64:
+		return 64
+	case complex128:
+		return 128
+	default:
+		return 0
+	}
+}
+
+func parseComplexSliceGen[T Complex](raw []string) ([]T, error) {
+	var zero []T
+
+	val := make([]T, 0, len(raw))
 
 	for _, s := range raw {
 		v, err := parseComplexGen[T](s)
 		if err != nil {
-			return tt, err
+			return zero, err
 		}
 
 		val = append(val, v)
@@ -339,13 +358,13 @@ func parseComplexSliceGen[S []T, T Complex](raw []string) (S, error) {
 	return val, nil
 }
 
-func getComplexSliceGen[S []T, T Complex](key, sep string) (S, error) {
+func getComplexSliceGen[T Complex](key, sep string) ([]T, error) {
 	env, err := getStringSlice(key, sep)
 	if err != nil {
 		return nil, err
 	}
 
-	return parseComplexSliceGen[S, T](env)
+	return parseComplexSliceGen[T](env)
 }
 
 func getComplexGen[T Complex](key string) (T, error) {

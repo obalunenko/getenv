@@ -42,7 +42,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []int{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]int, int]{},
+			want:      numberSliceParser[int]{},
 		},
 		{
 			v:         int8(0),
@@ -52,7 +52,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []int8{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]int8, int8]{},
+			want:      numberSliceParser[int8]{},
 		},
 		{
 			v:         int16(0),
@@ -62,7 +62,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []int16{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]int16, int16]{},
+			want:      numberSliceParser[int16]{},
 		},
 		{
 			v:         int32(0),
@@ -72,7 +72,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []int32{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]int32, int32]{},
+			want:      numberSliceParser[int32]{},
 		},
 		{
 			v:         int64(0),
@@ -82,7 +82,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []int64{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]int64, int64]{},
+			want:      numberSliceParser[int64]{},
 		},
 		{
 			v:         uint(0),
@@ -92,7 +92,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []uint{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]uint, uint]{},
+			want:      numberSliceParser[uint]{},
 		},
 		{
 			v:         uint8(0),
@@ -102,7 +102,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []uint8{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]uint8, uint8]{},
+			want:      numberSliceParser[uint8]{},
 		},
 		{
 			v:         uint16(0),
@@ -112,7 +112,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []uint16{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]uint16, uint16]{},
+			want:      numberSliceParser[uint16]{},
 		},
 		{
 			v:         uint32(0),
@@ -122,7 +122,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []uint32{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]uint32, uint32]{},
+			want:      numberSliceParser[uint32]{},
 		},
 		{
 			v:         uint64(0),
@@ -132,7 +132,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []uint64{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]uint64, uint64]{},
+			want:      numberSliceParser[uint64]{},
 		},
 		{
 			v:         float32(0),
@@ -142,7 +142,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []float32{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]float32, float32]{},
+			want:      numberSliceParser[float32]{},
 		},
 		{
 			v:         float64(0),
@@ -152,7 +152,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []float64{0},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]float64, float64]{},
+			want:      numberSliceParser[float64]{},
 		},
 		{
 			v:         false,
@@ -227,7 +227,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []uintptr{2},
 			wantPanic: assert.NotPanics,
-			want:      numberSliceParser[[]uintptr, uintptr]{},
+			want:      numberSliceParser[uintptr]{},
 		},
 		{
 			v:         complex64(1),
@@ -237,7 +237,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []complex64{1},
 			wantPanic: assert.NotPanics,
-			want:      complexSliceParser[[]complex64, complex64]{},
+			want:      complexSliceParser[complex64]{},
 		},
 		{
 			v:         complex128(1),
@@ -247,7 +247,7 @@ func TestNewEnvParser(t *testing.T) {
 		{
 			v:         []complex128{1},
 			wantPanic: assert.NotPanics,
-			want:      complexSliceParser[[]complex128, complex128]{},
+			want:      complexSliceParser[complex128]{},
 		},
 	}
 
