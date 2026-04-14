@@ -75,7 +75,8 @@ func ExampleEnvOrDefault() {
 	}
 
 	val = getenv.EnvOrDefault(key, url.URL{})
-	fmt.Printf("[%T]: %v\n", val, val)
+	urlVal := val.(url.URL)
+	fmt.Printf("[%T]: %s\n", urlVal, urlVal.String())
 
 	// net.IP
 	if err := os.Setenv(key, "2001:cb8::17"); err != nil {
@@ -115,7 +116,7 @@ func ExampleEnvOrDefault() {
 	// [time.Time]: 2022-01-20 00:00:00 +0000 UTC
 	// [[]float64]: [26.89 0.67]
 	// [time.Duration]: 2h35m0s
-	// [url.URL]: {https  test:abcd123 golangbyexample.com:8000 /tutorials/intro  false false type=advance&compact=false history }
+	// [url.URL]: https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history
 	// [net.IP]: 2001:cb8::17
 	// [[]string]: [a b c d]
 	// [complex128]: (1+2i)
@@ -192,7 +193,8 @@ func ExampleEnv() {
 	}
 
 	val, err = getenv.Env[url.URL](key)
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
+	urlVal, _ := val.(url.URL)
+	fmt.Printf("[%T]: %s; err: %v\n", urlVal, urlVal.String(), err)
 
 	// net.IP
 	if err = os.Setenv(key, "2001:cb8::17"); err != nil {
@@ -233,7 +235,7 @@ func ExampleEnv() {
 	// [time.Time]: 2022-01-20 00:00:00 +0000 UTC; err: <nil>
 	// [[]float64]: [26.89 0.67]; err: <nil>
 	// [time.Duration]: 2h35m0s; err: <nil>
-	// [url.URL]: {https  test:abcd123 golangbyexample.com:8000 /tutorials/intro  false false type=advance&compact=false history }; err: <nil>
+	// [url.URL]: https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history; err: <nil>
 	// [net.IP]: 2001:cb8::17; err: <nil>
 	// [[]string]: [a b c d]; err: <nil>
 	// [complex128]: (1+2i); err: <nil>

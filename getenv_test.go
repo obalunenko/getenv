@@ -4011,7 +4011,7 @@ func TestEnvIntSlice(t *testing.T) {
 }
 
 func errorEqual(expected error) assert.ErrorAssertionFunc {
-	return func(t assert.TestingT, err error, i ...interface{}) bool {
+	return func(t assert.TestingT, err error, i ...any) bool {
 		return assert.Error(t, err, i...) &&
 			assert.ErrorContains(t, err, expected.Error(), i...)
 	}
