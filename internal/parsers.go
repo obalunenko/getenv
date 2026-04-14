@@ -10,6 +10,15 @@ import (
 	"time"
 )
 
+const (
+	decimalBase = 10
+	bitSize8    = 8
+	bitSize16   = 16
+	bitSize32   = 32
+	bitSize64   = 64
+	bitSize128  = 128
+)
+
 func getString(key string) (string, error) {
 	env, ok := os.LookupEnv(key)
 	if !ok || env == "" {
@@ -77,37 +86,33 @@ func getStringSlice(key, sep string) ([]string, error) {
 func parseNumberGen[T Number](raw string) (T, error) {
 	var zero T
 
-	const (
-		base = 10
-	)
-
 	switch any(zero).(type) {
 	case int:
-		return parseSignedNumber[T](raw, base, strconv.IntSize)
+		return parseSignedNumber[T](raw, decimalBase, strconv.IntSize)
 	case int8:
-		return parseSignedNumber[T](raw, base, 8)
+		return parseSignedNumber[T](raw, decimalBase, bitSize8)
 	case int16:
-		return parseSignedNumber[T](raw, base, 16)
+		return parseSignedNumber[T](raw, decimalBase, bitSize16)
 	case int32:
-		return parseSignedNumber[T](raw, base, 32)
+		return parseSignedNumber[T](raw, decimalBase, bitSize32)
 	case int64:
-		return parseSignedNumber[T](raw, base, 64)
+		return parseSignedNumber[T](raw, decimalBase, bitSize64)
 	case uint:
-		return parseUnsignedNumber[T](raw, base, strconv.IntSize)
+		return parseUnsignedNumber[T](raw, decimalBase, strconv.IntSize)
 	case uint8:
-		return parseUnsignedNumber[T](raw, base, 8)
+		return parseUnsignedNumber[T](raw, decimalBase, bitSize8)
 	case uint16:
-		return parseUnsignedNumber[T](raw, base, 16)
+		return parseUnsignedNumber[T](raw, decimalBase, bitSize16)
 	case uint32:
-		return parseUnsignedNumber[T](raw, base, 32)
+		return parseUnsignedNumber[T](raw, decimalBase, bitSize32)
 	case uint64:
-		return parseUnsignedNumber[T](raw, base, 64)
+		return parseUnsignedNumber[T](raw, decimalBase, bitSize64)
 	case uintptr:
-		return parseUnsignedNumber[T](raw, base, strconv.IntSize)
+		return parseUnsignedNumber[T](raw, decimalBase, strconv.IntSize)
 	case float32:
-		return parseFloatNumber[T](raw, 32)
+		return parseFloatNumber[T](raw, bitSize32)
 	case float64:
-		return parseFloatNumber[T](raw, 64)
+		return parseFloatNumber[T](raw, bitSize64)
 	default:
 		return zero, ErrInvalidValue
 	}
@@ -333,9 +338,9 @@ func complexBits[T Complex]() int {
 
 	switch any(zero).(type) {
 	case complex64:
-		return 64
+		return bitSize64
 	case complex128:
-		return 128
+		return bitSize128
 	default:
 		return 0
 	}
