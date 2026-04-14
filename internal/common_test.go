@@ -55,6 +55,7 @@ func errorEqual(tb testing.TB, expected error) assert.ErrorAssertionFunc {
 
 	return func(at assert.TestingT, err error, i ...any) bool {
 		return assert.Error(at, err, i...) &&
+			assert.ErrorIs(at, err, expected, i...) &&
 			assert.ErrorContains(at, err, expected.Error(), i...)
 	}
 }

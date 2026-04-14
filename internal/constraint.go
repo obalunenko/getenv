@@ -4,8 +4,6 @@ import (
 	"net"
 	"net/url"
 	"time"
-
-	"golang.org/x/exp/constraints"
 )
 
 type (
@@ -30,7 +28,9 @@ type (
 	}
 
 	// Int is a constraint for integer and slice of integers.
-	Int = constraints.Signed
+	Int interface {
+		int | int8 | int16 | int32 | int64
+	}
 
 	// IntSlice is a constraint for slice of integers.
 	IntSlice interface {
@@ -38,7 +38,9 @@ type (
 	}
 
 	// Uint is a constraint for unsigned integer and slice of unsigned integers.
-	Uint = constraints.Unsigned
+	Uint interface {
+		uint | uint8 | uint16 | uint32 | uint64 | uintptr
+	}
 
 	// UintSlice is a constraint for slice of unsigned integers.
 	UintSlice interface {
@@ -46,7 +48,9 @@ type (
 	}
 
 	// Float is a constraint for float and slice of floats.
-	Float = constraints.Float
+	Float interface {
+		float32 | float64
+	}
 
 	// FloatSlice is a constraint for slice of floats.
 	FloatSlice interface {
@@ -79,5 +83,7 @@ type (
 	}
 
 	// Complex is a constraint for complex and slice of complex.
-	Complex = constraints.Complex
+	Complex interface {
+		complex64 | complex128
+	}
 )
