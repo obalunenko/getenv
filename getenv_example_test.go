@@ -75,7 +75,12 @@ func ExampleEnvOrDefault() {
 	}
 
 	val = getenv.EnvOrDefault(key, url.URL{})
-	urlVal := val.(url.URL)
+	urlVal, ok := val.(url.URL)
+
+	if !ok {
+		panic("expected url.URL value")
+	}
+
 	fmt.Printf("[%T]: %s\n", urlVal, urlVal.String())
 
 	// net.IP
@@ -193,7 +198,12 @@ func ExampleEnv() {
 	}
 
 	val, err = getenv.Env[url.URL](key)
-	urlVal, _ := val.(url.URL)
+	urlVal, ok := val.(url.URL)
+
+	if !ok {
+		panic("expected url.URL value")
+	}
+
 	fmt.Printf("[%T]: %s; err: %v\n", urlVal, urlVal.String(), err)
 
 	// net.IP
