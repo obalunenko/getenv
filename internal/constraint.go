@@ -27,7 +27,7 @@ type (
 		IntSlice | FloatSlice | UintSlice
 	}
 
-	// Int is a constraint for integer and slice of integers.
+	// Int is a constraint for integer scalar types.
 	Int interface {
 		int | int8 | int16 | int32 | int64
 	}
@@ -37,7 +37,7 @@ type (
 		[]int | []int8 | []int16 | []int32 | []int64
 	}
 
-	// Uint is a constraint for unsigned integer and slice of unsigned integers.
+	// Uint is a constraint for unsigned integer scalar types.
 	Uint interface {
 		uint | uint8 | uint16 | uint32 | uint64 | uintptr
 	}
@@ -47,7 +47,7 @@ type (
 		[]uint | []uint8 | []uint16 | []uint32 | []uint64 | []uintptr
 	}
 
-	// Float is a constraint for float and slice of floats.
+	// Float is a constraint for floating-point scalar types.
 	Float interface {
 		float32 | float64
 	}
@@ -82,7 +82,7 @@ type (
 		[]complex64 | []complex128
 	}
 
-	// Complex is a constraint for complex and slice of complex.
+	// Complex is a constraint for complex scalar types.
 	Complex interface {
 		complex64 | complex128
 	}

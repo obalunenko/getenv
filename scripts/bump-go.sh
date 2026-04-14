@@ -131,7 +131,7 @@ function bumpModFile() {
 
 }
 
-# This function reads the reaper.go file and extracts the current version.
+# This function reads the root go.mod file and extracts the current Go version.
 function extractCurrentVersion() {
   cat "${GO_MOD_FILE}" | grep '^go .*' | sed 's/^go //g' | head -n 1
 }
