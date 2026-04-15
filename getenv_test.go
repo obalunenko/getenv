@@ -1,6 +1,7 @@
 package getenv_test
 
 import (
+	"errors"
 	"net"
 	"net/url"
 	"testing"
@@ -3908,6 +3909,18 @@ func TestEnvInt(t *testing.T) {
 	}
 }
 
+func TestEnvErrorSentinels(t *testing.T) {
+	t.Setenv(testEnvKey, "not-an-int")
+
+	_, err := getenv.Env[int](testEnvKey)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, getenv.ErrInvalidValue))
+
+	_, err = getenv.Env[int]("GH_GETENV_TEST_NOT_SET")
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, getenv.ErrNotSet))
+}
+
 // TestEnvIntSlice tests the Env function with a []int.
 func TestEnvIntSlice(t *testing.T) {
 	type args struct {
@@ -4011,8 +4024,9 @@ func TestEnvIntSlice(t *testing.T) {
 }
 
 func errorEqual(expected error) assert.ErrorAssertionFunc {
-	return func(t assert.TestingT, err error, i ...interface{}) bool {
+	return func(t assert.TestingT, err error, i ...any) bool {
 		return assert.Error(t, err, i...) &&
+			assert.ErrorIs(t, err, expected, i...) &&
 			assert.ErrorContains(t, err, expected.Error(), i...)
 	}
 }

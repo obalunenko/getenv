@@ -10,7 +10,7 @@ import (
 )
 
 // panicAssertionFunc is a function that asserts that a function panics.
-type panicAssertionFunc func(t assert.TestingT, f assert.PanicTestFunc, msgAndArgs ...interface{}) bool
+type panicAssertionFunc func(t assert.TestingT, f assert.PanicTestFunc, msgAndArgs ...any) bool
 
 // testEnvKey is a key for test environment variable.
 const testEnvKey = "GH_GETENV_TEST"
@@ -53,8 +53,9 @@ func getTestIP(tb testing.TB, raw string) net.IP {
 func errorEqual(tb testing.TB, expected error) assert.ErrorAssertionFunc {
 	tb.Helper()
 
-	return func(at assert.TestingT, err error, i ...interface{}) bool {
+	return func(at assert.TestingT, err error, i ...any) bool {
 		return assert.Error(at, err, i...) &&
+			assert.ErrorIs(at, err, expected, i...) &&
 			assert.ErrorContains(at, err, expected.Error(), i...)
 	}
 }

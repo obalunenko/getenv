@@ -24,7 +24,7 @@ func Benchmark_float64SliceOrDefault(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		_, err := getNumberSliceGen[[]float32](testEnvKey, ",")
+		_, err := getNumberSliceGen[float32](testEnvKey, ",")
 		require.NoError(b, err)
 	}
 }
@@ -947,7 +947,7 @@ func Test_getNumberSliceGenInt(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]int](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[int](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -1082,7 +1082,7 @@ func Test_getNumberSliceGenFloat32(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]float32](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[float32](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -1217,7 +1217,7 @@ func Test_getNumberSliceGenFloat64(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]float64](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[float64](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -1352,7 +1352,7 @@ func Test_getNumberSliceGenInt16(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]int16](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[int16](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -1487,7 +1487,7 @@ func Test_getNumberSliceGenInt32(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]int32](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[int32](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -1622,7 +1622,7 @@ func Test_getNumberSliceGenUint(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]uint](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[uint](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -1757,7 +1757,7 @@ func Test_getNumberSliceGenUint8(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]uint8](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[uint8](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -1892,7 +1892,7 @@ func Test_getNumberSliceGenUint16(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]uint16](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[uint16](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -2027,7 +2027,7 @@ func Test_getNumberSliceGenUint32(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]uint32](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[uint32](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -2162,7 +2162,7 @@ func Test_getNumberSliceGenInt8(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]int8](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[int8](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -2297,7 +2297,7 @@ func Test_getNumberSliceGenInt64(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]int64](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[int64](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -3020,7 +3020,7 @@ func Test_getNumberSliceGenUint64(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]uint64](tt.args.key, tt.args.sep)
+			got, err := getNumberSliceGen[uint64](tt.args.key, tt.args.sep)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -4024,7 +4024,7 @@ func Test_getNumberSliceGenuintptr(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getNumberSliceGen[[]uintptr](tt.args.key, tt.args.separator)
+			got, err := getNumberSliceGen[uintptr](tt.args.key, tt.args.separator)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -4222,7 +4222,7 @@ func Test_getComplexSliceGenComplex64(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getComplexSliceGen[[]complex64](tt.args.key, tt.args.separator)
+			got, err := getComplexSliceGen[complex64](tt.args.key, tt.args.separator)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -4420,7 +4420,7 @@ func Test_getComplexSliceGenComplex128(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getComplexSliceGen[[]complex128](tt.args.key, tt.args.separator)
+			got, err := getComplexSliceGen[complex128](tt.args.key, tt.args.separator)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
