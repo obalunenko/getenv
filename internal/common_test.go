@@ -2,6 +2,7 @@ package internal
 
 import (
 	"net"
+	"net/netip"
 	"net/url"
 	"testing"
 
@@ -48,6 +49,30 @@ func getTestIP(tb testing.TB, raw string) net.IP {
 	tb.Helper()
 
 	return net.ParseIP(raw)
+}
+
+// getTestNetIPAddr is a helper function for getting netip.Addr from string.
+func getTestNetIPAddr(tb testing.TB, raw string) netip.Addr {
+	tb.Helper()
+
+	return netip.MustParseAddr(raw)
+}
+
+// getTestNetIPPrefix is a helper function for getting netip.Prefix from string.
+func getTestNetIPPrefix(tb testing.TB, raw string) netip.Prefix {
+	tb.Helper()
+
+	return netip.MustParsePrefix(raw)
+}
+
+// getTestHardwareAddr is a helper function for getting net.HardwareAddr from string.
+func getTestHardwareAddr(tb testing.TB, raw string) net.HardwareAddr {
+	tb.Helper()
+
+	val, err := net.ParseMAC(raw)
+	require.NoError(tb, err)
+
+	return val
 }
 
 func errorEqual(tb testing.TB, expected error) assert.ErrorAssertionFunc {

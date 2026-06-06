@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"testing"
 	"time"
@@ -218,6 +219,36 @@ func TestNewEnvParser(t *testing.T) {
 			v:         []net.IP{getTestIP(t, "0.0.0.0")},
 			wantPanic: assert.NotPanics,
 			want:      ipSliceParser([]net.IP{getTestIP(t, "0.0.0.0")}),
+		},
+		{
+			v:         netip.MustParseAddr("127.0.0.1"),
+			wantPanic: assert.NotPanics,
+			want:      netIPAddrParser(netip.MustParseAddr("127.0.0.1")),
+		},
+		{
+			v:         []netip.Addr{netip.MustParseAddr("127.0.0.1")},
+			wantPanic: assert.NotPanics,
+			want:      netIPAddrSliceParser([]netip.Addr{netip.MustParseAddr("127.0.0.1")}),
+		},
+		{
+			v:         netip.MustParsePrefix("192.168.0.0/24"),
+			wantPanic: assert.NotPanics,
+			want:      netIPPrefixParser(netip.MustParsePrefix("192.168.0.0/24")),
+		},
+		{
+			v:         []netip.Prefix{netip.MustParsePrefix("192.168.0.0/24")},
+			wantPanic: assert.NotPanics,
+			want:      netIPPrefixSliceParser([]netip.Prefix{netip.MustParsePrefix("192.168.0.0/24")}),
+		},
+		{
+			v:         getTestHardwareAddr(t, "01:23:45:67:89:ab"),
+			wantPanic: assert.NotPanics,
+			want:      hardwareAddrParser(getTestHardwareAddr(t, "01:23:45:67:89:ab")),
+		},
+		{
+			v:         []net.HardwareAddr{getTestHardwareAddr(t, "01:23:45:67:89:ab")},
+			wantPanic: assert.NotPanics,
+			want:      hardwareAddrSliceParser([]net.HardwareAddr{getTestHardwareAddr(t, "01:23:45:67:89:ab")}),
 		},
 		{
 			v:         uintptr(2),
@@ -475,6 +506,116 @@ func Test_newIPParser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.wantPanic(t, func() {
 				assert.Equal(t, tt.want, newIPParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Test_newNetIPParser tests newNetIPParser function.
+func Test_newNetIPParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	tests := []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "netip.Addr",
+			args: args{
+				v: netip.MustParseAddr("127.0.0.1"),
+			},
+			wantPanic: assert.NotPanics,
+			want:      netIPAddrParser(netip.MustParseAddr("127.0.0.1")),
+		},
+		{
+			name: "netip.Addr slice",
+			args: args{
+				v: []netip.Addr{netip.MustParseAddr("127.0.0.1")},
+			},
+			wantPanic: assert.NotPanics,
+			want:      netIPAddrSliceParser([]netip.Addr{netip.MustParseAddr("127.0.0.1")}),
+		},
+		{
+			name: "netip.Prefix",
+			args: args{
+				v: netip.MustParsePrefix("192.168.0.0/24"),
+			},
+			wantPanic: assert.NotPanics,
+			want:      netIPPrefixParser(netip.MustParsePrefix("192.168.0.0/24")),
+		},
+		{
+			name: "netip.Prefix slice",
+			args: args{
+				v: []netip.Prefix{netip.MustParsePrefix("192.168.0.0/24")},
+			},
+			wantPanic: assert.NotPanics,
+			want:      netIPPrefixSliceParser([]netip.Prefix{netip.MustParsePrefix("192.168.0.0/24")}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newNetIPParser(tt.args.v))
+			})
+		})
+	}
+}
+
+// Test_newHardwareAddrParser tests newHardwareAddrParser function.
+func Test_newHardwareAddrParser(t *testing.T) {
+	type args struct {
+		v any
+	}
+
+	tests := []struct {
+		name      string
+		args      args
+		wantPanic panicAssertionFunc
+		want      EnvParser
+	}{
+		{
+			name: "net.HardwareAddr",
+			args: args{
+				v: getTestHardwareAddr(t, "01:23:45:67:89:ab"),
+			},
+			wantPanic: assert.NotPanics,
+			want:      hardwareAddrParser(getTestHardwareAddr(t, "01:23:45:67:89:ab")),
+		},
+		{
+			name: "net.HardwareAddr slice",
+			args: args{
+				v: []net.HardwareAddr{getTestHardwareAddr(t, "01:23:45:67:89:ab")},
+			},
+			wantPanic: assert.NotPanics,
+			want:      hardwareAddrSliceParser([]net.HardwareAddr{getTestHardwareAddr(t, "01:23:45:67:89:ab")}),
+		},
+		{
+			name: "not supported",
+			args: args{
+				v: notsupported{},
+			},
+			wantPanic: assert.NotPanics,
+			want:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.wantPanic(t, func() {
+				assert.Equal(t, tt.want, newHardwareAddrParser(tt.args.v))
 			})
 		})
 	}

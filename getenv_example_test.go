@@ -241,7 +241,7 @@ func ExampleEnv() {
 	// Output:
 	// [string]: golly; err: <nil>
 	// [int]: 123; err: <nil>
-	// [int]: 0; err: failed to parse environment variable[GH_GETENV_TEST]: invalid value
+	// [int]: 0; err: failed to parse environment variable[GH_GETENV_TEST]: strconv.ParseInt: parsing "123s4": invalid syntax: invalid value
 	// [time.Time]: 2022-01-20 00:00:00 +0000 UTC; err: <nil>
 	// [[]float64]: [26.89 0.67]; err: <nil>
 	// [time.Duration]: 2h35m0s; err: <nil>
