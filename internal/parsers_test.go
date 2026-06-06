@@ -2,6 +2,7 @@ package internal
 
 import (
 	"net"
+	"net/netip"
 	"net/url"
 	"testing"
 	"time"
@@ -792,6 +793,23 @@ func Test_getStringSlice(t *testing.T) {
 			},
 		},
 		{
+			name: "env not set, no separator - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "true,newval",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+				sep: "",
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+		{
 			name: "env set, no separator - err returned",
 			precond: precondition{
 				setenv: setenv{
@@ -821,7 +839,7 @@ func Test_getStringSlice(t *testing.T) {
 			},
 			expected: expected{
 				val:     nil,
-				wantErr: errorEqual(t, ErrInvalidValue),
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -938,7 +956,7 @@ func Test_getNumberSliceGenInt(t *testing.T) {
 			},
 			expected: expected{
 				val:     nil,
-				wantErr: errorEqual(t, ErrInvalidValue),
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 	}
@@ -3526,6 +3544,603 @@ func Test_getIP(t *testing.T) {
 	}
 }
 
+func Test_getNetIPAddr(t *testing.T) {
+	type args struct {
+		key string
+	}
+
+	type expected struct {
+		val     netip.Addr
+		wantErr assert.ErrorAssertionFunc
+	}
+
+	tests := []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "192.168.8.1",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     netip.Addr{},
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.1",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     getTestNetIPAddr(t, "192.168.8.1"),
+				wantErr: assert.NoError,
+			},
+		},
+		{
+			name: "env set, corrupted - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.1/24",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     netip.Addr{},
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+		{
+			name: "empty env value set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     netip.Addr{},
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got, err := getNetIPAddr(tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func Test_getNetIPAddrSlice(t *testing.T) {
+	type args struct {
+		key       string
+		separator string
+	}
+
+	type expected struct {
+		val     []netip.Addr
+		wantErr assert.ErrorAssertionFunc
+	}
+
+	tests := []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "192.168.8.1,2001:db8::68",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.1,2001:db8::68",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val: []netip.Addr{
+					getTestNetIPAddr(t, "192.168.8.1"),
+					getTestNetIPAddr(t, "2001:db8::68"),
+				},
+				wantErr: assert.NoError,
+			},
+		},
+		{
+			name: "env set, corrupted - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.1,sdsdsd",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+		{
+			name: "env set, no separator - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.1,2001:db8::68",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got, err := getNetIPAddrSlice(tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func Test_getNetIPPrefix(t *testing.T) {
+	type args struct {
+		key string
+	}
+
+	type expected struct {
+		val     netip.Prefix
+		wantErr assert.ErrorAssertionFunc
+	}
+
+	tests := []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "192.168.8.0/24",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     netip.Prefix{},
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0/24",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     getTestNetIPPrefix(t, "192.168.8.0/24"),
+				wantErr: assert.NoError,
+			},
+		},
+		{
+			name: "env set, corrupted - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.1",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     netip.Prefix{},
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+		{
+			name: "empty env value set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     netip.Prefix{},
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got, err := getNetIPPrefix(tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func Test_getNetIPPrefixSlice(t *testing.T) {
+	type args struct {
+		key       string
+		separator string
+	}
+
+	type expected struct {
+		val     []netip.Prefix
+		wantErr assert.ErrorAssertionFunc
+	}
+
+	tests := []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "192.168.8.0/24,2001:db8::/64",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0/24,2001:db8::/64",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val: []netip.Prefix{
+					getTestNetIPPrefix(t, "192.168.8.0/24"),
+					getTestNetIPPrefix(t, "2001:db8::/64"),
+				},
+				wantErr: assert.NoError,
+			},
+		},
+		{
+			name: "env set, corrupted - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0/24,sdsdsd",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+		{
+			name: "env set, no separator - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "192.168.8.0/24,2001:db8::/64",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got, err := getNetIPPrefixSlice(tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func Test_getHardwareAddr(t *testing.T) {
+	type args struct {
+		key string
+	}
+
+	type expected struct {
+		val     net.HardwareAddr
+		wantErr assert.ErrorAssertionFunc
+	}
+
+	tests := []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "01:23:45:67:89:ab",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "01:23:45:67:89:ab",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     getTestHardwareAddr(t, "01:23:45:67:89:ab"),
+				wantErr: assert.NoError,
+			},
+		},
+		{
+			name: "env set, corrupted - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "not-a-mac",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+		{
+			name: "empty env value set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got, err := getHardwareAddr(tt.args.key)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
+func Test_getHardwareAddrSlice(t *testing.T) {
+	type args struct {
+		key       string
+		separator string
+	}
+
+	type expected struct {
+		val     []net.HardwareAddr
+		wantErr assert.ErrorAssertionFunc
+	}
+
+	tests := []struct {
+		name     string
+		precond  precondition
+		args     args
+		expected expected
+	}{
+		{
+			name: "env not set - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "01:23:45:67:89:ab,02:23:45:67:89:ab",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
+			},
+		},
+		{
+			name: "env set - env value returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "01:23:45:67:89:ab,02:23:45:67:89:ab",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val: []net.HardwareAddr{
+					getTestHardwareAddr(t, "01:23:45:67:89:ab"),
+					getTestHardwareAddr(t, "02:23:45:67:89:ab"),
+				},
+				wantErr: assert.NoError,
+			},
+		},
+		{
+			name: "env set, corrupted - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "01:23:45:67:89:ab,not-a-mac",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: ",",
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+		{
+			name: "env set, no separator - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: true,
+					val:   "01:23:45:67:89:ab,02:23:45:67:89:ab",
+				},
+			},
+			args: args{
+				key: testEnvKey,
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrInvalidValue),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.precond.maybeSetEnv(t, tt.args.key)
+
+			got, err := getHardwareAddrSlice(tt.args.key, tt.args.separator)
+			if !tt.expected.wantErr(t, err) {
+				return
+			}
+
+			assert.Equal(t, tt.expected.val, got)
+		})
+	}
+}
+
 func Test_getURLSlice(t *testing.T) {
 	type args struct {
 		key       string
@@ -3620,7 +4235,7 @@ func Test_getURLSlice(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got, err := getURLSlice(tt.args.key, ",")
+			got, err := getURLSlice(tt.args.key, tt.args.separator)
 			if !tt.expected.wantErr(t, err) {
 				return
 			}
@@ -3784,6 +4399,23 @@ func Test_getBoolSlice(t *testing.T) {
 			expected: expected{
 				val:     []bool{true, false},
 				wantErr: assert.NoError,
+			},
+		},
+		{
+			name: "env not set, no separator - err returned",
+			precond: precondition{
+				setenv: setenv{
+					isSet: false,
+					val:   "true,false",
+				},
+			},
+			args: args{
+				key:       testEnvKey,
+				separator: "",
+			},
+			expected: expected{
+				val:     nil,
+				wantErr: errorEqual(t, ErrNotSet),
 			},
 		},
 		{
