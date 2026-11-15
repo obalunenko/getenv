@@ -15,8 +15,4 @@ check_installed 'goreleaser'
 
 goreleaser healthcheck
 
-APP=${APP_NAME}
-
-echo "${SCRIPT_NAME} is running fo ${APP}... "
-
 goreleaser release --clean

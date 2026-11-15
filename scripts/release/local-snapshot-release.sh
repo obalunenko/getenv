@@ -9,9 +9,7 @@ SCRIPTS_DIR="${REPO_ROOT}/scripts"
 
 source "${SCRIPTS_DIR}/helpers-source.sh"
 
-APP=${APP_NAME}
-
-echo "${SCRIPT_NAME} is running fo ${APP}... "
+echo "${SCRIPT_NAME} is running... "
 
 check_installed 'goreleaser'
 
