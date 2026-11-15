@@ -20,6 +20,8 @@ dist/
 coverage/
 .DS_Store
 README_doc.md
+tests-report.json
+linters-report.xml
 .vscode/
 
 # Codecov CLI downloaded by codecov-action in CI
