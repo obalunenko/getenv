@@ -18,110 +18,64 @@ const decimalBase = 10
 // Slices are split by Parameters.Separator, time.Time is parsed with Parameters.Layout.
 // Every returned error wraps ErrInvalidValue.
 //
-//nolint:gocyclo,funlen // Flat dispatch: one case per supported type.
+//nolint:gocyclo,funlen // Flat dispatch: one case per supported type and its slice.
 func Parse[T EnvParsable](raw string, p Parameters) (T, error) {
 	var (
 		res T
 		err error
 	)
 
-	switch v := any(&res).(type) {
-	case *string:
-		*v = raw
-	case *[]string:
-		*v, err = parseSlice(raw, p.Separator, parseString)
-	case *int:
-		*v, err = parseInt[int](raw)
-	case *[]int:
-		*v, err = parseSlice(raw, p.Separator, parseInt[int])
-	case *int8:
-		*v, err = parseInt[int8](raw)
-	case *[]int8:
-		*v, err = parseSlice(raw, p.Separator, parseInt[int8])
-	case *int16:
-		*v, err = parseInt[int16](raw)
-	case *[]int16:
-		*v, err = parseSlice(raw, p.Separator, parseInt[int16])
-	case *int32:
-		*v, err = parseInt[int32](raw)
-	case *[]int32:
-		*v, err = parseSlice(raw, p.Separator, parseInt[int32])
-	case *int64:
-		*v, err = parseInt[int64](raw)
-	case *[]int64:
-		*v, err = parseSlice(raw, p.Separator, parseInt[int64])
-	case *uint:
-		*v, err = parseUint[uint](raw)
-	case *[]uint:
-		*v, err = parseSlice(raw, p.Separator, parseUint[uint])
-	case *uint8:
-		*v, err = parseUint[uint8](raw)
-	case *[]uint8:
-		*v, err = parseSlice(raw, p.Separator, parseUint[uint8])
-	case *uint16:
-		*v, err = parseUint[uint16](raw)
-	case *[]uint16:
-		*v, err = parseSlice(raw, p.Separator, parseUint[uint16])
-	case *uint32:
-		*v, err = parseUint[uint32](raw)
-	case *[]uint32:
-		*v, err = parseSlice(raw, p.Separator, parseUint[uint32])
-	case *uint64:
-		*v, err = parseUint[uint64](raw)
-	case *[]uint64:
-		*v, err = parseSlice(raw, p.Separator, parseUint[uint64])
-	case *uintptr:
-		*v, err = parseUint[uintptr](raw)
-	case *[]uintptr:
-		*v, err = parseSlice(raw, p.Separator, parseUint[uintptr])
-	case *float32:
-		*v, err = parseFloat[float32](raw)
-	case *[]float32:
-		*v, err = parseSlice(raw, p.Separator, parseFloat[float32])
-	case *float64:
-		*v, err = parseFloat[float64](raw)
-	case *[]float64:
-		*v, err = parseSlice(raw, p.Separator, parseFloat[float64])
-	case *complex64:
-		*v, err = parseComplex[complex64](raw)
-	case *[]complex64:
-		*v, err = parseSlice(raw, p.Separator, parseComplex[complex64])
-	case *complex128:
-		*v, err = parseComplex[complex128](raw)
-	case *[]complex128:
-		*v, err = parseSlice(raw, p.Separator, parseComplex[complex128])
-	case *bool:
-		*v, err = strconv.ParseBool(raw)
-	case *[]bool:
-		*v, err = parseSlice(raw, p.Separator, strconv.ParseBool)
-	case *time.Time:
-		*v, err = parseTime(p.Layout)(raw)
-	case *[]time.Time:
-		*v, err = parseSlice(raw, p.Separator, parseTime(p.Layout))
-	case *time.Duration:
-		*v, err = time.ParseDuration(raw)
-	case *[]time.Duration:
-		*v, err = parseSlice(raw, p.Separator, time.ParseDuration)
-	case *url.URL:
-		*v, err = parseURL(raw)
-	case *[]url.URL:
-		*v, err = parseSlice(raw, p.Separator, parseURL)
-	case *net.IP:
-		*v, err = parseIP(raw)
-	case *[]net.IP:
-		*v, err = parseSlice(raw, p.Separator, parseIP)
-	case *netip.Addr:
-		*v, err = netip.ParseAddr(raw)
-	case *[]netip.Addr:
-		*v, err = parseSlice(raw, p.Separator, netip.ParseAddr)
-	case *netip.Prefix:
-		*v, err = netip.ParsePrefix(raw)
-	case *[]netip.Prefix:
-		*v, err = parseSlice(raw, p.Separator, netip.ParsePrefix)
-	case *net.HardwareAddr:
-		*v, err = net.ParseMAC(raw)
-	case *[]net.HardwareAddr:
-		*v, err = parseSlice(raw, p.Separator, net.ParseMAC)
+	dst := any(&res)
+
+	switch dst.(type) {
+	case *string, *[]string:
+		err = parseInto(dst, raw, p, parseString)
+	case *int, *[]int:
+		err = parseInto(dst, raw, p, parseInt[int])
+	case *int8, *[]int8:
+		err = parseInto(dst, raw, p, parseInt[int8])
+	case *int16, *[]int16:
+		err = parseInto(dst, raw, p, parseInt[int16])
+	case *int32, *[]int32:
+		err = parseInto(dst, raw, p, parseInt[int32])
+	case *int64, *[]int64:
+		err = parseInto(dst, raw, p, parseInt[int64])
+	case *uint, *[]uint:
+		err = parseInto(dst, raw, p, parseUint[uint])
+	case *uint8, *[]uint8:
+		err = parseInto(dst, raw, p, parseUint[uint8])
+	case *uint16, *[]uint16:
+		err = parseInto(dst, raw, p, parseUint[uint16])
+	case *uint32, *[]uint32:
+		err = parseInto(dst, raw, p, parseUint[uint32])
+	case *uint64, *[]uint64:
+		err = parseInto(dst, raw, p, parseUint[uint64])
+	case *uintptr, *[]uintptr:
+		err = parseInto(dst, raw, p, parseUint[uintptr])
+	case *float32, *[]float32:
+		err = parseInto(dst, raw, p, parseFloat[float32])
+	case *float64, *[]float64:
+		err = parseInto(dst, raw, p, parseFloat[float64])
+	case *complex64, *[]complex64:
+		err = parseInto(dst, raw, p, parseComplex[complex64])
+	case *complex128, *[]complex128:
+		err = parseInto(dst, raw, p, parseComplex[complex128])
+	case *bool, *[]bool:
+		err = parseInto(dst, raw, p, strconv.ParseBool)
+	case *time.Time, *[]time.Time:
+		err = parseInto(dst, raw, p, parseTime(p.Layout))
+	case *time.Duration, *[]time.Duration:
+		err = parseInto(dst, raw, p, time.ParseDuration)
+	case *url.URL, *[]url.URL:
+		err = parseInto(dst, raw, p, parseURL)
+	case *net.IP, *[]net.IP:
+		err = parseInto(dst, raw, p, parseIP)
+	case *netip.Addr, *[]netip.Addr:
+		err = parseInto(dst, raw, p, netip.ParseAddr)
+	case *netip.Prefix, *[]netip.Prefix:
+		err = parseInto(dst, raw, p, netip.ParsePrefix)
+	case *net.HardwareAddr, *[]net.HardwareAddr:
+		err = parseInto(dst, raw, p, net.ParseMAC)
 	default:
 		// Unreachable while every EnvParsable type has a case above.
 		panic(fmt.Sprintf("getenv: no parser for %T", res))
@@ -134,6 +88,23 @@ func Parse[T EnvParsable](raw string, p Parameters) (T, error) {
 	}
 
 	return res, nil
+}
+
+// parseInto parses raw into dst, which points to either E or []E.
+func parseInto[E any](dst any, raw string, p Parameters, parse func(string) (E, error)) error {
+	var err error
+
+	switch v := dst.(type) {
+	case *E:
+		*v, err = parse(raw)
+	case *[]E:
+		*v, err = parseSlice(raw, p.Separator, parse)
+	default:
+		// Unreachable while every case of Parse passes the parser of its own type.
+		panic("getenv: parser does not match the destination type")
+	}
+
+	return err
 }
 
 // parseSlice splits raw by sep and parses every element with parse.
