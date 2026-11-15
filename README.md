@@ -12,57 +12,18 @@ It's type-safe and supports built-in types and slices of them.
 Empty environment variable values are treated as not set.
 
 Slices are split by "," and time.Time values are parsed with the time.RFC3339 layout,
-unless option.WithSeparator or option.WithTimeLayout sets another one.
+unless getenv.WithSeparator or getenv.WithTimeLayout sets another one.
 
-Types supported:
-- string
-- []string
-- int
-- []int
-- int8
-- []int8
-- int16
-- []int16
-- int32
-- []int32
-- int64
-- []int64
-- uint8
-- []uint8
-- uint16
-- []uint16
-- uint64
-- []uint64
-- uint
-- []uint
-- uintptr
-- []uintptr
-- uint32
-- []uint32
-- float32
-- []float32
-- float64
-- []float64
-- time.Time
-- []time.Time
-- time.Duration
-- []time.Duration
-- bool
-- []bool
-- url.URL
-- []url.URL
-- net.IP
-- []net.IP
-- netip.Addr
-- []netip.Addr
-- netip.Prefix
-- []netip.Prefix
-- net.HardwareAddr
-- []net.HardwareAddr
-- complex64
-- []complex64
-- complex128
-- []complex128
+Types supported, each both as a single value and as a slice (see `Parsable`):
+- `string`
+- `int`, `int8`, `int16`, `int32`, `int64`
+- `uint`, `uint8`, `uint16`, `uint32`, `uint64`, `uintptr`
+- `float32`, `float64`
+- `complex64`, `complex128`
+- `bool`
+- `time.Time`, `time.Duration`
+- `url.URL`
+- `net.IP`, `net.HardwareAddr`, `netip.Addr`, `netip.Prefix`
 
 ## Examples
 
@@ -83,7 +44,6 @@ import (
 	"time"
 
 	"github.com/obalunenko/getenv"
-	"github.com/obalunenko/getenv/option"
 )
 
 func main() {
@@ -131,7 +91,7 @@ func main() {
 		panic(err)
 	}
 
-	val, err = getenv.Env[time.Time](key, option.WithTimeLayout("2006-01-02"))
+	val, err = getenv.Env[time.Time](key, getenv.WithTimeLayout("2006-01-02"))
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// []float64
@@ -139,7 +99,7 @@ func main() {
 		panic(err)
 	}
 
-	val, err = getenv.Env[[]float64](key, option.WithSeparator(","))
+	val, err = getenv.Env[[]float64](key, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// time.Duration
@@ -171,7 +131,7 @@ func main() {
 		panic(err)
 	}
 
-	val, err = getenv.Env[[]string](key, option.WithSeparator(","))
+	val, err = getenv.Env[[]string](key, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// complex128
@@ -187,7 +147,7 @@ func main() {
 		panic(err)
 	}
 
-	val, err = getenv.Env[[]complex64](key, option.WithSeparator(","))
+	val, err = getenv.Env[[]complex64](key, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 }
@@ -228,7 +188,6 @@ import (
 	"time"
 
 	"github.com/obalunenko/getenv"
-	"github.com/obalunenko/getenv/option"
 )
 
 func main() {
@@ -267,7 +226,7 @@ func main() {
 
 	val = getenv.EnvOrDefault(key,
 		time.Date(1992, 12, 1, 0, 0, 0, 0, time.UTC),
-		option.WithTimeLayout("2006-01-02"),
+		getenv.WithTimeLayout("2006-01-02"),
 	)
 	fmt.Printf("[%T]: %v\n", val, val)
 
@@ -277,7 +236,7 @@ func main() {
 	}
 
 	val = getenv.EnvOrDefault(key, []float64{-99},
-		option.WithSeparator(","),
+		getenv.WithSeparator(","),
 	)
 	fmt.Printf("[%T]: %v\n", val, val)
 
@@ -310,7 +269,7 @@ func main() {
 		panic(err)
 	}
 
-	val = getenv.EnvOrDefault(key, []string{}, option.WithSeparator(","))
+	val = getenv.EnvOrDefault(key, []string{}, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v\n", val, val)
 
 	// complex128
@@ -326,7 +285,7 @@ func main() {
 		panic(err)
 	}
 
-	val = getenv.EnvOrDefault(key, []complex64{}, option.WithSeparator(","))
+	val = getenv.EnvOrDefault(key, []complex64{}, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v\n", val, val)
 
 }

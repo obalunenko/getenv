@@ -9,10 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/obalunenko/getenv"
-	"github.com/obalunenko/getenv/option"
 )
 
-// Parsing of every supported type is covered in the internal package;
+// Parsing of every supported type is covered in parse_test.go;
 // these tests check the public API: lookup, errors and options.
 
 const testEnvKey = "GH_GETENV_TEST"
@@ -69,7 +68,7 @@ func TestEnvOptions(t *testing.T) {
 	t.Run("separator", func(t *testing.T) {
 		t.Setenv(testEnvKey, "1|2|3")
 
-		got, err := getenv.Env[[]int](testEnvKey, option.WithSeparator("|"))
+		got, err := getenv.Env[[]int](testEnvKey, getenv.WithSeparator("|"))
 		require.NoError(t, err)
 		assert.Equal(t, []int{1, 2, 3}, got)
 	})
@@ -77,7 +76,7 @@ func TestEnvOptions(t *testing.T) {
 	t.Run("time layout", func(t *testing.T) {
 		t.Setenv(testEnvKey, "2022-01-20")
 
-		got, err := getenv.Env[time.Time](testEnvKey, option.WithTimeLayout(time.DateOnly))
+		got, err := getenv.Env[time.Time](testEnvKey, getenv.WithTimeLayout(time.DateOnly))
 		require.NoError(t, err)
 		assert.Equal(t, time.Date(2022, 1, 20, 0, 0, 0, 0, time.UTC), got)
 	})
@@ -101,13 +100,13 @@ func TestEnvOptions(t *testing.T) {
 	t.Run("empty separator", func(t *testing.T) {
 		t.Setenv(testEnvKey, "1,2")
 
-		_, err := getenv.Env[[]int](testEnvKey, option.WithSeparator(""))
+		_, err := getenv.Env[[]int](testEnvKey, getenv.WithSeparator(""))
 		require.ErrorIs(t, err, getenv.ErrInvalidValue)
 		assert.ErrorContains(t, err, "empty separator")
 	})
 
 	t.Run("not set is reported before empty separator", func(t *testing.T) {
-		_, err := getenv.Env[[]int](testEnvKey, option.WithSeparator(""))
+		_, err := getenv.Env[[]int](testEnvKey, getenv.WithSeparator(""))
 		require.ErrorIs(t, err, getenv.ErrNotSet)
 	})
 }
@@ -142,7 +141,7 @@ func TestEnvOrDefaultOptions(t *testing.T) {
 	t.Run("separator", func(t *testing.T) {
 		t.Setenv(testEnvKey, "a|b")
 
-		got := getenv.EnvOrDefault(testEnvKey, []string{"default"}, option.WithSeparator("|"))
+		got := getenv.EnvOrDefault(testEnvKey, []string{"default"}, getenv.WithSeparator("|"))
 		assert.Equal(t, []string{"a", "b"}, got)
 	})
 
@@ -175,6 +174,6 @@ func BenchmarkEnvOrDefault(b *testing.B) {
 	b.ReportAllocs()
 
 	for b.Loop() {
-		_ = getenv.EnvOrDefault(testEnvKey, []float64{}, option.WithSeparator(","))
+		_ = getenv.EnvOrDefault(testEnvKey, []float64{}, getenv.WithSeparator(","))
 	}
 }

@@ -1,34 +1,28 @@
 // Package option provides options for parsing environment variables.
+//
+// Deprecated: the options moved to package getenv. Use getenv.Option,
+// getenv.WithSeparator and getenv.WithTimeLayout instead.
 package option
 
 import (
-	"github.com/obalunenko/getenv/internal"
+	"github.com/obalunenko/getenv"
 )
 
 // Option configures how Env and EnvOrDefault parse the value of a variable.
-type Option interface {
-	// Apply applies the option to the parameters.
-	Apply(params *internal.Parameters)
-}
-
-type withSeparator string
-
-func (w withSeparator) Apply(p *internal.Parameters) {
-	p.Separator = string(w)
-}
+//
+// Deprecated: Use getenv.Option instead.
+type Option = getenv.Option
 
 // WithSeparator sets the separator of slice values. The default is ",".
+//
+// Deprecated: Use getenv.WithSeparator instead.
 func WithSeparator(separator string) Option {
-	return withSeparator(separator)
-}
-
-type withTimeLayout string
-
-func (w withTimeLayout) Apply(p *internal.Parameters) {
-	p.Layout = string(w)
+	return getenv.WithSeparator(separator)
 }
 
 // WithTimeLayout sets the layout of time.Time values. The default is time.RFC3339.
+//
+// Deprecated: Use getenv.WithTimeLayout instead.
 func WithTimeLayout(layout string) Option {
-	return withTimeLayout(layout)
+	return getenv.WithTimeLayout(layout)
 }

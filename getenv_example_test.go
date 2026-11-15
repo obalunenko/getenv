@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/obalunenko/getenv"
-	"github.com/obalunenko/getenv/option"
 )
 
 func ExampleEnvOrDefault() {
@@ -47,7 +46,7 @@ func ExampleEnvOrDefault() {
 
 	val = getenv.EnvOrDefault(key,
 		time.Date(1992, 12, 1, 0, 0, 0, 0, time.UTC),
-		option.WithTimeLayout("2006-01-02"),
+		getenv.WithTimeLayout("2006-01-02"),
 	)
 	fmt.Printf("[%T]: %v\n", val, val)
 
@@ -57,7 +56,7 @@ func ExampleEnvOrDefault() {
 	}
 
 	val = getenv.EnvOrDefault(key, []float64{-99},
-		option.WithSeparator(","),
+		getenv.WithSeparator(","),
 	)
 	fmt.Printf("[%T]: %v\n", val, val)
 
@@ -96,7 +95,7 @@ func ExampleEnvOrDefault() {
 		panic(err)
 	}
 
-	val = getenv.EnvOrDefault(key, []string{}, option.WithSeparator(","))
+	val = getenv.EnvOrDefault(key, []string{}, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v\n", val, val)
 
 	// complex128
@@ -112,7 +111,7 @@ func ExampleEnvOrDefault() {
 		panic(err)
 	}
 
-	val = getenv.EnvOrDefault(key, []complex64{}, option.WithSeparator(","))
+	val = getenv.EnvOrDefault(key, []complex64{}, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v\n", val, val)
 
 	// Output:
@@ -173,7 +172,7 @@ func ExampleEnv() {
 		panic(err)
 	}
 
-	val, err = getenv.Env[time.Time](key, option.WithTimeLayout("2006-01-02"))
+	val, err = getenv.Env[time.Time](key, getenv.WithTimeLayout("2006-01-02"))
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// []float64
@@ -181,7 +180,7 @@ func ExampleEnv() {
 		panic(err)
 	}
 
-	val, err = getenv.Env[[]float64](key, option.WithSeparator(","))
+	val, err = getenv.Env[[]float64](key, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// time.Duration
@@ -219,7 +218,7 @@ func ExampleEnv() {
 		panic(err)
 	}
 
-	val, err = getenv.Env[[]string](key, option.WithSeparator(","))
+	val, err = getenv.Env[[]string](key, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// complex128
@@ -235,7 +234,7 @@ func ExampleEnv() {
 		panic(err)
 	}
 
-	val, err = getenv.Env[[]complex64](key, option.WithSeparator(","))
+	val, err = getenv.Env[[]complex64](key, getenv.WithSeparator(","))
 	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
 
 	// Output:
