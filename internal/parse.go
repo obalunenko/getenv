@@ -17,15 +17,23 @@ const decimalBase = 10
 // Parse converts the raw value of an environment variable to T.
 // Slices are split by Parameters.Separator, time.Time is parsed with Parameters.Layout.
 // Every returned error wraps ErrInvalidValue.
+func Parse[T EnvParsable](raw string, p Parameters) (T, error) {
+	var res T
+
+	if err := parseValue(&res, raw, p); err != nil {
+		var zero T
+
+		return zero, fmt.Errorf("%w: %w", err, ErrInvalidValue)
+	}
+
+	return res, nil
+}
+
+// parseValue parses raw into the value that dst points to.
 //
 //nolint:gocyclo,funlen // Flat dispatch: one case per supported type and its slice.
-func Parse[T EnvParsable](raw string, p Parameters) (T, error) {
-	var (
-		res T
-		err error
-	)
-
-	dst := any(&res)
+func parseValue(dst any, raw string, p Parameters) error {
+	var err error
 
 	switch dst.(type) {
 	case *string, *[]string:
@@ -77,17 +85,11 @@ func Parse[T EnvParsable](raw string, p Parameters) (T, error) {
 	case *net.HardwareAddr, *[]net.HardwareAddr:
 		err = parseInto(dst, raw, p, net.ParseMAC)
 	default:
-		// Unreachable while every EnvParsable type has a case above.
-		panic(fmt.Sprintf("getenv: no parser for %T", res))
+		// Unreachable from Parse while every EnvParsable type has a case above.
+		panic("getenv: no parser for " + reflect.TypeOf(dst).String())
 	}
 
-	if err != nil {
-		var zero T
-
-		return zero, fmt.Errorf("%w: %w", err, ErrInvalidValue)
-	}
-
-	return res, nil
+	return err
 }
 
 // parseInto parses raw into dst, which points to either E or []E.

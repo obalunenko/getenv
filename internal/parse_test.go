@@ -269,6 +269,31 @@ func TestParseSliceErrors(t *testing.T) {
 	assert.ErrorContains(t, err, "element 2")
 }
 
+// unsupported is a type that has no parser.
+type unsupported struct{}
+
+// The panics guard against programming errors in this package: Parse cannot reach them
+// while every EnvParsable type has a parser of its own type.
+func TestParsePanics(t *testing.T) {
+	t.Run("no parser for the type", func(t *testing.T) {
+		var dst unsupported
+
+		assert.PanicsWithValue(t, "getenv: no parser for *internal.unsupported", func() {
+			err := parseValue(&dst, "1", comma)
+			t.Errorf("returned %v instead of panicking", err)
+		})
+	})
+
+	t.Run("parser does not match the destination", func(t *testing.T) {
+		var dst int
+
+		assert.PanicsWithValue(t, "getenv: parser does not match the destination type", func() {
+			err := parseInto(&dst, "1", comma, parseString)
+			t.Errorf("returned %v instead of panicking", err)
+		})
+	})
+}
+
 func FuzzParse(f *testing.F) {
 	seeds := []string{
 		"", "1", "-1", "1,2", "1.5", "true", "2m", "(1+2i)", "2018-04-21T22:30:00Z",
