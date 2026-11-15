@@ -25,11 +25,11 @@ while getopts u: flag; do
   esac
 done
 
-function openurl() {
+function open_url() {
   echo "${URL}"
-  openSource "${URL}"
+  open_source "${URL}"
 }
 
-openurl
+open_url
 
 echo "${SCRIPT_NAME} done."

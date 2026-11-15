@@ -11,7 +11,7 @@ source "${SCRIPTS_DIR}/helpers-source.sh"
 
 echo "${SCRIPT_NAME} is running... "
 
-checkInstalled 'goreleaser'
+check_installed 'goreleaser'
 
 goreleaser healthcheck
 

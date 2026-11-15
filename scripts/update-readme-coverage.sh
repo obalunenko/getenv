@@ -12,10 +12,9 @@ source "${SCRIPTS_DIR}/helpers-source.sh"
 
 echo "${SCRIPT_NAME} is running... "
 
-checkInstalled 'coverbadger'
-checkInstalled 'gocov'
+check_installed 'coverbadger'
 
-COVERAGE=$(gocov report "${COVER_DIR}/full.json" | tail -1 | awk '{if ($1 != "?") print $3; else print "0.0";}' | sed 's/\%//g')
+COVERAGE=$(go_tool gocov report "${COVER_DIR}/full.json" | tail -1 | awk '{if ($1 != "?") print $3; else print "0.0";}' | sed 's/\%//g')
 if [[ ${COVERAGE} == "NaN" ]]; then
   COVERAGE="0.0"
 fi

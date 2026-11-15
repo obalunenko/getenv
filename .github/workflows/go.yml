@@ -16,7 +16,6 @@ on:
       - 'Makefile'
       - '!**.*md'
       - '.github/workflows/**'
-      - 'deployments/docker-compose/go-tools-docker-compose.yml'
   pull_request:
     types: [ opened, synchronize, reopened ]
     branches:
@@ -32,7 +31,6 @@ on:
       - 'Makefile'
       - '!**.*md'
       - '.github/workflows/**'
-      - 'deployments/docker-compose/go-tools-docker-compose.yml'
 
 jobs:
   build:
@@ -41,7 +39,7 @@ jobs:
       max-parallel: 3
       matrix:
         os: [ 'ubuntu-24.04' ]
-        go-version: [1.26.2]
+        go-version: [1.27.4]
     runs-on: ${{ matrix.os }}
     name: Build
     steps:
@@ -62,15 +60,15 @@ jobs:
       - name: Set up cache
         uses: actions/cache@v6
         env:
-          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
+          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
         with:
           path: |
             ${{ env.GOBIN }}
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@v7
@@ -88,7 +86,7 @@ jobs:
       max-parallel: 2
       matrix:
         os: [ 'ubuntu-24.04' ]
-        go-version: [1.26.2]
+        go-version: [1.27.4]
     runs-on: ${{ matrix.os }}
     name: Run Tests
     steps:
@@ -109,20 +107,15 @@ jobs:
       - name: Set up cache
         uses: actions/cache@v6
         env:
-          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
+          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
         with:
           path: |
             ${{ env.GOBIN }}
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
-
-      - name: Install tools
-        run: |
-          make install-tools
-        shell: bash
+            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Test
         run: |
@@ -135,7 +128,7 @@ jobs:
       max-parallel: 2
       matrix:
         os: [ 'ubuntu-24.04' ]
-        go-version: [1.26.2]
+        go-version: [1.27.4]
     runs-on: ${{ matrix.os }}
     name: Run linters
     steps:
@@ -157,28 +150,18 @@ jobs:
           make vet
         shell: bash
 
-      - name: Set up cache
-        uses: actions/cache@v6
-        env:
-          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
-        with:
-          path: |
-            ${{ env.GOBIN }}
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
-
-      - name: Install tools
+      # Dependabot bumps golangci-lint in tools/golangci-lint/go.mod; CI follows it.
+      - name: Get golangci-lint version
+        id: golangci-lint
         run: |
-          make install-tools
+          echo "version=$(awk '$1 == "github.com/golangci/golangci-lint/v2" { print $2 }' tools/golangci-lint/go.mod)" >> "$GITHUB_OUTPUT"
         shell: bash
 
       - name: Lint
-        run: |
-          make lint-pipeline
-        shell: bash
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: ${{ steps.golangci-lint.outputs.version }}
+          args: --config .golangci.pipe.yml
 
   reports:
     needs: [ testing, linting, build ]
@@ -187,7 +170,7 @@ jobs:
       max-parallel: 1
       matrix:
         os: [ 'ubuntu-24.04' ]
-        go-version: [1.26.2]
+        go-version: [1.27.4]
     runs-on: ${{ matrix.os }}
     name: Quality reports
     steps:
@@ -207,30 +190,33 @@ jobs:
       - name: Set up cache
         uses: actions/cache@v6
         env:
-          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
+          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
         with:
           path: |
             ${{ env.GOBIN }}
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
-
-      - name: Install tools
-        run: |
-          make install-tools
-        shell: bash
+            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Prepare test coverage and reports
         run: |
           make prepare-cover-report
         shell: bash
 
-      - name: Prepare lint report
+      - name: Get golangci-lint version
+        id: golangci-lint
         run: |
-          make lint-sonar
+          echo "version=$(awk '$1 == "github.com/golangci/golangci-lint/v2" { print $2 }' tools/golangci-lint/go.mod)" >> "$GITHUB_OUTPUT"
         shell: bash
+
+      # .golangci.yml writes the checkstyle report for Sonar to linters-report.xml.
+      - name: Prepare lint report
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: ${{ steps.golangci-lint.outputs.version }}
+          args: --config .golangci.yml
 
       - name: Cover report upload
         if: success()

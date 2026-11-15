@@ -11,7 +11,7 @@ source "${SCRIPTS_DIR}/helpers-source.sh"
 
 echo "${SCRIPT_NAME} is running... "
 
-checkInstalled 'goreadme'
+check_installed 'goreadme'
 
 
 goreadme -credit=false -skip-sub-packages  > README_doc.md
