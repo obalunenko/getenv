@@ -158,12 +158,6 @@ linters:
         text: exported func * returns unexported type *, which can be annoying to use
       - path: (.+)\.go$
         text: should have a package comment, unless it's in another file for this package
-    paths:
-      - \.pb\.go$
-      - vendor/
-      - third_party$
-      - builtin$
-      - examples$
 issues:
   uniq-by-line: true
   new: false
@@ -179,22 +173,8 @@ formatters:
     - gofmt
     - goimports
   settings:
-    gci:
-      sections:
-        - standard
-        - default
-        - prefix(github.com/obalunenko)
-        - localmodule
-      custom-order: true
-      no-lex-order: true
     goimports:
       local-prefixes:
         - github.com/obalunenko/getenv
   exclusions:
     generated: lax
-    paths:
-      - \.pb\.go$
-      - vendor/
-      - third_party$
-      - builtin$
-      - examples$

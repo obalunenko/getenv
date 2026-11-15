@@ -1,4 +1,4 @@
-.PHONY: help test-cover prepare-cover-report open-cover-report update-readme-cover update-readme-doc test test-regression configure tidy imports fmt format-project install-tools vet lint-full lint-sonar release release-local-snapshot check-releaser new-version
+.PHONY: help test-cover prepare-cover-report open-cover-report update-readme-cover update-readme-doc test configure tidy imports fmt format-project install-tools vet lint-full lint-sonar release release-local-snapshot check-releaser new-version
 
 GOVERSION:=1.27.4
 
@@ -6,7 +6,6 @@ TARGET_MAX_CHAR_NUM=20
 
 ## Show help
 help:
-	${call colored, help is running...}
 	@echo ''
 	@echo 'Usage:'
 	@echo '  make <target>'
@@ -45,9 +44,6 @@ update-readme-doc:
 ## Run tests.
 test:
 	./scripts/tests/run.sh
-
-## Run regression tests.
-test-regression: test
 
 ## Tidy go.mod and install needed tools.
 configure: tidy install-tools
@@ -96,7 +92,7 @@ check-releaser:
 	./scripts/release/check.sh
 
 ## Issue new release.
-new-version: vet test-regression
+new-version: vet test
 	./scripts/release/new-version.sh
 
 bump-go-version:

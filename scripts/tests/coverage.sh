@@ -12,8 +12,6 @@ source "${SCRIPTS_DIR}/helpers-source.sh"
 
 echo "${SCRIPT_NAME} is running... "
 
-export GO111MODULE=on
-
 rm -rf "${COVER_DIR}"
 mkdir -p "${COVER_DIR}"
 
