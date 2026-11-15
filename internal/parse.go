@@ -2,6 +2,7 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -184,6 +185,11 @@ func parseTime(layout string) func(string) (time.Time, error) {
 func parseURL(s string) (url.URL, error) {
 	u, err := url.Parse(s)
 	if err != nil {
+		// url.Error quotes the whole input, which may hold credentials.
+		if uerr, ok := errors.AsType[*url.Error](err); ok {
+			return url.URL{}, uerr.Err
+		}
+
 		return url.URL{}, err
 	}
 

@@ -202,6 +202,17 @@ func TestParseURL(t *testing.T) {
 	)
 }
 
+func TestParseURLErrorHidesValue(t *testing.T) {
+	for _, raw := range []string{
+		"postgres://admin:S3cr3t@db:5432/app%zz",
+		"postgres://admin:S3cr3t@db:54x32/app",
+	} {
+		_, err := Parse[url.URL](raw, Parameters{})
+		require.ErrorIs(t, err, ErrInvalidValue)
+		assert.NotContains(t, err.Error(), "S3cr3t")
+	}
+}
+
 func TestParseNetwork(t *testing.T) {
 	testParse(t,
 		parseCase[net.IP]{name: "ipv4", raw: "192.168.8.0", want: net.ParseIP("192.168.8.0")},
