@@ -32,7 +32,7 @@ Types supported, each both as a single value and as a slice (see `Parsable`):
 ### Env
 
 Env retrieves the value of the environment variable named by the key.
-If the variable is present in the environment the value will be parsed and returned.
+If the variable is present in the environment, the value will be parsed and returned.
 Otherwise, an error will be returned.
 
 ```golang
@@ -40,136 +40,137 @@ package main
 
 import (
 	"fmt"
-	"net"
-	"net/url"
+	"log"
 	"os"
-	"time"
 
 	"github.com/obalunenko/getenv"
 )
 
 func main() {
-	const (
-		key = "GH_GETENV_TEST"
-	)
-
-	var (
-		val any
-		err error
-	)
-
-	defer func() {
-		if err = os.Unsetenv(key); err != nil {
-			panic(err)
-		}
-	}()
-
-	// string
-	if err = os.Setenv(key, "golly"); err != nil {
-		panic(err)
+	// In a real program the variable comes from the environment.
+	if err := os.Setenv("PORT", "8080"); err != nil {
+		log.Fatal(err)
 	}
 
-	val, err = getenv.Env[string](key)
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
-
-	// int
-	if err = os.Setenv(key, "123"); err != nil {
-		panic(err)
+	port, err := getenv.Env[int]("PORT")
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	val, err = getenv.Env[int](key)
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
+	fmt.Println(port)
+}
 
-	// int conversion error
-	if err = os.Setenv(key, "123s4"); err != nil {
-		panic(err)
+```
+
+ Output:
+
+```
+8080
+```
+
+### Env: errors
+
+```golang
+package main
+
+import (
+	"errors"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/obalunenko/getenv"
+)
+
+func main() {
+	if err := os.Setenv("WORKERS", "four"); err != nil {
+		log.Fatal(err)
 	}
 
-	val, err = getenv.Env[int](key)
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
+	_, err := getenv.Env[int]("WORKERS")
+	fmt.Println(errors.Is(err, getenv.ErrInvalidValue), err)
 
-	// time.Time
-	if err = os.Setenv(key, "2022-01-20"); err != nil {
-		panic(err)
-	}
-
-	val, err = getenv.Env[time.Time](key, getenv.WithTimeLayout("2006-01-02"))
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
-
-	// []float64
-	if err = os.Setenv(key, "26.89,0.67"); err != nil {
-		panic(err)
-	}
-
-	val, err = getenv.Env[[]float64](key, getenv.WithSeparator(","))
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
-
-	// time.Duration
-	if err = os.Setenv(key, "2h35m"); err != nil {
-		panic(err)
-	}
-
-	val, err = getenv.Env[time.Duration](key)
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
-
-	// url.URL
-	if err = os.Setenv(key, "https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history"); err != nil {
-		panic(err)
-	}
-
-	val, err = getenv.Env[url.URL](key)
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
-
-	// net.IP
-	if err = os.Setenv(key, "2001:cb8::17"); err != nil {
-		panic(err)
-	}
-
-	val, err = getenv.Env[net.IP](key)
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
-
-	// []string
-	if err = os.Setenv(key, "a,b,c,d"); err != nil {
-		panic(err)
-	}
-
-	val, err = getenv.Env[[]string](key, getenv.WithSeparator(","))
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
-
-	// complex128
-	if err = os.Setenv(key, "1+2i"); err != nil {
-		panic(err)
-	}
-
-	val, err = getenv.Env[complex128](key)
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
-
-	// []complex64
-	if err = os.Setenv(key, "1+2i,3+4i"); err != nil {
-		panic(err)
-	}
-
-	val, err = getenv.Env[[]complex64](key, getenv.WithSeparator(","))
-	fmt.Printf("[%T]: %v; err: %v\n", val, val, err)
+	_, err = getenv.Env[int]("GETENV_EXAMPLE_NOT_SET")
+	fmt.Println(errors.Is(err, getenv.ErrNotSet), err)
 
 }
 
 ```
 
-Output:
+ Output:
 
 ```
-[string]: golly; err: <nil>
-[int]: 123; err: <nil>
-[int]: 0; err: failed to parse environment variable[GH_GETENV_TEST]: invalid value: strconv.ParseInt: parsing "123s4": invalid syntax
-[time.Time]: 2022-01-20 00:00:00 +0000 UTC; err: <nil>
-[[]float64]: [26.89 0.67]; err: <nil>
-[time.Duration]: 2h35m0s; err: <nil>
-[url.URL]: https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history; err: <nil>
-[net.IP]: 2001:cb8::17; err: <nil>
-[[]string]: [a b c d]; err: <nil>
-[complex128]: (1+2i); err: <nil>
-[[]complex64]: [(1+2i) (3+4i)]; err: <nil>
+true environment variable "WORKERS": invalid value: strconv.ParseInt: parsing "four": invalid syntax
+true environment variable "GETENV_EXAMPLE_NOT_SET": not set
+```
+
+### Env: slice
+
+```golang
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/obalunenko/getenv"
+)
+
+func main() {
+	if err := os.Setenv("HOSTS", "a.example.com,b.example.com"); err != nil {
+		log.Fatal(err)
+	}
+
+	hosts, err := getenv.Env[[]string]("HOSTS")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(hosts)
+}
+
+```
+
+ Output:
+
+```
+[a.example.com b.example.com]
+```
+
+### Env: url.URL
+
+```golang
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/url"
+	"os"
+
+	"github.com/obalunenko/getenv"
+)
+
+func main() {
+	if err := os.Setenv("DATABASE_URL", "postgres://user:secret@db:5432/app"); err != nil {
+		log.Fatal(err)
+	}
+
+	dsn, err := getenv.Env[url.URL]("DATABASE_URL")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(dsn.Host, dsn.Redacted())
+}
+
+```
+
+ Output:
+
+```
+db:5432 postgres://user:xxxxx@db:5432/app
 ```
 
 ### EnvOrDefault
@@ -184,8 +185,7 @@ package main
 
 import (
 	"fmt"
-	"net"
-	"net/url"
+	"log"
 	"os"
 	"time"
 
@@ -193,118 +193,95 @@ import (
 )
 
 func main() {
-	const (
-		key = "GH_GETENV_TEST"
-	)
-
-	defer func() {
-		if err := os.Unsetenv(key); err != nil {
-			panic(err)
-		}
-	}()
-
-	var val any
-
-	// string
-	if err := os.Setenv(key, "golly"); err != nil {
-		panic(err)
+	// "30" has no unit, so it is not a valid time.Duration: EnvOrDefault falls back
+	// to the default, the same as for a variable that is not set. Use Env to catch it.
+	if err := os.Setenv("TIMEOUT", "30"); err != nil {
+		log.Fatal(err)
 	}
 
-	val = getenv.EnvOrDefault(key, "golly")
-	fmt.Printf("[%T]: %v\n", val, val)
+	timeout := getenv.EnvOrDefault("TIMEOUT", 5*time.Second)
+	retries := getenv.EnvOrDefault("GETENV_EXAMPLE_RETRIES", 3)
 
-	// int
-	if err := os.Setenv(key, "123"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key, -99)
-	fmt.Printf("[%T]: %v\n", val, val)
-
-	// time.Time
-	if err := os.Setenv(key, "2022-01-20"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key,
-		time.Date(1992, 12, 1, 0, 0, 0, 0, time.UTC),
-		getenv.WithTimeLayout("2006-01-02"),
-	)
-	fmt.Printf("[%T]: %v\n", val, val)
-
-	// []float64
-	if err := os.Setenv(key, "26.89,0.67"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key, []float64{-99},
-		getenv.WithSeparator(","),
-	)
-	fmt.Printf("[%T]: %v\n", val, val)
-
-	// time.Duration
-	if err := os.Setenv(key, "2h35m"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key, time.Second)
-	fmt.Printf("[%T]: %v\n", val, val)
-
-	// url.URL
-	if err := os.Setenv(key, "https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key, url.URL{})
-	fmt.Printf("[%T]: %v\n", val, val)
-
-	// net.IP
-	if err := os.Setenv(key, "2001:cb8::17"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key, net.IP{})
-	fmt.Printf("[%T]: %v\n", val, val)
-
-	// []string
-	if err := os.Setenv(key, "a,b,c,d"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key, []string{}, getenv.WithSeparator(","))
-	fmt.Printf("[%T]: %v\n", val, val)
-
-	// complex128
-	if err := os.Setenv(key, "1+2i"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key, complex128(0))
-	fmt.Printf("[%T]: %v\n", val, val)
-
-	// []complex64
-	if err := os.Setenv(key, "1+2i,3+4i"); err != nil {
-		panic(err)
-	}
-
-	val = getenv.EnvOrDefault(key, []complex64{}, getenv.WithSeparator(","))
-	fmt.Printf("[%T]: %v\n", val, val)
-
+	fmt.Println(timeout, retries)
 }
 
 ```
 
-Output:
+ Output:
 
 ```
-[string]: golly
-[int]: 123
-[time.Time]: 2022-01-20 00:00:00 +0000 UTC
-[[]float64]: [26.89 0.67]
-[time.Duration]: 2h35m0s
-[url.URL]: https://test:abcd123@golangbyexample.com:8000/tutorials/intro?type=advance&compact=false#history
-[net.IP]: 2001:cb8::17
-[[]string]: [a b c d]
-[complex128]: (1+2i)
-[[]complex64]: [(1+2i) (3+4i)]
+5s 3
+```
+
+### WithSeparator
+
+WithSeparator sets the separator of slice values. The default is ",".
+
+```golang
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/obalunenko/getenv"
+)
+
+func main() {
+	if err := os.Setenv("PORTS", "80|443"); err != nil {
+		log.Fatal(err)
+	}
+
+	ports, err := getenv.Env[[]int]("PORTS", getenv.WithSeparator("|"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(ports)
+}
+
+```
+
+ Output:
+
+```
+[80 443]
+```
+
+### WithTimeLayout
+
+WithTimeLayout sets the layout of time.Time values. The default is time.RFC3339.
+
+```golang
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	"github.com/obalunenko/getenv"
+)
+
+func main() {
+	if err := os.Setenv("RELEASE_DATE", "2022-01-20"); err != nil {
+		log.Fatal(err)
+	}
+
+	date, err := getenv.Env[time.Time]("RELEASE_DATE", getenv.WithTimeLayout(time.DateOnly))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(date)
+}
+
+```
+
+ Output:
+
+```
+2022-01-20 00:00:00 +0000 UTC
 ```

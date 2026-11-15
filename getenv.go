@@ -31,12 +31,12 @@ func Env[T Parsable](key string, options ...Option) (T, error) {
 
 	raw, ok := os.LookupEnv(key)
 	if !ok || raw == "" {
-		return zero, fmt.Errorf("failed to get environment variable[%s]: %w", key, ErrNotSet)
+		return zero, fmt.Errorf("environment variable %q: %w", key, ErrNotSet)
 	}
 
 	val, err := parseAs[T](raw, newParams(options))
 	if err != nil {
-		return zero, fmt.Errorf("failed to parse environment variable[%s]: %w", key, err)
+		return zero, fmt.Errorf("environment variable %q: %w", key, err)
 	}
 
 	return val, nil

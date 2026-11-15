@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-const decimalBase = 10
-
 var errEmptySeparator = errors.New("empty separator")
 
 // parseAs converts the raw value of an environment variable to T.
@@ -137,7 +135,7 @@ func parseString(s string) (string, error) {
 }
 
 func parseInt[T signed](s string) (T, error) {
-	v, err := strconv.ParseInt(s, decimalBase, bitSize[T]())
+	v, err := strconv.ParseInt(s, 10, bitSize[T]())
 	if err != nil {
 		return 0, err
 	}
@@ -146,7 +144,7 @@ func parseInt[T signed](s string) (T, error) {
 }
 
 func parseUint[T unsigned](s string) (T, error) {
-	v, err := strconv.ParseUint(s, decimalBase, bitSize[T]())
+	v, err := strconv.ParseUint(s, 10, bitSize[T]())
 	if err != nil {
 		return 0, err
 	}
