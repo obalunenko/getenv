@@ -17,8 +17,8 @@ echo "${SCRIPT_NAME} is running... "
   tail -q -n +2 "${COVER_DIR}"/*.cov
 } >>"${COVER_DIR}/full.cov"
 
-gotool gocov convert "${COVER_DIR}/full.cov" >"${COVER_DIR}/full.json"
+go_tool gocov convert "${COVER_DIR}/full.cov" >"${COVER_DIR}/full.json"
 
-gotool gocov-html "${COVER_DIR}/full.json" >"${COVER_DIR}/full.html"
+go_tool gocov-html "${COVER_DIR}/full.json" >"${COVER_DIR}/full.html"
 
 echo "${SCRIPT_NAME} is done... "

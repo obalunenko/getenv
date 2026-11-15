@@ -11,6 +11,6 @@ source "${SCRIPTS_DIR}/helpers-source.sh"
 
 echo "${SCRIPT_NAME} is running... "
 
-gotool gotestsum --format testname -- -race ./...
+go_tool gotestsum --format testname -- -race ./...
 
 echo "${SCRIPT_NAME} done."

@@ -14,7 +14,7 @@ echo "${SCRIPT_NAME} is running... "
 for dir in "${REPO_ROOT}"/tools/*/; do
   name="$(basename "${dir}")"
   echo "Building ${name}"
-  toolPath "${name}" >/dev/null
+  tool_path "${name}" >/dev/null
 done
 
 echo "${SCRIPT_NAME} done."
