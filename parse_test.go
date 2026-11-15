@@ -1,4 +1,4 @@
-package internal
+package getenv
 
 import (
 	"fmt"
@@ -15,24 +15,24 @@ import (
 )
 
 // comma holds the parameters for slice cases.
-var comma = Parameters{Separator: ","}
+var comma = params{separator: ","}
 
-type parseCase[T EnvParsable] struct {
+type parseCase[T Parsable] struct {
 	name    string
 	raw     string
-	params  Parameters
+	params  params
 	want    T
 	wantErr bool
 }
 
-// testParse runs Parse[T] for every case: an error must wrap ErrInvalidValue and come with the zero value.
-func testParse[T EnvParsable](t *testing.T, cases ...parseCase[T]) {
+// testParse runs parseAs[T] for every case: an error must wrap ErrInvalidValue and come with the zero value.
+func testParse[T Parsable](t *testing.T, cases ...parseCase[T]) {
 	t.Helper()
 
 	t.Run(fmt.Sprintf("%T", *new(T)), func(t *testing.T) {
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
-				got, err := Parse[T](tc.raw, tc.params)
+				got, err := parseAs[T](tc.raw, tc.params)
 				if tc.wantErr {
 					require.ErrorIs(t, err, ErrInvalidValue)
 					assert.Zero(t, got)
@@ -53,7 +53,9 @@ func TestParseString(t *testing.T) {
 	)
 	testParse(t,
 		parseCase[[]string]{name: "values", raw: "true,newval", params: comma, want: []string{"true", "newval"}},
-		parseCase[[]string]{name: "other separator", raw: "a,b", params: Parameters{Separator: " "}, want: []string{"a,b"}},
+		parseCase[[]string]{name: "other separator", raw: "a,b", params: params{separator: " "}, want: []string{"a,b"}},
+		parseCase[[]string]{name: "elements are not trimmed", raw: " a, b", params: comma, want: []string{" a", " b"}},
+		parseCase[[]string]{name: "trailing separator adds an empty element", raw: "a,b,", params: comma, want: []string{"a", "b", ""}},
 	)
 }
 
@@ -81,6 +83,8 @@ func TestParseInt(t *testing.T) {
 	testParse(t,
 		parseCase[[]int]{name: "values", raw: "1,-2", params: comma, want: []int{1, -2}},
 		parseCase[[]int]{name: "invalid element", raw: "1,asd", params: comma, wantErr: true},
+		parseCase[[]int]{name: "space after separator", raw: "1, 2", params: comma, wantErr: true},
+		parseCase[[]int]{name: "trailing separator", raw: "1,2,", params: comma, wantErr: true},
 	)
 	testParse(t, parseCase[[]int8]{name: "values", raw: "1,2", params: comma, want: []int8{1, 2}})
 	testParse(t, parseCase[[]int16]{name: "values", raw: "1,2", params: comma, want: []int16{1, 2}})
@@ -161,7 +165,7 @@ func TestParseBool(t *testing.T) {
 func TestParseTime(t *testing.T) {
 	const layout = "2006/02/01 15:04"
 
-	p := Parameters{Separator: ",", Layout: layout}
+	p := params{separator: ",", layout: layout}
 	want := time.Date(2018, 4, 21, 22, 30, 0, 0, time.UTC)
 
 	testParse(t,
@@ -200,6 +204,17 @@ func TestParseURL(t *testing.T) {
 		},
 		parseCase[[]url.URL]{name: "invalid element", raw: "https://google.com,htps://%%2github.com", params: comma, wantErr: true},
 	)
+}
+
+func TestParseURLErrorHidesValue(t *testing.T) {
+	for _, raw := range []string{
+		"postgres://admin:S3cr3t@db:5432/app%zz",
+		"postgres://admin:S3cr3t@db:54x32/app",
+	} {
+		_, err := parseAs[url.URL](raw, params{})
+		require.ErrorIs(t, err, ErrInvalidValue)
+		assert.NotContains(t, err.Error(), "S3cr3t")
+	}
 }
 
 func TestParseNetwork(t *testing.T) {
@@ -259,11 +274,11 @@ func TestParseNetwork(t *testing.T) {
 }
 
 func TestParseSliceErrors(t *testing.T) {
-	_, err := Parse[[]string]("a,b", Parameters{})
+	_, err := parseAs[[]string]("a,b", params{})
 	require.ErrorIs(t, err, ErrInvalidValue)
 	require.ErrorIs(t, err, errEmptySeparator)
 
-	_, err = Parse[[]int]("1,2,x", comma)
+	_, err = parseAs[[]int]("1,2,x", comma)
 	require.ErrorIs(t, err, ErrInvalidValue)
 	require.ErrorIs(t, err, strconv.ErrSyntax)
 	assert.ErrorContains(t, err, "element 2")
@@ -272,13 +287,13 @@ func TestParseSliceErrors(t *testing.T) {
 // unsupported is a type that has no parser.
 type unsupported struct{}
 
-// The panics guard against programming errors in this package: Parse cannot reach them
-// while every EnvParsable type has a parser of its own type.
+// The panics guard against programming errors in this package: parseAs cannot reach them
+// while every Parsable type has a parser of its own type.
 func TestParsePanics(t *testing.T) {
 	t.Run("no parser for the type", func(t *testing.T) {
 		var dst unsupported
 
-		assert.PanicsWithValue(t, "getenv: no parser for *internal.unsupported", func() {
+		assert.PanicsWithValue(t, "getenv: no parser for *getenv.unsupported", func() {
 			err := parseValue(&dst, "1", comma)
 			t.Errorf("returned %v instead of panicking", err)
 		})
@@ -305,7 +320,7 @@ func FuzzParse(f *testing.F) {
 	}
 
 	f.Fuzz(func(t *testing.T, raw string) {
-		p := Parameters{Separator: ",", Layout: time.RFC3339}
+		p := params{separator: ",", layout: time.RFC3339}
 
 		checkErrContract[int](t, raw, p)
 		checkErrContract[[]uint8](t, raw, p)
@@ -319,17 +334,17 @@ func FuzzParse(f *testing.F) {
 		checkErrContract[[]netip.Prefix](t, raw, p)
 		checkErrContract[net.HardwareAddr](t, raw, p)
 
-		got, err := Parse[[]string](raw, p)
+		got, err := parseAs[[]string](raw, p)
 		require.NoError(t, err)
 		assert.Len(t, got, strings.Count(raw, ",")+1)
 	})
 }
 
-// checkErrContract asserts that a failed Parse returns the zero value and an error wrapping ErrInvalidValue.
-func checkErrContract[T EnvParsable](t *testing.T, raw string, p Parameters) {
+// checkErrContract asserts that a failed parseAs returns the zero value and an error wrapping ErrInvalidValue.
+func checkErrContract[T Parsable](t *testing.T, raw string, p params) {
 	t.Helper()
 
-	got, err := Parse[T](raw, p)
+	got, err := parseAs[T](raw, p)
 	if err != nil {
 		require.ErrorIs(t, err, ErrInvalidValue)
 		require.Zero(t, got)
@@ -340,7 +355,7 @@ func BenchmarkParse(b *testing.B) {
 	b.ReportAllocs()
 
 	for b.Loop() {
-		if _, err := Parse[[]float64]("1235.67,87.98", comma); err != nil {
+		if _, err := parseAs[[]float64]("1235.67,87.98", comma); err != nil {
 			b.Fatal(err)
 		}
 	}
