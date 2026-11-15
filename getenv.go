@@ -54,8 +54,8 @@
 package getenv
 
 import (
-	"errors"
 	"fmt"
+	"os"
 
 	"github.com/obalunenko/getenv/internal"
 	"github.com/obalunenko/getenv/option"
@@ -63,73 +63,45 @@ import (
 
 var (
 	// ErrNotSet is an error that is returned when the environment variable is not set.
-	ErrNotSet = errors.New("not set")
+	ErrNotSet = internal.ErrNotSet
 	// ErrInvalidValue is an error that is returned when the environment variable is not valid.
-	ErrInvalidValue = errors.New("invalid value")
+	ErrInvalidValue = internal.ErrInvalidValue
 )
+
+// Parsable is a constraint for the types that Env and EnvOrDefault can parse.
+// The list of supported types is in the package documentation.
+type Parsable = internal.EnvParsable
 
 // Env retrieves the value of the environment variable named by the key.
 // If the variable is present in the environment, the value will be parsed and returned.
 // Otherwise, an error will be returned.
-func Env[T internal.EnvParsable](key string, options ...option.Option) (T, error) {
-	var t T
+func Env[T Parsable](key string, options ...option.Option) (T, error) {
+	var zero T
 
-	w := internal.NewEnvParser(t)
+	raw, ok := os.LookupEnv(key)
+	if !ok || raw == "" {
+		return zero, fmt.Errorf("failed to get environment variable[%s]: %w", key, ErrNotSet)
+	}
 
-	params := newParseParams(options)
-
-	val, err := w.ParseEnv(key, params)
+	val, err := internal.Parse[T](raw, newParseParams(options))
 	if err != nil {
-		if errors.Is(err, internal.ErrNotSet) {
-			return t, fmt.Errorf("failed to get environment variable[%s]: %w", key, publicError{
-				cause:    err,
-				sentinel: ErrNotSet,
-			})
-		}
-
-		if errors.Is(err, internal.ErrInvalidValue) {
-			return t, fmt.Errorf("failed to parse environment variable[%s]: %w", key, publicError{
-				cause:    err,
-				sentinel: ErrInvalidValue,
-			})
-		}
-
-		return t, fmt.Errorf("failed to parse environment variable[%s]: %w", key, err)
+		return zero, fmt.Errorf("failed to parse environment variable[%s]: %w", key, err)
 	}
 
-	res, ok := val.(T)
-	if !ok {
-		return t, fmt.Errorf("failed to parse environment variable[%s]: %w", key, ErrInvalidValue)
-	}
-
-	return res, nil
+	return val, nil
 }
 
 // EnvOrDefault retrieves the value of the environment variable named by the key.
 // If the variable is present in the environment the value will be parsed and returned.
 // Otherwise, the default value will be returned.
 // The value returned will be of the same type as the default value.
-func EnvOrDefault[T internal.EnvParsable](key string, defaultVal T, options ...option.Option) T {
+func EnvOrDefault[T Parsable](key string, defaultVal T, options ...option.Option) T {
 	val, err := Env[T](key, options...)
 	if err != nil {
 		return defaultVal
 	}
 
 	return val
-}
-
-// publicError keeps parser details while matching exported sentinels.
-type publicError struct {
-	cause    error
-	sentinel error
-}
-
-func (e publicError) Error() string {
-	return e.cause.Error()
-}
-
-func (e publicError) Unwrap() []error {
-	return []error{e.cause, e.sentinel}
 }
 
 // newParseParams creates new parameters from options.
