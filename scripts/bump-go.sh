@@ -4,7 +4,10 @@ set -euo pipefail
 
 readonly CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly ROOT_DIR="$(dirname "$CURRENT_DIR")"
-readonly GO_MOD_FILE="${ROOT_DIR}/go.mod"
+# The root go.mod holds the minimum Go version for library users and is bumped
+# by hand. This script bumps the development toolchain: tool modules and docs.
+# CI needs no bump: it uses the stable and oldstable aliases of setup-go.
+readonly GO_MOD_FILE="${ROOT_DIR}/tools/golangci-lint/go.mod"
 
 function main() {
   local input_go_version="${1:-}"
@@ -28,36 +31,26 @@ function main() {
   normalized_go_version="$(normalize_go_version "${input_go_version}")"
   local patched_go_version
   patched_go_version="$(to_patched_go_version "${normalized_go_version}")"
-  local ci_go_version
-  ci_go_version="${patched_go_version}"
   local toolchain_go_version
   toolchain_go_version="$(to_toolchain_go_version "${patched_go_version}")"
 
   local escaped_normalized_go_version
   escaped_normalized_go_version="$(escape_for_sed_replacement "${patched_go_version}")"
-  local escaped_ci_go_version
-  escaped_ci_go_version="$(escape_for_sed_replacement "${ci_go_version}")"
   local escaped_toolchain_go_version
   escaped_toolchain_go_version="$(escape_for_sed_replacement "${toolchain_go_version}")"
 
   echo " - New (go.mod): ${patched_go_version}"
   echo " - New (toolchain): ${toolchain_go_version}"
-  echo " - New (CI): ${ci_go_version}"
 
   # bump mod files in all the modules
   while IFS= read -r mod_file; do
     bump_mod_file "${mod_file}" "${escaped_current_go_version}" "${escaped_normalized_go_version}" "${escaped_toolchain_go_version}"
-  done < <(find "${ROOT_DIR}" -name "go.mod" -not -path "${ROOT_DIR}/vendor/*" -not -path "${ROOT_DIR}/.git/*")
+  done < <(find "${ROOT_DIR}" -name "go.mod" -not -path "${ROOT_DIR}/go.mod" -not -path "${ROOT_DIR}/vendor/*" -not -path "${ROOT_DIR}/.git/*")
 
   # bump markdown files
   while IFS= read -r f; do
     bump_golang_docker_images "${f}" "${escaped_current_go_version}" "${escaped_normalized_go_version}"
   done < <(find "${ROOT_DIR}" -name "*.md")
-
-  # bump github action workflows
-  while IFS= read -r f; do
-    bump_ci_matrix "${f}" "${escaped_ci_go_version}"
-  done < <(find "${ROOT_DIR}/.github/workflows" -name "*.yml")
 }
 
 function escape_for_sed_pattern() {
@@ -96,15 +89,6 @@ function to_toolchain_go_version() {
   echo "go${version}"
 }
 
-# it will replace matrix entries like 'go-version: [1.24.x]' with the new CI version.
-function bump_ci_matrix() {
-  local file="${1}"
-  local new_go_version="${2}"
-
-  sed -E "s/(go-version:[[:space:]]*\[)[^]]+(\])/\1${new_go_version}\2/g" "${file}" > "${file}.tmp"
-  mv "${file}.tmp" "${file}"
-}
-
 # it will replace the 'golang:${old_go_version}' with 'golang:${new_go_version}' in the given file
 function bump_golang_docker_images() {
   local file="${1}"
@@ -131,7 +115,7 @@ function bump_mod_file() {
 
 }
 
-# This function reads the root go.mod file and extracts the current Go version.
+# This function reads the tool go.mod file and extracts the current Go version.
 function extract_current_version() {
   cat "${GO_MOD_FILE}" | grep '^go .*' | sed 's/^go //g' | head -n 1
 }

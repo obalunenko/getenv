@@ -8,14 +8,13 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}" && git rev-parse --show-toplevel)"
 
 echo "${SCRIPT_NAME} is running... "
 
-sync_vendor() {
+tidy() {
   go mod tidy -v
-  go mod vendor
   go mod verify
 }
 
 cd "${REPO_ROOT}" || exit 1
 pwd
-sync_vendor
+tidy
 
 echo "${SCRIPT_NAME} done."

@@ -9,19 +9,13 @@ on:
 
 jobs:
   release:
-    strategy:
-      fail-fast: true
-      max-parallel: 1
-      matrix:
-        os: [ 'ubuntu-24.04' ]
-        go-version: [1.27.4]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     name: Release
     steps:
       - name: Set up go
         uses: actions/setup-go@v7.0.0
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: stable
 
       - name: Checkout
         uses: actions/checkout@v7

@@ -9,8 +9,6 @@ on:
       - 'scripts/**'
       - 'tools/**'
       - '**/*.go'
-      - '**/*.gohtml'
-      - '**/*.proto'
       - 'go.mod'
       - 'go.sum'
       - 'Makefile'
@@ -18,29 +16,20 @@ on:
       - '.github/workflows/**'
   pull_request:
     types: [ opened, synchronize, reopened ]
-    branches:
-      - '*'
     paths:
       - 'scripts/**'
       - 'tools/**'
       - '**/*.go'
-      - '**/*.gohtml'
-      - '**/*.proto'
       - 'go.mod'
       - 'go.sum'
       - 'Makefile'
       - '!**.*md'
       - '.github/workflows/**'
 
+# Go versions come from the setup-go aliases: stable is the latest release, oldstable the previous one.
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      max-parallel: 3
-      matrix:
-        os: [ 'ubuntu-24.04' ]
-        go-version: [1.27.4]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     name: Build
     steps:
       - name: Checkout
@@ -51,24 +40,11 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@v7.0.0
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: stable
 
       - run: |
           go version
         shell: bash
-
-      - name: Set up cache
-        uses: actions/cache@v6
-        env:
-          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
-        with:
-          path: |
-            ${{ env.GOBIN }}
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@v7
@@ -83,17 +59,17 @@ jobs:
   testing:
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
-        os: [ 'ubuntu-24.04' ]
-        go-version: [1.27.4]
-    runs-on: ${{ matrix.os }}
-    name: Run Tests
+        # Both supported Go releases; the go directive in go.mod must not be newer than oldstable.
+        go-version: [ stable, oldstable ]
+    runs-on: ubuntu-24.04
+    name: Run Tests (Go ${{ matrix.go-version }})
+    env:
+      # Fail instead of switching to a newer toolchain than the one under test.
+      GOTOOLCHAIN: local
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Set up go
         uses: actions/setup-go@v7.0.0
@@ -104,32 +80,14 @@ jobs:
           go version
         shell: bash
 
-      - name: Set up cache
-        uses: actions/cache@v6
-        env:
-          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
-        with:
-          path: |
-            ${{ env.GOBIN }}
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-
+      # Not make test: it builds gotestsum from tools/, which needs a newer Go than oldstable.
       - name: Test
         run: |
-          make test
+          go test -race ./...
         shell: bash
 
   linting:
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        os: [ 'ubuntu-24.04' ]
-        go-version: [1.27.4]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     name: Run linters
     steps:
       - name: Checkout
@@ -140,7 +98,8 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@v7.0.0
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: stable
+
       - run: |
           go version
         shell: bash
@@ -168,13 +127,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    strategy:
-      fail-fast: true
-      max-parallel: 1
-      matrix:
-        os: [ 'ubuntu-24.04' ]
-        go-version: [1.27.4]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     name: Quality reports
     steps:
       - name: Checkout
@@ -182,26 +135,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      # This job builds the coverage tools, so their go.sum files are part of the cache key.
       - name: Set up go
         uses: actions/setup-go@v7.0.0
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: stable
+          cache-dependency-path: |
+            go.sum
+            tools/*/go.sum
+
       - run: |
           go version
         shell: bash
-
-      - name: Set up cache
-        uses: actions/cache@v6
-        env:
-          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
-        with:
-          path: |
-            ${{ env.GOBIN }}
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Prepare test coverage and reports
         run: |
@@ -235,4 +180,3 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
