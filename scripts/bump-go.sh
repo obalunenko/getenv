@@ -4,7 +4,9 @@ set -euo pipefail
 
 readonly CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly ROOT_DIR="$(dirname "$CURRENT_DIR")"
-readonly GO_MOD_FILE="${ROOT_DIR}/go.mod"
+# The root go.mod holds the minimum Go version for library users and is bumped
+# by hand. This script bumps the development toolchain: tool modules, CI, docs.
+readonly GO_MOD_FILE="${ROOT_DIR}/tools/golangci-lint/go.mod"
 
 function main() {
   local input_go_version="${1:-}"
@@ -47,7 +49,7 @@ function main() {
   # bump mod files in all the modules
   while IFS= read -r mod_file; do
     bump_mod_file "${mod_file}" "${escaped_current_go_version}" "${escaped_normalized_go_version}" "${escaped_toolchain_go_version}"
-  done < <(find "${ROOT_DIR}" -name "go.mod" -not -path "${ROOT_DIR}/vendor/*" -not -path "${ROOT_DIR}/.git/*")
+  done < <(find "${ROOT_DIR}" -name "go.mod" -not -path "${ROOT_DIR}/go.mod" -not -path "${ROOT_DIR}/vendor/*" -not -path "${ROOT_DIR}/.git/*")
 
   # bump markdown files
   while IFS= read -r f; do
@@ -131,7 +133,7 @@ function bump_mod_file() {
 
 }
 
-# This function reads the root go.mod file and extracts the current Go version.
+# This function reads the tool go.mod file and extracts the current Go version.
 function extract_current_version() {
   cat "${GO_MOD_FILE}" | grep '^go .*' | sed 's/^go //g' | head -n 1
 }

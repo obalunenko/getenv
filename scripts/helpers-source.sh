@@ -13,8 +13,8 @@ function check_installed() {
 }
 
 # Prints the binary path of a tool pinned in tools/<name>/go.mod, building it on
-# first use. go tool runs inside the tool module: -modfile from the repo root
-# clashes with vendor/.
+# first use. go tool runs inside the tool module, so tool dependencies stay out
+# of the root go.mod.
 function tool_path() {
   local name="$1"
 

@@ -122,6 +122,32 @@ jobs:
           make test
         shell: bash
 
+  # The go directive in go.mod is the minimum Go version for library users; make sure it holds.
+  testing-min-go:
+    runs-on: ubuntu-24.04
+    name: Run Tests (minimum Go from go.mod)
+    env:
+      # Fail instead of switching to a newer toolchain.
+      GOTOOLCHAIN: local
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up go
+        uses: actions/setup-go@v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - run: |
+          go version
+        shell: bash
+
+      # make test builds gotestsum from tools/, which needs the development Go version.
+      - name: Test
+        run: |
+          go test -race ./...
+        shell: bash
+
   linting:
     strategy:
       fail-fast: false
@@ -164,7 +190,7 @@ jobs:
           args: --config .golangci.pipe.yml
 
   reports:
-    needs: [ testing, linting, build ]
+    needs: [ testing, testing-min-go, linting, build ]
     permissions:
       contents: read
       id-token: write
