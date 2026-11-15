@@ -186,7 +186,7 @@ func parseURL(s string) (url.URL, error) {
 	if err != nil {
 		// url.Error quotes the whole input, which may hold credentials.
 		if uerr, ok := errors.AsType[*url.Error](err); ok {
-			return url.URL{}, uerr.Err
+			err = uerr.Err
 		}
 
 		return url.URL{}, err
