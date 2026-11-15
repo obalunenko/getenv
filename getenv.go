@@ -61,7 +61,10 @@
 // - the ParseEnv method of T, see EnvParser;
 // - the UnmarshalText method of *T, or of T if it is a pointer type, see encoding.TextUnmarshaler;
 // - the underlying type of T, if it is a string, bool or numeric type, as for type Port uint16.
-// Note that type Timeout time.Duration is parsed as int64 nanoseconds, not as a duration.
+// Note that type Timeout time.Duration is parsed as int64 nanoseconds, not as a duration:
+// its underlying type is int64, and it does not get the methods of time.Duration.
+// To parse it as a duration, implement EnvParser (see its example),
+// or declare an alias instead, type Timeout = time.Duration, if it needs no methods of its own.
 //
 // Env and EnvOrDefault panic for any other type, even when the variable is not set.
 package getenv

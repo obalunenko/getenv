@@ -70,7 +70,10 @@ A value of a custom type T is parsed with the first one that fits:
 - the ParseEnv method of T, see EnvParser;
 - the UnmarshalText method of *T, or of T if it is a pointer type, see encoding.TextUnmarshaler;
 - the underlying type of T, if it is a string, bool or numeric type, as for type Port uint16.
-Note that type Timeout time.Duration is parsed as int64 nanoseconds, not as a duration.
+Note that type Timeout time.Duration is parsed as int64 nanoseconds, not as a duration:
+its underlying type is int64, and it does not get the methods of time.Duration.
+To parse it as a duration, implement EnvParser (see its example),
+or declare an alias instead, type Timeout = time.Duration, if it needs no methods of its own.
 
 Env and EnvOrDefault panic for any other type, even when the variable is not set.
 
@@ -507,4 +510,78 @@ Output:
 [[]string]: [a b c d]
 [complex128]: (1+2i)
 [[]complex64]: [(1+2i) (3+4i)]
+```
+
+### EnvParser
+
+This example shows how to parse a type defined over time.Duration as a duration.
+
+```golang
+package main
+
+import (
+	"fmt"
+	"os"
+	"time"
+
+	"github.com/obalunenko/getenv"
+)
+
+// Timeout is defined over time.Duration: without ParseEnv it would be parsed as int64 nanoseconds.
+type Timeout time.Duration
+
+// Check at compile time that Timeout implements getenv.EnvParser.
+var _ getenv.EnvParser[Timeout] = Timeout(0)
+
+// ParseEnv parses Timeout as a duration.
+func (Timeout) ParseEnv(raw string) (Timeout, error) {
+	d, err := time.ParseDuration(raw)
+
+	return Timeout(d), err
+}
+
+// String returns Timeout as a duration.
+func (t Timeout) String() string {
+	return time.Duration(t).String()
+}
+
+// This example shows how to parse a type defined over time.Duration as a duration.
+func main() {
+	const (
+		key = "GH_GETENV_TEST"
+	)
+
+	var err error
+
+	defer func() {
+		if err = os.Unsetenv(key); err != nil {
+			panic(err)
+		}
+	}()
+
+	// Timeout
+	if err = os.Setenv(key, "2m30s"); err != nil {
+		panic(err)
+	}
+
+	timeout, err := getenv.Env[Timeout](key)
+	fmt.Printf("[%T]: %v; err: %v\n", timeout, timeout, err)
+
+	// []Timeout
+	if err = os.Setenv(key, "1s,500ms"); err != nil {
+		panic(err)
+	}
+
+	timeouts := getenv.EnvOrDefault(key, []Timeout{Timeout(time.Second)})
+	fmt.Printf("[%T]: %v\n", timeouts, timeouts)
+
+}
+
+```
+
+Output:
+
+```
+[main.Timeout]: 2m30s; err: <nil>
+[[]main.Timeout]: [1s 500ms]
 ```

@@ -63,6 +63,18 @@ func (wrongParseEnv) ParseEnv(raw string) (string, error) {
 // unsupported is a type that has no parser.
 type unsupported struct{}
 
+// Types defined over time.Duration: their underlying type is int64.
+type (
+	nanos   time.Duration
+	timeout time.Duration
+)
+
+func (timeout) ParseEnv(raw string) (timeout, error) {
+	d, err := time.ParseDuration(raw)
+
+	return timeout(d), err
+}
+
 // Types whose underlying type is a basic type, and named slice types.
 type (
 	port     uint16
@@ -148,6 +160,21 @@ func TestParseNamedSliceOfEnvParsable(t *testing.T) {
 		params: comma,
 		want:   ips{net.ParseIP("192.168.8.1"), net.ParseIP("::1")},
 	})
+}
+
+// A type defined over time.Duration is parsed as int64, unless it has the ParseEnv method.
+func TestParseDefinedDuration(t *testing.T) {
+	testParse(t,
+		parseCase[nanos]{name: "int64 nanoseconds", raw: "2000000000", want: nanos(2 * time.Second)},
+		parseCase[nanos]{name: "not a duration", raw: "2s", wantErr: true},
+	)
+	testParse(t,
+		parseCase[timeout]{name: "ParseEnv", raw: "2s", want: timeout(2 * time.Second)},
+		parseCase[timeout]{name: "ParseEnv invalid", raw: "2", wantErr: true},
+	)
+	testParse(t, parseCase[[]timeout]{name: "ParseEnv values", raw: "1s,500ms", params: comma, want: []timeout{
+		timeout(time.Second), timeout(500 * time.Millisecond),
+	}})
 }
 
 func TestParsePrecedence(t *testing.T) {
