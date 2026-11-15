@@ -80,10 +80,9 @@ jobs:
           go version
         shell: bash
 
-      # Not make test: it builds gotestsum from tools/, which needs a newer Go than oldstable.
       - name: Test
         run: |
-          go test -race ./...
+          make test
         shell: bash
 
   linting:
@@ -135,22 +134,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      # This job builds the coverage tools, so their go.sum files are part of the cache key.
       - name: Set up go
         uses: actions/setup-go@v7.0.0
         with:
           go-version: stable
-          cache-dependency-path: |
-            go.sum
-            tools/*/go.sum
 
       - run: |
           go version
         shell: bash
 
-      - name: Prepare test coverage and reports
+      - name: Test coverage
         run: |
-          make prepare-cover-report
+          make test-cover
         shell: bash
 
       # Codecov rejects tokenless uploads to the default branch; authenticate with OIDC.
