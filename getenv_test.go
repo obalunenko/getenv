@@ -82,15 +82,32 @@ func TestEnvOptions(t *testing.T) {
 		assert.Equal(t, time.Date(2022, 1, 20, 0, 0, 0, 0, time.UTC), got)
 	})
 
-	t.Run("no separator", func(t *testing.T) {
+	t.Run("default separator", func(t *testing.T) {
 		t.Setenv(testEnvKey, "1,2")
 
-		_, err := getenv.Env[[]int](testEnvKey)
-		require.ErrorIs(t, err, getenv.ErrInvalidValue)
+		got, err := getenv.Env[[]int](testEnvKey)
+		require.NoError(t, err)
+		assert.Equal(t, []int{1, 2}, got)
 	})
 
-	t.Run("not set is reported before missing separator", func(t *testing.T) {
-		_, err := getenv.Env[[]int](testEnvKey)
+	t.Run("default time layout", func(t *testing.T) {
+		t.Setenv(testEnvKey, "2022-01-20T10:30:00Z")
+
+		got, err := getenv.Env[time.Time](testEnvKey)
+		require.NoError(t, err)
+		assert.Equal(t, time.Date(2022, 1, 20, 10, 30, 0, 0, time.UTC), got)
+	})
+
+	t.Run("empty separator", func(t *testing.T) {
+		t.Setenv(testEnvKey, "1,2")
+
+		_, err := getenv.Env[[]int](testEnvKey, option.WithSeparator(""))
+		require.ErrorIs(t, err, getenv.ErrInvalidValue)
+		assert.ErrorContains(t, err, "empty separator")
+	})
+
+	t.Run("not set is reported before empty separator", func(t *testing.T) {
+		_, err := getenv.Env[[]int](testEnvKey, option.WithSeparator(""))
 		require.ErrorIs(t, err, getenv.ErrNotSet)
 	})
 }
@@ -122,10 +139,19 @@ func TestEnvOrDefault(t *testing.T) {
 }
 
 func TestEnvOrDefaultOptions(t *testing.T) {
-	t.Setenv(testEnvKey, "a|b")
+	t.Run("separator", func(t *testing.T) {
+		t.Setenv(testEnvKey, "a|b")
 
-	got := getenv.EnvOrDefault(testEnvKey, []string{"default"}, option.WithSeparator("|"))
-	assert.Equal(t, []string{"a", "b"}, got)
+		got := getenv.EnvOrDefault(testEnvKey, []string{"default"}, option.WithSeparator("|"))
+		assert.Equal(t, []string{"a", "b"}, got)
+	})
+
+	t.Run("default separator", func(t *testing.T) {
+		t.Setenv(testEnvKey, "a,b")
+
+		got := getenv.EnvOrDefault(testEnvKey, []string{"default"})
+		assert.Equal(t, []string{"a", "b"}, got)
+	})
 }
 
 // mustEnv is a caller-side generic helper: it compiles only because Parsable is exported.

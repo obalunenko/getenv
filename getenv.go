@@ -2,6 +2,9 @@
 // It's type-safe and supports built-in types and slices of them.
 // Note: empty environment variable values are treated as "not set".
 //
+// Slices are split by "," and time.Time values are parsed with the time.RFC3339 layout,
+// unless option.WithSeparator or option.WithTimeLayout sets another one.
+//
 // Types supported:
 // - string
 // - []string
@@ -56,6 +59,7 @@ package getenv
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/obalunenko/getenv/internal"
 	"github.com/obalunenko/getenv/option"
@@ -66,6 +70,12 @@ var (
 	ErrNotSet = internal.ErrNotSet
 	// ErrInvalidValue is an error that is returned when the environment variable is not valid.
 	ErrInvalidValue = internal.ErrInvalidValue
+)
+
+// Defaults for the options that were not passed.
+const (
+	defaultSeparator  = ","
+	defaultTimeLayout = time.RFC3339
 )
 
 // Parsable is a constraint for the types that Env and EnvOrDefault can parse.
@@ -92,9 +102,9 @@ func Env[T Parsable](key string, options ...option.Option) (T, error) {
 }
 
 // EnvOrDefault retrieves the value of the environment variable named by the key.
-// If the variable is present in the environment the value will be parsed and returned.
-// Otherwise, the default value will be returned.
-// The value returned will be of the same type as the default value.
+// If the variable is set and its value can be parsed, the parsed value is returned.
+// Otherwise, defaultVal is returned: both when the variable is not set (or empty)
+// and when its value is invalid. Use Env to tell these cases apart.
 func EnvOrDefault[T Parsable](key string, defaultVal T, options ...option.Option) T {
 	val, err := Env[T](key, options...)
 	if err != nil {
@@ -104,9 +114,12 @@ func EnvOrDefault[T Parsable](key string, defaultVal T, options ...option.Option
 	return val
 }
 
-// newParseParams creates new parameters from options.
+// newParseParams creates new parameters from the defaults and options.
 func newParseParams(opts []option.Option) internal.Parameters {
-	var p internal.Parameters
+	p := internal.Parameters{
+		Separator: defaultSeparator,
+		Layout:    defaultTimeLayout,
+	}
 
 	for _, opt := range opts {
 		opt.Apply(&p)
