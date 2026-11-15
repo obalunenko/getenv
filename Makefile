@@ -1,11 +1,4 @@
-.PHONY: help, test-cover, prepare-cover-report, open-cover-report, update-readme-cover, update-readme-doc, test, test-regression, configure, tidy, imports, fmt, format-project, install-tools, vet, lint-full, lint-pipeline, lint-sonar, release, release-local-snapshot, check-releaser, new-version
-BIN_DIR=./bin
-
-SHELL := env VERSION=$(VERSION) $(SHELL)
-VERSION ?= $(shell git describe --tags $(git rev-list --tags --max-count=1))
-
-APP_NAME?=getenv
-SHELL := env APP_NAME=$(APP_NAME) $(SHELL)
+.PHONY: help test-cover prepare-cover-report open-cover-report update-readme-cover update-readme-doc test test-regression configure tidy imports fmt format-project install-tools vet lint-full lint-pipeline lint-sonar release release-local-snapshot check-releaser new-version
 
 GOVERSION:=1.27.4
 
