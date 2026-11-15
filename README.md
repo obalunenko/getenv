@@ -13,6 +13,8 @@ Empty environment variable values are treated as not set.
 
 Slices are split by "," and time.Time values are parsed with the time.RFC3339 layout,
 unless getenv.WithSeparator or getenv.WithTimeLayout sets another one.
+Slice elements are not trimmed, so "1, 2" is not a valid []int,
+and a trailing separator adds an empty element: "a,b," is []string{"a", "b", ""}.
 
 Types supported, each both as a single value and as a slice (see `Parsable`):
 - `string`

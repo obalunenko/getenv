@@ -4,6 +4,8 @@
 //
 // Slices are split by "," and time.Time values are parsed with the time.RFC3339 layout,
 // unless WithSeparator or WithTimeLayout sets another one.
+// Slice elements are not trimmed, so "1, 2" is not a valid []int,
+// and a trailing separator adds an empty element: "a,b," is []string{"a", "b", ""}.
 //
 // The supported types are listed in Parsable.
 package getenv

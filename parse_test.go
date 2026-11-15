@@ -54,6 +54,8 @@ func TestParseString(t *testing.T) {
 	testParse(t,
 		parseCase[[]string]{name: "values", raw: "true,newval", params: comma, want: []string{"true", "newval"}},
 		parseCase[[]string]{name: "other separator", raw: "a,b", params: params{separator: " "}, want: []string{"a,b"}},
+		parseCase[[]string]{name: "elements are not trimmed", raw: " a, b", params: comma, want: []string{" a", " b"}},
+		parseCase[[]string]{name: "trailing separator adds an empty element", raw: "a,b,", params: comma, want: []string{"a", "b", ""}},
 	)
 }
 
@@ -81,6 +83,8 @@ func TestParseInt(t *testing.T) {
 	testParse(t,
 		parseCase[[]int]{name: "values", raw: "1,-2", params: comma, want: []int{1, -2}},
 		parseCase[[]int]{name: "invalid element", raw: "1,asd", params: comma, wantErr: true},
+		parseCase[[]int]{name: "space after separator", raw: "1, 2", params: comma, wantErr: true},
+		parseCase[[]int]{name: "trailing separator", raw: "1,2,", params: comma, wantErr: true},
 	)
 	testParse(t, parseCase[[]int8]{name: "values", raw: "1,2", params: comma, want: []int8{1, 2}})
 	testParse(t, parseCase[[]int16]{name: "values", raw: "1,2", params: comma, want: []int16{1, 2}})
