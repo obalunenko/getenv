@@ -43,28 +43,6 @@ function fmt() {
   echo ""
 }
 
-function go_lint() {
-  echo "golint..."
-
-  check_installed 'golint'
-
-  declare -a lints=$(golint $(go list ./...)) ## its a hack to not lint generated code
-  if [[ ${lints} ]]; then
-    echo "fix it:"
-    for l in "${lints[@]}"; do
-      echo "$l"
-
-    done
-    exit 1
-
-  else
-    echo "code is ok"
-    echo ${lints}
-  fi
-
-  echo ""
-}
-
 function go_group() {
   echo "goimports..."
 
@@ -90,14 +68,6 @@ function golangci() {
   echo "golangci-lint linter running..."
 
   go_tool golangci-lint run --config .golangci.yml ./...
-
-  echo ""
-}
-
-function golangci_ci_execute() {
-  echo "golangci-lint-ci_execute linter running..."
-
-  go_tool golangci-lint run ./... >linters.out
 
   echo ""
 }
