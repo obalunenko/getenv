@@ -45,6 +45,9 @@ linters:
   settings:
     dupl:
       threshold: 100
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
     funlen:
       lines: 100
       statements: 50
@@ -127,6 +130,16 @@ linters:
       require-explanation: false
       require-specific: false
       allow-unused: false
+    revive:
+      enable-default-rules: true
+      rules:
+        - name: defer
+          arguments:
+            - - call-chain
+              - loop
+              - method-call
+              - recover
+              - return
     wsl_v5:
       allow-first-in-block: true
       allow-whole-block: false

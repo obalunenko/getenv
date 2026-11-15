@@ -1,4 +1,4 @@
-.PHONY: help test-cover prepare-cover-report open-cover-report update-readme-cover update-readme-doc test test-regression configure tidy imports fmt format-project install-tools vet lint-full lint-pipeline lint-sonar release release-local-snapshot check-releaser new-version
+.PHONY: help test-cover prepare-cover-report open-cover-report update-readme-cover update-readme-doc test test-regression configure tidy imports fmt format-project install-tools vet lint-full lint-sonar release release-local-snapshot check-releaser new-version
 
 GOVERSION:=1.27.4
 
@@ -78,10 +78,6 @@ vet:
 ## Run full linting
 lint-full:
 	./scripts/linting/run-linters.sh
-
-## Run linting for build pipeline
-lint-pipeline:
-	./scripts/linting/golangci-pipeline.sh
 
 ## Run linting for sonar report
 lint-sonar:
