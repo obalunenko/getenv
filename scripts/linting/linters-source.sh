@@ -10,24 +10,14 @@ source "${SCRIPTS_DIR}/helpers-source.sh"
 
 function vet() {
   echo "vet project..."
-  declare -a vet_errs=$(go vet $(go list ./...) 2>&1 >/dev/null)
-  EXIT_CODE=$?
-  if [[ ${EXIT_CODE} -ne 0 ]]; then
+
+  # Rely on the exit code: stderr also carries non-findings such as "go: downloading ...".
+  if ! go vet ./...; then
+    echo "fix it"
     exit 1
   fi
-  if [[ ${vet_errs} ]]; then
-    echo "fix it:"
-    for f in "${vet_errs[@]}"; do
-      echo "$f"
 
-    done
-    exit 1
-
-  else
-    echo "code is ok"
-    echo ${vet_errs}
-  fi
-  echo ""
+  echo "code is ok"
   echo ""
 }
 
