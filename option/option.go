@@ -5,7 +5,7 @@ import (
 	"github.com/obalunenko/getenv/internal"
 )
 
-// Option is a contract for EnvParser parameters options.
+// Option configures how Env and EnvOrDefault parse the value of a variable.
 type Option interface {
 	// Apply applies the option to the parameters.
 	Apply(params *internal.Parameters)

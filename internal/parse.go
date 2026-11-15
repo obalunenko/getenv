@@ -23,7 +23,7 @@ func Parse[T EnvParsable](raw string, p Parameters) (T, error) {
 	if err := parseValue(&res, raw, p); err != nil {
 		var zero T
 
-		return zero, fmt.Errorf("%w: %w", err, ErrInvalidValue)
+		return zero, fmt.Errorf("%w: %w", ErrInvalidValue, err)
 	}
 
 	return res, nil
