@@ -148,6 +148,7 @@ linters:
       - linters:
           - dupl
           - funlen
+          - goconst
           - gocyclo
           - gosec
         path: _test\.go

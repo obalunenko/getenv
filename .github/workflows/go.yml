@@ -165,6 +165,9 @@ jobs:
 
   reports:
     needs: [ testing, linting, build ]
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: true
       max-parallel: 1
@@ -218,15 +221,18 @@ jobs:
           version: ${{ steps.golangci-lint.outputs.version }}
           args: --config .golangci.yml
 
+      # Codecov rejects tokenless uploads to the default branch; authenticate with OIDC.
       - name: Cover report upload
         if: success()
-        run: |
-          bash <(curl -s https://codecov.io/bash) -f ./coverage/full.cov
-        shell: bash
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          files: ./coverage/full.cov
+          disable_search: true
+          use_oidc: true
+          fail_ci_if_error: true
 
       - name: SonarCloud report upload
-        uses: sonarsource/sonarcloud-github-action@v5.0
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
