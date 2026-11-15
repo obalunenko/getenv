@@ -1394,7 +1394,12 @@ func TestTimeSliceOrDefault(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.precond.maybeSetEnv(t, tt.args.key)
 
-			got := getenv.EnvOrDefault(tt.args.key, tt.args.defaultVal, option.WithTimeLayout(tt.args.layout), option.WithSeparator(tt.args.separator))
+			got := getenv.EnvOrDefault(
+				tt.args.key,
+				tt.args.defaultVal,
+				option.WithTimeLayout(tt.args.layout),
+				option.WithSeparator(tt.args.separator),
+			)
 			assert.Equal(t, tt.expected.val, got)
 		})
 	}
