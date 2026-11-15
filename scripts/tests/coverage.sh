@@ -15,6 +15,6 @@ echo "${SCRIPT_NAME} is running... "
 rm -rf "${COVER_DIR}"
 mkdir -p "${COVER_DIR}"
 
-go test --count=1 -coverprofile "${COVER_DIR}/unit.cov" -covermode=atomic -json ./... >tests-report.json
+go test --count=1 -coverprofile "${COVER_DIR}/unit.cov" -covermode=atomic ./...
 
 echo "${SCRIPT_NAME} is done... "

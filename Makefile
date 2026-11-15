@@ -1,4 +1,4 @@
-.PHONY: help test-cover prepare-cover-report open-cover-report update-readme-cover update-readme-doc test configure tidy imports fmt format-project install-tools vet lint-full lint-sonar release release-local-snapshot check-releaser new-version
+.PHONY: help test-cover prepare-cover-report open-cover-report update-readme-doc test configure tidy imports fmt format-project install-tools vet lint-full release release-local-snapshot check-releaser new-version
 
 GOVERSION:=1.27.4
 
@@ -32,10 +32,6 @@ prepare-cover-report: test-cover
 ## Open coverage report.
 open-cover-report: prepare-cover-report
 	./scripts/open-coverage-report.sh
-
-## Update readme coverage.
-update-readme-cover: prepare-cover-report
-	./scripts/update-readme-coverage.sh
 
 ## Update readme doc.
 update-readme-doc:
@@ -74,10 +70,6 @@ vet:
 ## Run full linting
 lint-full:
 	./scripts/linting/run-linters.sh
-
-## Run linting for sonar report
-lint-sonar:
-	./scripts/linting/golangci-sonar.sh
 
 ## Release
 release:

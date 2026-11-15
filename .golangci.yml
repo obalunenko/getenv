@@ -7,8 +7,6 @@ output:
       path: stderr
       print-linter-name: true
       print-issued-lines: true
-    checkstyle:
-      path: linters-report.xml
   sort-order:
     - linter
     - severity

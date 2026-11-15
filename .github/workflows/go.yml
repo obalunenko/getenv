@@ -153,19 +153,6 @@ jobs:
           make prepare-cover-report
         shell: bash
 
-      - name: Get golangci-lint version
-        id: golangci-lint
-        run: |
-          echo "version=$(awk '$1 == "github.com/golangci/golangci-lint/v2" { print $2 }' tools/golangci-lint/go.mod)" >> "$GITHUB_OUTPUT"
-        shell: bash
-
-      # .golangci.yml writes the checkstyle report for Sonar to linters-report.xml.
-      - name: Prepare lint report
-        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
-        with:
-          version: ${{ steps.golangci-lint.outputs.version }}
-          args: --config .golangci.yml
-
       # Codecov rejects tokenless uploads to the default branch; authenticate with OIDC.
       - name: Cover report upload
         if: success()
@@ -175,8 +162,3 @@ jobs:
           disable_search: true
           use_oidc: true
           fail_ci_if_error: true
-
-      - name: SonarCloud report upload
-        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
