@@ -2,6 +2,7 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/netip"
@@ -17,10 +18,25 @@ const decimalBase = 10
 // Parse converts the raw value of an environment variable to T.
 // Slices are split by Parameters.Separator, time.Time is parsed with Parameters.Layout.
 // Every returned error wraps ErrInvalidValue.
-func Parse[T EnvParsable](raw string, p Parameters) (T, error) {
+// Parse panics if T is not supported, see MustSupport.
+func Parse[T any](raw string, p Parameters) (T, error) {
 	var res T
 
-	if err := parseValue(&res, raw, p); err != nil {
+	err := parseBuiltin(&res, raw, p)
+	if errors.Is(err, errNotBuiltin) {
+		// A separate variable keeps res on the stack for the EnvParsable types.
+		var custom T
+
+		parse := customParserOf(&custom, p)
+		if parse == nil {
+			panic(unsupportedError[T]())
+		}
+
+		err = parse(raw)
+		res = custom
+	}
+
+	if err != nil {
 		var zero T
 
 		return zero, fmt.Errorf("%w: %w", err, ErrInvalidValue)
@@ -29,10 +45,32 @@ func Parse[T EnvParsable](raw string, p Parameters) (T, error) {
 	return res, nil
 }
 
-// parseValue parses raw into the value that dst points to.
+// MustSupport panics if Parse cannot parse T: T is neither an EnvParsable type,
+// nor a custom type (see valueParserOf), nor a slice of them.
+func MustSupport[T any]() {
+	var probe T
+
+	if !isBuiltin(&probe) && customParserOf(&probe, Parameters{}) == nil {
+		panic(unsupportedError[T]())
+	}
+}
+
+// unsupportedError returns the value that Parse and MustSupport panic with.
+func unsupportedError[T any]() error {
+	return fmt.Errorf("getenv: %w: %s", ErrUnsupportedType, reflect.TypeFor[T]())
+}
+
+// isBuiltin reports whether dst points to a value of an EnvParsable type.
+// It parses the empty string into dst: that has no side effects for the EnvParsable types.
+func isBuiltin(dst any) bool {
+	return !errors.Is(parseBuiltin(dst, "", Parameters{}), errNotBuiltin)
+}
+
+// parseBuiltin parses raw into the value that dst points to.
+// It returns errNotBuiltin if the value is not of an EnvParsable type.
 //
 //nolint:gocyclo,funlen // Flat dispatch: one case per supported type and its slice.
-func parseValue(dst any, raw string, p Parameters) error {
+func parseBuiltin(dst any, raw string, p Parameters) error {
 	var err error
 
 	switch dst.(type) {
@@ -85,8 +123,7 @@ func parseValue(dst any, raw string, p Parameters) error {
 	case *net.HardwareAddr, *[]net.HardwareAddr:
 		err = parseInto(dst, raw, p, net.ParseMAC)
 	default:
-		// Unreachable from Parse while every EnvParsable type has a case above.
-		panic("getenv: no parser for " + reflect.TypeOf(dst).String())
+		return errNotBuiltin
 	}
 
 	return err
@@ -102,7 +139,7 @@ func parseInto[E any](dst any, raw string, p Parameters, parse func(string) (E, 
 	case *[]E:
 		*v, err = parseSlice(raw, p.Separator, parse)
 	default:
-		// Unreachable while every case of Parse passes the parser of its own type.
+		// Unreachable while every case of parseBuiltin passes the parser of its own type.
 		panic("getenv: parser does not match the destination type")
 	}
 

@@ -17,7 +17,7 @@ import (
 // comma holds the parameters for slice cases.
 var comma = Parameters{Separator: ","}
 
-type parseCase[T EnvParsable] struct {
+type parseCase[T any] struct {
 	name    string
 	raw     string
 	params  Parameters
@@ -26,7 +26,7 @@ type parseCase[T EnvParsable] struct {
 }
 
 // testParse runs Parse[T] for every case: an error must wrap ErrInvalidValue and come with the zero value.
-func testParse[T EnvParsable](t *testing.T, cases ...parseCase[T]) {
+func testParse[T any](t *testing.T, cases ...parseCase[T]) {
 	t.Helper()
 
 	t.Run(fmt.Sprintf("%T", *new(T)), func(t *testing.T) {
@@ -269,21 +269,9 @@ func TestParseSliceErrors(t *testing.T) {
 	assert.ErrorContains(t, err, "element 2")
 }
 
-// unsupported is a type that has no parser.
-type unsupported struct{}
-
-// The panics guard against programming errors in this package: Parse cannot reach them
-// while every EnvParsable type has a parser of its own type.
 func TestParsePanics(t *testing.T) {
-	t.Run("no parser for the type", func(t *testing.T) {
-		var dst unsupported
-
-		assert.PanicsWithValue(t, "getenv: no parser for *internal.unsupported", func() {
-			err := parseValue(&dst, "1", comma)
-			t.Errorf("returned %v instead of panicking", err)
-		})
-	})
-
+	// This panic guards against programming errors in this package: Parse cannot reach it
+	// while every case of parseBuiltin passes the parser of its own type.
 	t.Run("parser does not match the destination", func(t *testing.T) {
 		var dst int
 
@@ -318,6 +306,10 @@ func FuzzParse(f *testing.F) {
 		checkErrContract[net.IP](t, raw, p)
 		checkErrContract[[]netip.Prefix](t, raw, p)
 		checkErrContract[net.HardwareAddr](t, raw, p)
+		checkErrContract[level](t, raw, p)
+		checkErrContract[[]*point](t, raw, p)
+		checkErrContract[ports](t, raw, p)
+		checkErrContract[timeouts](t, raw, p)
 
 		got, err := Parse[[]string](raw, p)
 		require.NoError(t, err)
@@ -326,7 +318,7 @@ func FuzzParse(f *testing.F) {
 }
 
 // checkErrContract asserts that a failed Parse returns the zero value and an error wrapping ErrInvalidValue.
-func checkErrContract[T EnvParsable](t *testing.T, raw string, p Parameters) {
+func checkErrContract[T any](t *testing.T, raw string, p Parameters) {
 	t.Helper()
 
 	got, err := Parse[T](raw, p)

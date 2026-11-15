@@ -1,6 +1,7 @@
 package getenv_test
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -151,6 +152,89 @@ func TestEnvOrDefaultOptions(t *testing.T) {
 
 		got := getenv.EnvOrDefault(testEnvKey, []string{"default"})
 		assert.Equal(t, []string{"a", "b"}, got)
+	})
+}
+
+// color is a custom type: it implements getenv.EnvParser.
+type color string
+
+var _ getenv.EnvParser[color] = color("")
+
+func (color) ParseEnv(raw string) (color, error) {
+	switch raw {
+	case "red", "green":
+		return color(raw), nil
+	default:
+		return "", fmt.Errorf("unknown color %q", raw)
+	}
+}
+
+func TestEnvCustomType(t *testing.T) {
+	t.Run("value", func(t *testing.T) {
+		t.Setenv(testEnvKey, "red")
+
+		got, err := getenv.Env[color](testEnvKey)
+		require.NoError(t, err)
+		assert.Equal(t, color("red"), got)
+	})
+
+	t.Run("slice", func(t *testing.T) {
+		t.Setenv(testEnvKey, "red|green")
+
+		got, err := getenv.Env[[]color](testEnvKey, option.WithSeparator("|"))
+		require.NoError(t, err)
+		assert.Equal(t, []color{"red", "green"}, got)
+	})
+
+	t.Run("invalid", func(t *testing.T) {
+		t.Setenv(testEnvKey, "blue")
+
+		got, err := getenv.Env[color](testEnvKey)
+		require.ErrorIs(t, err, getenv.ErrInvalidValue)
+		assert.ErrorContains(t, err, testEnvKey)
+		assert.Zero(t, got)
+	})
+
+	t.Run("not set", func(t *testing.T) {
+		_, err := getenv.Env[color](testEnvKey)
+		require.ErrorIs(t, err, getenv.ErrNotSet)
+	})
+
+	t.Run("default", func(t *testing.T) {
+		t.Setenv(testEnvKey, "blue")
+
+		assert.Equal(t, color("green"), getenv.EnvOrDefault(testEnvKey, color("green")))
+	})
+}
+
+func TestUnsupportedType(t *testing.T) {
+	const msg = "getenv: unsupported type: chan int"
+
+	t.Run("set", func(t *testing.T) {
+		t.Setenv(testEnvKey, "1")
+
+		assert.PanicsWithError(t, msg, func() {
+			_, err := getenv.Env[chan int](testEnvKey)
+			t.Errorf("returned %v instead of panicking", err)
+		})
+	})
+
+	t.Run("not set", func(t *testing.T) {
+		assert.PanicsWithError(t, msg, func() {
+			_, err := getenv.Env[chan int](testEnvKey)
+			t.Errorf("returned %v instead of panicking", err)
+		})
+	})
+
+	t.Run("default", func(t *testing.T) {
+		defer func() {
+			err, ok := recover().(error)
+			require.True(t, ok, "panic value is not an error")
+			require.ErrorIs(t, err, getenv.ErrUnsupportedType)
+		}()
+
+		got := getenv.EnvOrDefault(testEnvKey, make(chan int))
+		t.Errorf("returned %v instead of panicking", got)
 	})
 }
 
