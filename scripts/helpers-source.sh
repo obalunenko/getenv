@@ -12,6 +12,23 @@ function checkInstalled() {
   fi
 }
 
+# Prints the binary path of a tool pinned in tools/<name>/go.mod, building it on
+# first use. go tool runs inside the tool module: -modfile from the repo root
+# clashes with vendor/.
+function toolPath() {
+  go tool -C "${REPO_ROOT}/tools/$1" -n "$1"
+}
+
+# Runs a tool pinned in tools/<name>/go.mod: gotool <name> [args...]
+function gotool() {
+  local name="$1"
+  shift
+
+  local bin
+  bin="$(toolPath "${name}")"
+  "${bin}" "$@"
+}
+
 function openSource() {
   OPEN_CMD=""
   OPEN_SRC=$1

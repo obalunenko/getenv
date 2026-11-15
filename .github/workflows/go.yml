@@ -16,7 +16,6 @@ on:
       - 'Makefile'
       - '!**.*md'
       - '.github/workflows/**'
-      - 'deployments/docker-compose/go-tools-docker-compose.yml'
   pull_request:
     types: [ opened, synchronize, reopened ]
     branches:
@@ -32,7 +31,6 @@ on:
       - 'Makefile'
       - '!**.*md'
       - '.github/workflows/**'
-      - 'deployments/docker-compose/go-tools-docker-compose.yml'
 
 jobs:
   build:
@@ -62,15 +60,15 @@ jobs:
       - name: Set up cache
         uses: actions/cache@v6
         env:
-          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
+          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
         with:
           path: |
             ${{ env.GOBIN }}
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@v7
@@ -109,20 +107,15 @@ jobs:
       - name: Set up cache
         uses: actions/cache@v6
         env:
-          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
+          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
         with:
           path: |
             ${{ env.GOBIN }}
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
-
-      - name: Install tools
-        run: |
-          make install-tools
-        shell: bash
+            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Test
         run: |
@@ -160,20 +153,15 @@ jobs:
       - name: Set up cache
         uses: actions/cache@v6
         env:
-          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
+          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
         with:
           path: |
             ${{ env.GOBIN }}
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
-
-      - name: Install tools
-        run: |
-          make install-tools
-        shell: bash
+            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Lint
         run: |
@@ -207,20 +195,15 @@ jobs:
       - name: Set up cache
         uses: actions/cache@v6
         env:
-          cache-name: cache-vendored-tools-${{ secrets.CACHE_VERSION }}
+          cache-name: cache-tools-${{ github.job }}-${{ secrets.CACHE_VERSION }}
         with:
           path: |
             ${{ env.GOBIN }}
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.sum', 'tools/*/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/tools/go.sum') }}
-
-      - name: Install tools
-        run: |
-          make install-tools
-        shell: bash
+            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Prepare test coverage and reports
         run: |

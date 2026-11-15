@@ -28,10 +28,23 @@ updates:
       prefix: "chore"
       include: "scope"
 
-  - package-ecosystem: "docker"
-    directory: "/build/docker/go-tools"
+  - package-ecosystem: "gomod"
+    directories:
+      - "/tools/*"
     schedule:
       interval: "daily"
+    # go.mod marks tool modules as indirect, so list them by name: this bumps
+    # the tools and leaves their own dependencies alone.
+    allow:
+      - dependency-name: "github.com/axw/gocov"
+      - dependency-name: "github.com/golangci/golangci-lint/v2"
+      - dependency-name: "github.com/matm/gocov-html"
+      - dependency-name: "golang.org/x/tools"
+      - dependency-name: "gotest.tools/gotestsum"
+    groups:
+      tools:
+        patterns:
+          - "*"
     labels:
       - "dependencies"
     assignees:
