@@ -13,6 +13,6 @@ source "${SCRIPTS_DIR}/linting/linters-source.sh"
 
 echo "Linting..."
 
-gotool golangci-lint run --config .golangci.yml >linters.out
+gotool golangci-lint run --config .golangci.yml
 
 echo "${SCRIPT_NAME} done."
