@@ -158,7 +158,7 @@ jobs:
         shell: bash
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: ${{ steps.golangci-lint.outputs.version }}
           args: --config .golangci.pipe.yml
@@ -213,7 +213,7 @@ jobs:
 
       # .golangci.yml writes the checkstyle report for Sonar to linters-report.xml.
       - name: Prepare lint report
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: ${{ steps.golangci-lint.outputs.version }}
           args: --config .golangci.yml

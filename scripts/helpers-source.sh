@@ -16,7 +16,9 @@ function checkInstalled() {
 # first use. go tool runs inside the tool module: -modfile from the repo root
 # clashes with vendor/.
 function toolPath() {
-  go tool -C "${REPO_ROOT}/tools/$1" -n "$1"
+  local name="$1"
+
+  go tool -C "${REPO_ROOT}/tools/${name}" -n "${name}"
 }
 
 # Runs a tool pinned in tools/<name>/go.mod: gotool <name> [args...]
